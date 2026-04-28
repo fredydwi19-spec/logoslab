@@ -5,9 +5,10 @@ import { db, pool } from "./db/db";
 const app = new Elysia()
   .onError(({ code, error }) => {
     console.error(`[Error] ${code}:`, error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return {
       status: 500,
-      error: error.message || "Internal Server Error"
+      error: message || "Internal Server Error"
     };
   })
   .get("/health", async () => {
