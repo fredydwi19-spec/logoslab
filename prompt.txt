@@ -1,0 +1,69 @@
+1.  Buatkan issue.md berisi planning untuk membuat ini:
+    Buat project baru di folder ini
+    menggunakan Bun dan gunakan dependancy:
+        - ElysiaJS
+        - Drizzle
+        - MySQL
+    jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan 
+
+2.  Jalankan github issue: https://github.com/fredydwi19-spec/logoslab/issues/5
+
+3.  Buatkan pull request 
+
+4.  Buatkan issue.md berisi planning untuk membuat ini:
+    Buat table user dengan kolom:
+        - id auto increment
+        - name varchar 100 not null
+        - email varchar 255 not null
+        - created_at timestamp default current_timestamp
+        - updated_at timestamp default current_timestamp on update current_timestamp
+    jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan 
+
+5.  Buatkan github issue.md berisi planning untuk membuat ini:
+    Role: Senior Fullstack Developer & UI Engineer
+    Task: Implementasikan struktur Landing Page "Logos LAB" ke dalam proyek ElysiaJS.
+    Spesifikasi Tampilan (Issue.md):
+        Header: Logo di kiri dengan teks "Logos LAB", Menu "Login" di kanan.
+        Hero Section: Judul "Edukasi Alkitab dan Berpikir Kritis", deskripsi visi, dan tombol CTA "Mulai Menjelajah".
+        Section 2 (Games Carousel): Buat kontainer slider untuk thumbnail game populer.
+        Section 3 (Materi Pembelajaran): >    - Thumbnail Statis.
+        Tipe PDF: Icon kaca pembesar + button "Baca".
+        Tipe Video: Play button + button "Tonton Video".
+        Footer: Copyright by FDS, tagline Logos LAB, dan Live Counter (ambil data count user dari DB dan buat variabel dummy untuk jumlah kunjungan).
+    jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan 
+
+6.  Buatkan github issue.md berisi planning untuk membuat ini:
+    Role: Lead Fullstack Architect & Security Engineer
+    Objective: Membangun sistem autentikasi terpadu (Manual & Google OAuth) yang terhubung langsung dengan Dashboard Profesional sesuai Role User.
+        1. Database Schema Update (Drizzle):
+            Tabel users: Tambahkan kolom password (hashed), google_id, role (Enum: KETUA_TIM, PEMBUAT_GAME, PEMBUAT_MATERI, PAKAR, USER), username, dan profile_picture.
+            Tabel projects: Tambahkan kolom id, title, type (GAME, MATERI), status (DRAFT, REVIEW, ACCEPTED, PUBLISHED), id_pembuat (FK ke users), id_pakar (FK ke users).
+        2. Sistem Autentikasi:
+            Login Logic: Buat endpoint untuk Login Manual dan Google OAuth.
+            Post-Login Redirect: Setelah login berhasil, sistem harus mengecek role user dan mengarahkan ke:
+                KETUA_TIM -> /dashboard/ketua
+                PEMBUAT_GAME -> /dashboard/game
+                PEMBUAT_MATERI -> /dashboard/materi
+                PAKAR -> /dashboard/pakar
+                USER -> /dashboard/member (atau tetap di Landing Page).
+        3. UI Dashboard Profesional (Style: TailAdmin):
+            Sidebar Brand: Ganti teks logo menjadi [Username] (Bold) dan [Role Name] (Muted text) di bawahnya.
+            Dinamika Sidebar Menu:
+                Semua Role: Memiliki menu Edit Profile (Form Username & Foto).
+                KETUA_TIM: Menu "Semua Proyek", "Proyek Game" (Dropdown: Draft Review, Accept, Publish), "Proyek Materi" (Dropdown: sama).
+                PEMBUAT_GAME: Menu "Proyek Saya" (Khusus proyek tipe GAME yang di-assign).
+                PEMBUAT_MATERI: Menu "Proyek Saya" (Khusus proyek tipe MATERI - Teks/Video).
+                PAKAR: Menu "Proyek Saya" (Daftar Proyek Game/Materi yang butuh validasi/review).
+        4. Teknis Implementasi:
+            - Gunakan @elysiajs/html dan Tailwind CSS.
+            - Pisahkan layout dashboard ke dalam komponen agar sidebar hanya perlu ditulis satu kali namun isinya berubah sesuai role.
+            - Output: Tuliskan checklist langkah-langkah di issue.md, mulai dari migrasi database hingga pembuatan middleware keamanan rute.
+    jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan
