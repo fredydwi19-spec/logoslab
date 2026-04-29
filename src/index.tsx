@@ -109,6 +109,10 @@ const app = new Elysia()
                   <span class="mr-3">📊</span> Dashboard
                 </a>
                 
+                <a href="#" class="nav-item">
+                  <span class="mr-3">📂</span> Semua Proyek
+                </a>
+
                 <div class="group">
                   <button class="nav-item w-[calc(100%-2rem)] flex justify-between">
                     <span><span class="mr-3">🎮</span> Proyek Game</span>
@@ -151,10 +155,10 @@ const app = new Elysia()
 
             <div class="main-content">
               <header class="flex justify-between items-center mb-8">
-                <h1 class="text-2xl font-bold text-slate-800">Dashboard ${roleName}</h1>
+                <h1 class="text-2xl font-bold text-slate-800">Semua Proyek</h1>
                 <div class="flex items-center gap-4">
                   <div class="relative">
-                    <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
+                    <input type="text" placeholder="Search projects..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
                     <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
                   </div>
                   <button class="p-2 text-slate-400 hover:text-blue-600">🔔</button>
@@ -162,50 +166,107 @@ const app = new Elysia()
                 </div>
               </header>
 
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="card">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">👥</div>
-                    <span class="text-emerald-500 text-xs font-bold">↑ 12%</span>
-                  </div>
-                  <p class="text-2xl font-bold text-slate-800">3,456</p>
-                  <p class="text-sm text-slate-500">Total Users</p>
+              <!-- Table 1: Proyek Game -->
+              <div class="card mb-8">
+                <div class="flex justify-between items-center mb-6">
+                  <h2 class="text-lg font-bold text-slate-800">Tabel Proyek Game</h2>
+                  <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <span>+</span> Tambah Game
+                  </button>
                 </div>
-                <div class="card">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">🎮</div>
-                    <span class="text-emerald-500 text-xs font-bold">↑ 5%</span>
-                  </div>
-                  <p class="text-2xl font-bold text-slate-800">124</p>
-                  <p class="text-sm text-slate-500">Active Games</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="border-b border-slate-100 text-slate-400 text-sm">
+                        <th class="pb-4 font-semibold">ID</th>
+                        <th class="pb-4 font-semibold">Judul Game</th>
+                        <th class="pb-4 font-semibold">Status</th>
+                        <th class="pb-4 font-semibold">Pembuat</th>
+                        <th class="pb-4 font-semibold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-slate-600">
+                      <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                        <td class="py-4">#G001</td>
+                        <td class="py-4 font-medium text-slate-800">Bible Trivia Quest</td>
+                        <td class="py-4"><span class="px-2 py-1 bg-emerald-100 text-emerald-600 rounded text-xs">Published</span></td>
+                        <td class="py-4">Andi Game</td>
+                        <td class="py-4 text-right">
+                          <button class="text-blue-600 hover:underline mr-3">Edit</button>
+                          <button class="text-red-500 hover:underline">Hapus</button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                        <td class="py-4">#G002</td>
+                        <td class="py-4 font-medium text-slate-800">Puzzle Iman v2</td>
+                        <td class="py-4"><span class="px-2 py-1 bg-amber-100 text-amber-600 rounded text-xs">Draft</span></td>
+                        <td class="py-4">Budi Creator</td>
+                        <td class="py-4 text-right">
+                          <button class="text-blue-600 hover:underline mr-3">Edit</button>
+                          <button class="text-red-500 hover:underline">Hapus</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                <div class="card">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">📚</div>
-                    <span class="text-rose-500 text-xs font-bold">↓ 2%</span>
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-between items-center text-sm text-slate-500">
+                  <p>Showing 1 to 2 of 2 entries</p>
+                  <div class="flex gap-2">
+                    <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50">Prev</button>
+                    <button class="px-3 py-1 bg-blue-600 text-white rounded">1</button>
+                    <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50">Next</button>
                   </div>
-                  <p class="text-2xl font-bold text-slate-800">89</p>
-                  <p class="text-sm text-slate-500">Materials</p>
-                </div>
-                <div class="card">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 bg-purple-50 text-purple-600 rounded-lg">⚖️</div>
-                    <span class="text-emerald-500 text-xs font-bold">↑ 8%</span>
-                  </div>
-                  <p class="text-2xl font-bold text-slate-800">42</p>
-                  <p class="text-sm text-slate-500">Validations</p>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="card h-80 flex flex-col items-center justify-center border-dashed border-2">
-                  <p class="text-slate-400">Chart Section (Coming Soon)</p>
+              <!-- Table 2: Proyek Materi -->
+              <div class="card">
+                <div class="flex justify-between items-center mb-6">
+                  <h2 class="text-lg font-bold text-slate-800">Tabel Proyek Materi</h2>
+                  <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <span>+</span> Tambah Materi
+                  </button>
                 </div>
-                <div class="card h-80 flex flex-col items-center justify-center border-dashed border-2">
-                  <p class="text-slate-400">Activity Logs (Coming Soon)</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="border-b border-slate-100 text-slate-400 text-sm">
+                        <th class="pb-4 font-semibold">ID</th>
+                        <th class="pb-4 font-semibold">Judul Materi</th>
+                        <th class="pb-4 font-semibold">Tipe</th>
+                        <th class="pb-4 font-semibold">Status</th>
+                        <th class="pb-4 font-semibold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-slate-600">
+                      <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                        <td class="py-4">#M001</td>
+                        <td class="py-4 font-medium text-slate-800">Sejarah Israel Kuno</td>
+                        <td class="py-4">PDF</td>
+                        <td class="py-4"><span class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs">In Review</span></td>
+                        <td class="py-4 text-right">
+                          <button class="text-blue-600 hover:underline mr-3">Edit</button>
+                          <button class="text-red-500 hover:underline">Hapus</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-between items-center text-sm text-slate-500">
+                  <p>Showing 1 to 1 of 1 entries</p>
+                  <div class="flex gap-2">
+                    <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50">Prev</button>
+                    <button class="px-3 py-1 bg-blue-600 text-white rounded">1</button>
+                    <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50">Next</button>
+                  </div>
                 </div>
               </div>
             </div>
+          </body>
+          </html>
+        `;
           </body>
           </html>
         `;
