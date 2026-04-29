@@ -108,12 +108,31 @@ const app = new Elysia()
                 <a href="#" class="nav-item active">
                   <span class="mr-3">📊</span> Dashboard
                 </a>
-                <a href="#" class="nav-item">
-                  <span class="mr-3">🎮</span> Game Proyek
-                </a>
-                <a href="#" class="nav-item">
-                  <span class="mr-3">📚</span> Materi Proyek
-                </a>
+                
+                <div class="group">
+                  <button class="nav-item w-[calc(100%-2rem)] flex justify-between">
+                    <span><span class="mr-3">🎮</span> Proyek Game</span>
+                    <span class="text-[10px]">▼</span>
+                  </button>
+                  <div class="hidden group-hover:block ml-12 mb-2">
+                    <a href="#" class="block py-2 text-sm text-slate-500 hover:text-blue-600">Daftar Game</a>
+                    <a href="#" class="block py-2 text-sm text-slate-500 hover:text-blue-600">Buat Baru</a>
+                    <a href="#" class="block py-2 text-sm text-slate-500 hover:text-blue-600">Draft</a>
+                  </div>
+                </div>
+
+                <div class="group">
+                  <button class="nav-item w-[calc(100%-2rem)] flex justify-between">
+                    <span><span class="mr-3">📚</span> Proyek Materi</span>
+                    <span class="text-[10px]">▼</span>
+                  </button>
+                  <div class="hidden group-hover:block ml-12 mb-2">
+                    <a href="#" class="block py-2 text-sm text-slate-500 hover:text-blue-600">Daftar Materi</a>
+                    <a href="#" class="block py-2 text-sm text-slate-500 hover:text-blue-600">Buat Baru</a>
+                    <a href="#" class="block py-2 text-sm text-slate-500 hover:text-blue-600">Draft</a>
+                  </div>
+                </div>
+
                 <a href="#" class="nav-item">
                   <span class="mr-3">👥</span> Users
                 </a>

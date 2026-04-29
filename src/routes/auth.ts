@@ -89,4 +89,8 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
     // 3. Create if not, then sign JWT
     
     set.redirect = "/dashboard/member"; // Default
+  })
+  .get("/logout", ({ cookie: { auth }, set }) => {
+    auth.remove();
+    set.redirect = "/";
   });
