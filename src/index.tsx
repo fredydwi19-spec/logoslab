@@ -43,6 +43,7 @@ const app = new Elysia()
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie: { auth }, set }) => {
+        if (!auth.value) return (set.redirect = "/");
         const payload = await jwt.verify(auth.value);
         if (!payload) {
           return (set.redirect = "/");
@@ -50,7 +51,9 @@ const app = new Elysia()
       })
       .derive(async ({ jwt, cookie: { auth } }) => {
         const payload = await jwt.verify(auth.value);
-        return { user: payload };
+        if (!payload) return { user: null };
+        // Clone payload to avoid readonly issues
+        return { user: { ...payload } as any };
       })
       .get("/:role", ({ params, user, set }) => {
         if (!user || !user.role) return "Unauthorized";
