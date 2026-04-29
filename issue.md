@@ -1,205 +1,150 @@
-# Refactor: Base Server ElysiaJS + Drizzle ORM + MySQL
+# Landing Page — Logos LAB
 
-> **Role**: Senior Backend Architect
-> **Stack**: Bun · ElysiaJS · Drizzle ORM · MySQL
-> **Database**: `logoslab` (sudah ada, sudah memiliki tabel `users`)
-
----
-
-## Context & Current State
-
-Project ini sudah memiliki scaffolding awal, namun perlu direfactor agar lebih robust dan production-ready. Berikut kondisi yang sudah ada:
-
-| File | Status | Catatan |
-|------|--------|---------|
-| `src/index.ts` | ✅ Ada | Server Elysia di port 3000, tapi belum ada error handling |
-| `src/db/index.ts` | ⚠️ Perlu refactor | Koneksi DB langsung `await` di top-level, tidak ada singleton pattern, tidak ada error handling |
-| `src/db/schema.ts` | ⚠️ Perlu update | Schema `users` ada tapi kurang kolom `updated_at` |
-| `src/routes/users.ts` | ⚠️ Perlu refactor | CRUD ada tapi import dari `../db` bukan `../db/db`, tidak ada error handling |
-| `.env` | ✅ Ada | `DATABASE_URL=mysql://root:mysqldatabase@localhost:3306/logoslab` |
+> **Role**: Senior Fullstack Developer & UI Engineer
+> **Stack**: Bun · ElysiaJS · Drizzle ORM · MySQL · HTML/CSS/JS
+> **Tujuan**: Membangun Landing Page "Logos LAB" yang disajikan via ElysiaJS static file serving.
 
 ---
 
-## Phase 1: Refactor Database Connection Layer
+## Konteks Proyek
 
-### 1.1 — Pindahkan koneksi ke `src/db/db.ts` (Singleton Pattern)
+Proyek **Logos LAB** sudah memiliki backend API (ElysiaJS + Drizzle ORM + MySQL) yang berjalan di port 3000. Plugin `@elysiajs/static` sudah terinstall. Sekarang perlu ditambahkan Landing Page sebagai halaman utama (`/`) yang menampilkan informasi produk, game carousel, materi pembelajaran, dan live counter.
 
-- [ ] Buat file baru `src/db/db.ts`
-- [ ] Implementasi **singleton pattern** — koneksi hanya dibuat sekali dan di-reuse
-- [ ] Gunakan `mysql2/promise` dengan `createPool()` (bukan `createConnection()`) agar lebih tahan terhadap koneksi putus
-- [ ] Baca connection string dari `process.env.DATABASE_URL`
-- [ ] Tambahkan **try-catch** saat inisialisasi koneksi:
-  - Jika gagal, log error message yang jelas (termasuk host/port) lalu `process.exit(1)`
-- [ ] Export `db` instance (Drizzle) dan optional export `pool` untuk keperluan health-check
-- [ ] Hapus file lama `src/db/index.ts` setelah semua import sudah dipindah
+### Teknologi Frontend
 
-### 1.2 — Update Schema (`src/db/schema.ts`)
-
-- [ ] Tambahkan kolom `updated_at` dengan tipe `timestamp`, default `CURRENT_TIMESTAMP`, dan `ON UPDATE CURRENT_TIMESTAMP`
-- [ ] Ubah panjang kolom `name` dari `varchar(255)` menjadi `varchar(100)` sesuai requirement
-- [ ] Pastikan semua kolom yang di-export:
-  - `id` — serial, auto increment, primary key
-  - `name` — varchar(100), NOT NULL
-  - `email` — varchar(255), NOT NULL, UNIQUE
-  - `created_at` — timestamp, default NOW
-  - `updated_at` — timestamp, default NOW, on update NOW
-- [ ] Jalankan `bun run db:generate` untuk membuat migration file baru
-- [ ] Jalankan `bun run db:migrate` untuk apply perubahan ke database
+- **Pure HTML, CSS, dan Vanilla JS** — tidak perlu framework frontend.
+- File statis disajikan menggunakan `@elysiajs/static` dari folder `public/`.
+- Data dinamis (user count) diambil via fetch ke endpoint API internal.
 
 ---
 
-## Phase 2: Setup Elysia Server
+## Phase 1: Setup Static File Serving
 
-### 2.1 — Refactor `src/index.ts`
-
-- [ ] Import `db` dari `./db/db` (bukan `./db`)
-- [ ] Tambahkan **global error handler** menggunakan `.onError()` di Elysia:
-  - Tangkap error database (koneksi putus, query gagal)
-  - Return response JSON `{ error: string, status: number }` yang konsisten
-- [ ] Tambahkan **health-check endpoint** `GET /health` yang:
-  - Melakukan query sederhana ke DB (misal: `SELECT 1`)
-  - Return `{ status: "ok", timestamp: ... }` jika berhasil
-  - Return `{ status: "error", message: ... }` jika DB tidak bisa dijangkau
-- [ ] Pastikan server tetap listen di port `3000`
-- [ ] Log startup message yang mencantumkan port dan status koneksi DB
+- [ ] Buat folder `public/` di root project
+- [ ] Buat sub-folder: `public/css/`, `public/js/`, `public/assets/`
+- [ ] Konfigurasi `@elysiajs/static` di `src/index.ts` agar serve folder `public/`
+- [ ] Buat route `GET /` yang mengembalikan file `public/index.html`
+- [ ] Pastikan static assets (CSS, JS, gambar) bisa diakses via URL
 
 ---
 
-## Phase 3: API Endpoints (Users)
+## Phase 2: Struktur HTML (`public/index.html`)
 
-### 3.1 — Refactor `src/routes/users.ts`
+Buat satu file HTML utama yang terdiri dari 5 section:
 
-- [ ] Update import path: ganti `../db` → `../db/db`
-- [ ] **GET `/users`**
-  - Query semua data dari tabel `users` menggunakan Drizzle
-  - Bungkus dalam try-catch, return `500` jika query gagal
-  - Response format: `{ data: User[], count: number }`
-- [ ] **POST `/users`**
-  - Input body: `{ name: string }` — hanya field `name` yang diterima (email opsional, hapus jika tidak diperlukan, atau buat opsional)
-  - Validasi menggunakan `t.Object()` dari Elysia
-  - Bungkus insert dalam try-catch:
-    - Tangkap duplicate entry error (email unique constraint)
-    - Return `409 Conflict` untuk duplicate
-    - Return `500` untuk error lainnya
-  - Response sukses: `{ data: { id, name, ... }, message: "User created" }`
-- [ ] **Opsional** — Pertahankan endpoint yang sudah ada (`GET /:id`, `PUT /:id`, `DELETE /:id`) tapi tambahkan try-catch di masing-masing
+### 2.1 — Header (Navbar)
 
----
+- [ ] Logo di kiri dengan teks **"Logos LAB"**
+- [ ] Menu navigasi di kanan berisi link **"Login"**
+- [ ] Sticky/fixed di atas saat scroll
 
-## Phase 4: Validasi & Testing
+### 2.2 — Hero Section
 
-### 4.1 — Manual Test dengan curl
+- [ ] Judul besar: **"Edukasi Alkitab dan Berpikir Kritis"**
+- [ ] Paragraf deskripsi singkat tentang visi Logos LAB
+- [ ] Tombol CTA: **"Mulai Menjelajah"** (bisa scroll ke section berikutnya atau link ke halaman lain)
+- [ ] Background yang menarik (gradient, gambar, atau pattern)
 
-Setelah semua perubahan selesai, jalankan server lalu test:
+### 2.3 — Section Games Carousel
 
-- [ ] **Start server**
-  ```bash
-  bun run dev
-  ```
+- [ ] Heading: **"Games Populer"** (atau sejenisnya)
+- [ ] Kontainer horizontal slider/carousel berisi thumbnail game
+- [ ] Setiap thumbnail berisi gambar + judul game
+- [ ] Gunakan placeholder image untuk 4-6 item game
+- [ ] Navigasi carousel: tombol panah kiri/kanan atau swipe
+- [ ] Implementasi scroll behavior via Vanilla JS
 
-- [ ] **Test health-check**
-  ```bash
-  curl.exe http://127.0.0.1:3000/health
-  ```
-  Expected: `{ "status": "ok", "timestamp": "..." }`
+### 2.4 — Section Materi Pembelajaran
 
-- [ ] **Test GET /users** (harus return array, mungkin kosong)
-  ```bash
-  curl.exe http://127.0.0.1:3000/users
-  ```
-  Expected: `{ "data": [...], "count": 0 }`
+- [ ] Heading: **"Materi Pembelajaran"**
+- [ ] Grid/list card berisi thumbnail materi
+- [ ] Setiap card adalah thumbnail statis dengan dua varian:
 
-- [ ] **Test POST /users** (tambah user baru)
-  ```bash
-  curl.exe -X POST http://127.0.0.1:3000/users -H "Content-Type: application/json" -d "{\"name\": \"Test User\"}"
-  ```
-  Expected: `{ "data": { "id": 1, "name": "Test User" }, "message": "User created" }`
+  **Tipe PDF:**
+  - Thumbnail/cover image
+  - Icon kaca pembesar (search icon) di atas thumbnail
+  - Button **"Baca"**
 
-- [ ] **Test GET /users** lagi (harus ada 1 data)
-  ```bash
-  curl.exe http://127.0.0.1:3000/users
-  ```
-  Expected: `{ "data": [{ "id": 1, "name": "Test User", ... }], "count": 1 }`
+  **Tipe Video:**
+  - Thumbnail/cover image
+  - Play button overlay di tengah thumbnail
+  - Button **"Tonton Video"**
 
-### 4.2 — Automated Test (Opsional)
+- [ ] Gunakan minimal 4 item dummy (2 PDF + 2 Video)
 
-- [ ] Buat file `src/__tests__/users.test.ts`
-- [ ] Gunakan `bun:test` bawaan Bun
-- [ ] Test minimal:
-  ```typescript
-  import { describe, it, expect } from "bun:test";
+### 2.5 — Footer
 
-  const BASE_URL = "http://127.0.0.1:3000";
-
-  describe("Users API", () => {
-    it("GET /health should return ok", async () => {
-      const res = await fetch(`${BASE_URL}/health`);
-      const body = await res.json();
-      expect(res.status).toBe(200);
-      expect(body.status).toBe("ok");
-    });
-
-    it("GET /users should return array", async () => {
-      const res = await fetch(`${BASE_URL}/users`);
-      const body = await res.json();
-      expect(res.status).toBe(200);
-      expect(Array.isArray(body.data)).toBe(true);
-    });
-
-    it("POST /users should create user", async () => {
-      const res = await fetch(`${BASE_URL}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Bun Tester" }),
-      });
-      const body = await res.json();
-      expect(res.status).toBe(200);
-      expect(body.data.name).toBe("Bun Tester");
-    });
-  });
-  ```
-- [ ] Tambahkan script di `package.json`: `"test": "bun test"`
-- [ ] Jalankan: `bun test` (pastikan server sudah berjalan di terminal lain)
+- [ ] Teks copyright: **"© 2026 FDS"**
+- [ ] Tagline Logos LAB
+- [ ] **Live Counter** yang menampilkan:
+  - Jumlah user terdaftar — diambil dari endpoint `GET /users` (ambil `count` dari response)
+  - Jumlah kunjungan — gunakan variabel dummy (hardcoded atau dari `localStorage`)
 
 ---
 
-## Phase 5: Cleanup
+## Phase 3: Styling (`public/css/style.css`)
 
-- [ ] Hapus `src/db/index.ts` (sudah diganti `src/db/db.ts`)
-- [ ] Hapus file `prompt.txt`, `issue.md`, `bun.lock` dari tracking jika tidak diperlukan
-- [ ] Pastikan `.env` ada di `.gitignore`
-- [ ] Pastikan `node_modules/` ada di `.gitignore`
-- [ ] Commit semua perubahan dan push
+- [ ] Design modern & clean (dark mode atau light mode, pilih salah satu yang cocok)
+- [ ] Responsive layout — mobile-first, breakpoint untuk tablet dan desktop
+- [ ] Smooth scroll antar section
+- [ ] Hover effects pada tombol dan card
+- [ ] Carousel styling (overflow hidden, snap scroll)
+- [ ] Typography yang rapi dan konsisten
+- [ ] Animasi ringan (fade-in saat scroll, hover transitions)
+
+---
+
+## Phase 4: JavaScript (`public/js/main.js`)
+
+- [ ] **Carousel logic**: scroll horizontal, tombol next/prev, auto-scroll opsional
+- [ ] **Live counter**: `fetch('/users')` → ambil `count` → tampilkan di footer
+- [ ] **Variabel kunjungan dummy**: buat angka random atau increment dari `localStorage`
+- [ ] **Smooth scroll**: CTA button dan navigasi internal
+
+---
+
+## Phase 5: API Endpoint Tambahan (Opsional)
+
+Jika dibutuhkan endpoint khusus untuk landing page:
+
+- [ ] `GET /api/stats` — return `{ userCount: number, visitCount: number }` 
+  - `userCount` query dari DB (`SELECT COUNT(*) FROM users`)
+  - `visitCount` bisa dari variabel in-memory (dummy)
 
 ---
 
 ## Struktur Folder Akhir
 
 ```
+├── public/
+│   ├── index.html            # Landing page utama
+│   ├── css/
+│   │   └── style.css         # Semua styling
+│   ├── js/
+│   │   └── main.js           # Carousel, counter, interaksi
+│   └── assets/
+│       ├── logo.png           # Logo Logos LAB
+│       └── games/             # Thumbnail game placeholder
+│           ├── game1.png
+│           └── ...
 ├── src/
-│   ├── index.ts              # Entry point — Elysia server, port 3000
+│   ├── index.ts              # Entry point — tambah static serving + route "/"
 │   ├── db/
-│   │   ├── db.ts             # Singleton DB connection (pool + drizzle)
-│   │   └── schema.ts         # Drizzle schema (users table)
-│   ├── routes/
-│   │   └── users.ts          # User CRUD endpoints
-│   └── __tests__/
-│       └── users.test.ts     # API integration tests (opsional)
-├── drizzle/                  # Generated migration files
-├── drizzle.config.ts
-├── package.json
-├── tsconfig.json
-├── .env                      # (gitignored)
-├── .env.example
-└── .gitignore
+│   │   ├── db.ts
+│   │   └── schema.ts
+│   └── routes/
+│       └── users.ts
+└── ...
 ```
 
 ---
 
-## Error Handling Checklist
+## Checklist Akhir
 
-- [ ] Koneksi DB gagal saat startup → log error, `process.exit(1)`
-- [ ] Query gagal saat runtime → return `500` dengan pesan error
-- [ ] Duplicate entry (unique constraint) → return `409 Conflict`
-- [ ] Invalid request body → return `400 Bad Request` (otomatis dari Elysia `t.Object()`)
-- [ ] Route tidak ditemukan → return `404 Not Found` (default Elysia)
+- [ ] Akses `http://localhost:3000/` → tampil Landing Page
+- [ ] Semua section tampil dengan benar (Header, Hero, Games, Materi, Footer)
+- [ ] Carousel bisa di-scroll atau diklik panah
+- [ ] Card materi menampilkan icon yang sesuai (PDF vs Video)
+- [ ] Live counter di footer menampilkan angka user dari DB
+- [ ] Responsive di mobile dan desktop
+- [ ] Tidak ada error di console browser
