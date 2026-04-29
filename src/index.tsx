@@ -46,28 +46,31 @@ const app = new Elysia()
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie: { auth }, set }) => {
-        if (!auth.value) return (set.redirect = "/");
+        if (!auth.value) {
+          set.redirect = "/";
+          return "/";
+        }
         const payload = await jwt.verify(auth.value);
         if (!payload) {
-          return (set.redirect = "/");
+          set.redirect = "/";
+          return "/";
         }
       })
       .derive(async ({ jwt, cookie: { auth } }) => {
         const payload = await jwt.verify(auth.value);
-        if (!payload) return { user: null };
-        // Clone payload to avoid readonly issues
-        return { user: { ...payload } as any };
+        return { user: payload ? { ...payload } : null };
       })
-      .get("/:role", ({ params, user, set }) => {
-        if (!user || !user.role) return "Unauthorized";
+      .get("/:role", ({ params, user }) => {
+        if (!user || !(user as any).role) return "Unauthorized";
         
         const roleParam = params.role.toUpperCase();
         const userRole = (user as any).role as string;
+        const username = (user as any).username as string;
         
-        return html(`
+        return `
           <div class="space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-              <h2 class="text-lg font-bold mb-2">Selamat Datang, ${(user as any).username}!</h2>
+              <h2 class="text-lg font-bold mb-2">Selamat Datang, ${username}!</h2>
               <p class="text-slate-600">Ini adalah halaman dashboard khusus untuk ${userRole.replace('_', ' ')}.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -85,7 +88,7 @@ const app = new Elysia()
               </div>
             </div>
           </div>
-        `);
+        `;
       })
   )
   .listen(3000);
