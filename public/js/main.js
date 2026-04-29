@@ -88,9 +88,8 @@ async function initCounters() {
     if (response.ok) {
       const data = await response.json();
       if (userCountEl && data.count !== undefined) {
-        // Base users + actual users to make it look active
-        const totalUsers = 500 + data.count; 
-        animateCounter(userCountEl, 0, totalUsers, 2000);
+        // Show exact count from database
+        animateCounter(userCountEl, 0, data.count, 2000);
       }
     } else {
       // Fallback
