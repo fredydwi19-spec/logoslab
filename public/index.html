@@ -18,14 +18,14 @@
         <span>Logos LAB</span>
       </a>
       <nav class="header__nav">
-        <a href="#login" class="btn-login" id="btn-login">
+        <button class="btn-login" id="btn-login-trigger">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>
             <line x1="15" y1="12" x2="3" y2="12"/>
           </svg>
           Login
-        </a>
+        </button>
       </nav>
     </div>
   </header>
@@ -275,5 +275,38 @@
   </footer>
 
   <script src="/public/js/main.js"></script>
+
+  <!-- ========== LOGIN MODAL ========== -->
+  <div class="modal" id="login-modal">
+    <div class="modal__overlay" id="login-modal-overlay"></div>
+    <div class="modal__content reveal">
+      <button class="modal__close" id="login-modal-close">&times;</button>
+      <div class="modal__header">
+        <h2 class="modal__title">Selamat Datang Kembali</h2>
+        <p class="modal__subtitle">Masuk ke akun Logos LAB Anda</p>
+      </div>
+      <form class="modal__form" id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Masukkan username Anda" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Masukkan password Anda" required>
+        </div>
+        <div id="login-error" class="form-error" style="display: none;"></div>
+        <button type="submit" class="btn-submit" id="login-submit-btn">
+          Masuk Sekarang
+        </button>
+      </form>
+      <div class="modal__footer">
+        <p>Atau masuk dengan</p>
+        <a href="/api/auth/google" class="btn-google">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+          Google
+        </a>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

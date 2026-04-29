@@ -7,6 +7,71 @@ document.addEventListener('DOMContentLoaded', () => {
   initCarousel();
   initRevealAnimations();
   initCounters();
+
+  // ========== LOGIN MODAL LOGIC ==========
+  const loginModal = document.getElementById('login-modal');
+  const loginTrigger = document.getElementById('btn-login-trigger');
+  const loginClose = document.getElementById('login-modal-close');
+  const loginOverlay = document.getElementById('login-modal-overlay');
+  const loginForm = document.getElementById('login-form');
+  const loginError = document.getElementById('login-error');
+  const loginSubmitBtn = document.getElementById('login-submit-btn');
+
+  if (loginTrigger && loginModal) {
+    loginTrigger.addEventListener('click', () => {
+      loginModal.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevent scroll
+    });
+
+    const closeModal = () => {
+      loginModal.classList.remove('active');
+      document.body.style.overflow = '';
+      loginError.style.display = 'none';
+      loginForm.reset();
+    };
+
+    loginClose.addEventListener('click', closeModal);
+    loginOverlay.addEventListener('click', closeModal);
+
+    // Handle Form Submission
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.style.display = 'none';
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = 'Memproses...';
+
+      const formData = new FormData(loginForm);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          // Success! Redirect to dashboard
+          window.location.href = result.redirect;
+        } else {
+          // Error
+          loginError.textContent = result.error || 'Login gagal. Silakan coba lagi.';
+          loginError.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        loginError.textContent = 'Terjadi kesalahan koneksi.';
+        loginError.style.display = 'block';
+      } finally {
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.textContent = 'Masuk Sekarang';
+      }
+    });
+  }
 });
 
 /* --- Header Scroll Effect --- */
