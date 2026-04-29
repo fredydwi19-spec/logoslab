@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Logos LAB — Platform edukasi Alkitab dan berpikir kritis. Belajar melalui game interaktif, materi PDF, dan video pembelajaran.">
+  <title>Logos LAB — Edukasi Alkitab dan Berpikir Kritis</title>
+  <link rel="icon" href="/public/assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="/" class="header__logo">
+        <img src="/public/assets/logo.png" alt="Logos LAB Logo">
+        <span>Logos LAB</span>
+      </a>
+      <nav class="header__nav">
+        <a href="#login" class="btn-login" id="btn-login">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Login
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero" id="hero">
+    <div class="hero__bg"></div>
+    <div class="container">
+      <div class="hero__content">
+        <div class="hero__badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+          Platform Edukasi Interaktif
+        </div>
+        <h1 class="hero__title">
+          <span class="highlight">Edukasi Alkitab</span><br>dan Berpikir Kritis
+        </h1>
+        <p class="hero__desc">
+          Logos LAB hadir untuk membantu Anda memahami Alkitab secara mendalam
+          melalui pendekatan berpikir kritis, game interaktif, dan materi
+          pembelajaran yang menarik.
+        </p>
+        <a href="#games" class="hero__cta" id="cta-explore">
+          Mulai Menjelajah
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== GAMES CAROUSEL ========== -->
+  <section class="section games" id="games">
+    <div class="container">
+      <div class="section__header reveal">
+        <h2 class="section__title">🎮 Games Populer</h2>
+        <p class="section__subtitle">Belajar Alkitab dengan cara yang seru dan interaktif</p>
+      </div>
+      <div class="carousel reveal">
+        <div class="carousel__track" id="carousel-track">
+
+          <div class="carousel__item">
+            <img class="carousel__img" src="/public/assets/games/game1.png" alt="Bible Trivia">
+            <div class="carousel__info">
+              <h3 class="carousel__name">Bible Trivia</h3>
+              <span class="carousel__tag">Kuis</span>
+            </div>
+          </div>
+
+          <div class="carousel__item">
+            <img class="carousel__img" src="/public/assets/games/game2.png" alt="Puzzle Alkitab">
+            <div class="carousel__info">
+              <h3 class="carousel__name">Puzzle Alkitab</h3>
+              <span class="carousel__tag">Puzzle</span>
+            </div>
+          </div>
+
+          <div class="carousel__item">
+            <img class="carousel__img" src="/public/assets/games/game3.png" alt="Petualangan Iman">
+            <div class="carousel__info">
+              <h3 class="carousel__name">Petualangan Iman</h3>
+              <span class="carousel__tag">Petualangan</span>
+            </div>
+          </div>
+
+          <div class="carousel__item">
+            <img class="carousel__img" src="/public/assets/games/game4.png" alt="Kuis Tokoh">
+            <div class="carousel__info">
+              <h3 class="carousel__name">Kuis Tokoh</h3>
+              <span class="carousel__tag">Kuis</span>
+            </div>
+          </div>
+
+          <div class="carousel__item">
+            <img class="carousel__img" src="/public/assets/games/game1.png" alt="Cerita Bergambar">
+            <div class="carousel__info">
+              <h3 class="carousel__name">Cerita Bergambar</h3>
+              <span class="carousel__tag">Edukasi</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="carousel__controls">
+          <button class="carousel__btn" id="carousel-prev" aria-label="Previous">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <button class="carousel__btn" id="carousel-next" aria-label="Next">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== MATERI PEMBELAJARAN ========== -->
+  <section class="section materi" id="materi">
+    <div class="container">
+      <div class="section__header reveal">
+        <h2 class="section__title">📚 Materi Pembelajaran</h2>
+        <p class="section__subtitle">Pelajari Alkitab melalui berbagai format yang mudah dipahami</p>
+      </div>
+      <div class="materi__grid">
+
+        <!-- PDF Card 1 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--pdf">📖</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <!-- Search / Magnifying glass icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--pdf">PDF</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Pengantar Perjanjian Baru</h3>
+            <p class="materi-card__desc">Memahami konteks sejarah, penulis, dan tema utama setiap kitab dalam Perjanjian Baru.</p>
+            <button class="materi-card__action materi-card__action--pdf" id="btn-baca-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              Baca
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF Card 2 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--pdf">🧠</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--pdf">PDF</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Dasar Berpikir Kritis</h3>
+            <p class="materi-card__desc">Panduan lengkap untuk mengembangkan kemampuan berpikir kritis dalam mempelajari teks Alkitab.</p>
+            <button class="materi-card__action materi-card__action--pdf" id="btn-baca-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              Baca
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Card 1 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--video">🏛️</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <!-- Play icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--video">Video</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Sejarah Israel Kuno</h3>
+            <p class="materi-card__desc">Perjalanan bangsa Israel dari masa Abraham hingga kehancuran Bait Allah kedua.</p>
+            <button class="materi-card__action materi-card__action--video" id="btn-tonton-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Tonton Video
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Card 2 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--video">✝️</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--video">Video</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Perumpamaan Yesus</h3>
+            <p class="materi-card__desc">Memahami makna mendalam di balik perumpamaan-perumpamaan yang diajarkan Yesus.</p>
+            <button class="materi-card__action materi-card__action--video" id="btn-tonton-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Tonton Video
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <div class="footer__logo">
+            <img src="/public/assets/logo.png" alt="Logos LAB">
+            <span>Logos LAB</span>
+          </div>
+          <p class="footer__tagline">Membangun generasi yang memahami Alkitab dan mampu berpikir kritis.</p>
+        </div>
+        <div class="footer__stats">
+          <div class="stat-card">
+            <span class="stat-card__number" id="user-count">—</span>
+            <span class="stat-card__label">Pengguna</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__number" id="visit-count">—</span>
+            <span class="stat-card__label">Kunjungan</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copyright">&copy; 2026 FDS. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/public/js/main.js"></script>
+</body>
+</html>
