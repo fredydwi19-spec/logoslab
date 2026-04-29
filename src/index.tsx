@@ -20,9 +20,12 @@ const app = new Elysia()
   .onError(({ code, error }) => {
     console.error(`[Error] ${code}:`, error);
     const message = error instanceof Error ? error.message : "Unknown error";
+    const stack = error instanceof Error ? error.stack : "";
     return {
       status: 500,
-      error: message || "Internal Server Error"
+      error: message,
+      stack: stack,
+      code: code
     };
   })
   .get("/health", async () => {
@@ -61,11 +64,12 @@ const app = new Elysia()
         const roleParam = params.role.toUpperCase();
         const userRole = (user as any).role as string;
         
-        return Layout({
-          title: `Dashboard ${roleParam}`,
-          username: (user as any).username as string,
-          role: userRole,
-          children: (
+        return (
+          <Layout
+            title={`Dashboard ${roleParam}`}
+            username={(user as any).username as string}
+            role={userRole}
+          >
             <div class="space-y-6">
               <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h2 class="text-lg font-bold mb-2">Selamat Datang, {(user as any).username}!</h2>
@@ -86,8 +90,8 @@ const app = new Elysia()
                 </div>
               </div>
             </div>
-          )
-        });
+          </Layout>
+        );
       })
   )
   .listen(3000);
