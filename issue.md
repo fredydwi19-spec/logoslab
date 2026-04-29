@@ -1,150 +1,93 @@
-# Landing Page — Logos LAB
+# Autentikasi Terpadu & Dashboard Profesional (Role-Based)
 
-> **Role**: Senior Fullstack Developer & UI Engineer
-> **Stack**: Bun · ElysiaJS · Drizzle ORM · MySQL · HTML/CSS/JS
-> **Tujuan**: Membangun Landing Page "Logos LAB" yang disajikan via ElysiaJS static file serving.
-
----
-
-## Konteks Proyek
-
-Proyek **Logos LAB** sudah memiliki backend API (ElysiaJS + Drizzle ORM + MySQL) yang berjalan di port 3000. Plugin `@elysiajs/static` sudah terinstall. Sekarang perlu ditambahkan Landing Page sebagai halaman utama (`/`) yang menampilkan informasi produk, game carousel, materi pembelajaran, dan live counter.
-
-### Teknologi Frontend
-
-- **Pure HTML, CSS, dan Vanilla JS** — tidak perlu framework frontend.
-- File statis disajikan menggunakan `@elysiajs/static` dari folder `public/`.
-- Data dinamis (user count) diambil via fetch ke endpoint API internal.
+> **Role**: Lead Fullstack Architect & Security Engineer
+> **Objective**: Membangun sistem autentikasi terpadu (Manual & Google OAuth) yang terhubung langsung dengan Dashboard Profesional sesuai Role User.
 
 ---
 
-## Phase 1: Setup Static File Serving
+## 1. Database Schema Update (Drizzle)
 
-- [ ] Buat folder `public/` di root project
-- [ ] Buat sub-folder: `public/css/`, `public/js/`, `public/assets/`
-- [ ] Konfigurasi `@elysiajs/static` di `src/index.ts` agar serve folder `public/`
-- [ ] Buat route `GET /` yang mengembalikan file `public/index.html`
-- [ ] Pastikan static assets (CSS, JS, gambar) bisa diakses via URL
+### Update Tabel `users`
+Tambahkan kolom baru untuk mendukung autentikasi dan profil lengkap:
+- [ ] `password` — varchar/string (hashed)
+- [ ] `google_id` — varchar/string (opsional, untuk OAuth)
+- [ ] `role` — Enum: `KETUA_TIM`, `PEMBUAT_GAME`, `PEMBUAT_MATERI`, `PAKAR`, `USER`
+- [ ] `username` — varchar/string
+- [ ] `profile_picture` — varchar/string (URL gambar)
 
----
+### Buat Tabel Baru `projects`
+Tabel untuk mengelola proyek (materi/game) di dashboard:
+- [ ] `id` — primary key, auto increment/uuid
+- [ ] `title` — varchar/string
+- [ ] `type` — Enum: `GAME`, `MATERI`
+- [ ] `status` — Enum: `DRAFT`, `REVIEW`, `ACCEPTED`, `PUBLISHED`
+- [ ] `id_pembuat` — FK (Foreign Key) ke tabel `users`
+- [ ] `id_pakar` — FK (Foreign Key) ke tabel `users`
 
-## Phase 2: Struktur HTML (`public/index.html`)
-
-Buat satu file HTML utama yang terdiri dari 5 section:
-
-### 2.1 — Header (Navbar)
-
-- [ ] Logo di kiri dengan teks **"Logos LAB"**
-- [ ] Menu navigasi di kanan berisi link **"Login"**
-- [ ] Sticky/fixed di atas saat scroll
-
-### 2.2 — Hero Section
-
-- [ ] Judul besar: **"Edukasi Alkitab dan Berpikir Kritis"**
-- [ ] Paragraf deskripsi singkat tentang visi Logos LAB
-- [ ] Tombol CTA: **"Mulai Menjelajah"** (bisa scroll ke section berikutnya atau link ke halaman lain)
-- [ ] Background yang menarik (gradient, gambar, atau pattern)
-
-### 2.3 — Section Games Carousel
-
-- [ ] Heading: **"Games Populer"** (atau sejenisnya)
-- [ ] Kontainer horizontal slider/carousel berisi thumbnail game
-- [ ] Setiap thumbnail berisi gambar + judul game
-- [ ] Gunakan placeholder image untuk 4-6 item game
-- [ ] Navigasi carousel: tombol panah kiri/kanan atau swipe
-- [ ] Implementasi scroll behavior via Vanilla JS
-
-### 2.4 — Section Materi Pembelajaran
-
-- [ ] Heading: **"Materi Pembelajaran"**
-- [ ] Grid/list card berisi thumbnail materi
-- [ ] Setiap card adalah thumbnail statis dengan dua varian:
-
-  **Tipe PDF:**
-  - Thumbnail/cover image
-  - Icon kaca pembesar (search icon) di atas thumbnail
-  - Button **"Baca"**
-
-  **Tipe Video:**
-  - Thumbnail/cover image
-  - Play button overlay di tengah thumbnail
-  - Button **"Tonton Video"**
-
-- [ ] Gunakan minimal 4 item dummy (2 PDF + 2 Video)
-
-### 2.5 — Footer
-
-- [ ] Teks copyright: **"© 2026 FDS"**
-- [ ] Tagline Logos LAB
-- [ ] **Live Counter** yang menampilkan:
-  - Jumlah user terdaftar — diambil dari endpoint `GET /users` (ambil `count` dari response)
-  - Jumlah kunjungan — gunakan variabel dummy (hardcoded atau dari `localStorage`)
+**Tugas Migrasi:**
+- [ ] Update `src/db/schema.ts` sesuai dengan spesifikasi di atas.
+- [ ] Jalankan `bun run db:generate` untuk membuat file migrasi.
+- [ ] Jalankan `bun run db:migrate` untuk apply perubahan ke database MySQL.
 
 ---
 
-## Phase 3: Styling (`public/css/style.css`)
+## 2. Sistem Autentikasi & Rute
 
-- [ ] Design modern & clean (dark mode atau light mode, pilih salah satu yang cocok)
-- [ ] Responsive layout — mobile-first, breakpoint untuk tablet dan desktop
-- [ ] Smooth scroll antar section
-- [ ] Hover effects pada tombol dan card
-- [ ] Carousel styling (overflow hidden, snap scroll)
-- [ ] Typography yang rapi dan konsisten
-- [ ] Animasi ringan (fade-in saat scroll, hover transitions)
+### Endpoint Login
+- [ ] **Login Manual**: Buat endpoint `POST /api/auth/login` yang menerima username/email dan password, validasi hash, dan set cookie/token sesi.
+- [ ] **Google OAuth**: Integrasikan login dengan Google (menggunakan library OAuth) dan simpan `google_id`. Jika user baru, buat data otomatis.
 
----
+### Post-Login Redirect Logic
+Setelah proses autentikasi sukses, cek nilai kolom `role` dari user yang login dan arahkan secara dinamis:
+- [ ] `KETUA_TIM` ➔ Redirect ke `/dashboard/ketua`
+- [ ] `PEMBUAT_GAME` ➔ Redirect ke `/dashboard/game`
+- [ ] `PEMBUAT_MATERI` ➔ Redirect ke `/dashboard/materi`
+- [ ] `PAKAR` ➔ Redirect ke `/dashboard/pakar`
+- [ ] `USER` ➔ Redirect ke `/dashboard/member` (atau arahkan kembali ke Landing Page).
 
-## Phase 4: JavaScript (`public/js/main.js`)
-
-- [ ] **Carousel logic**: scroll horizontal, tombol next/prev, auto-scroll opsional
-- [ ] **Live counter**: `fetch('/users')` → ambil `count` → tampilkan di footer
-- [ ] **Variabel kunjungan dummy**: buat angka random atau increment dari `localStorage`
-- [ ] **Smooth scroll**: CTA button dan navigasi internal
-
----
-
-## Phase 5: API Endpoint Tambahan (Opsional)
-
-Jika dibutuhkan endpoint khusus untuk landing page:
-
-- [ ] `GET /api/stats` — return `{ userCount: number, visitCount: number }` 
-  - `userCount` query dari DB (`SELECT COUNT(*) FROM users`)
-  - `visitCount` bisa dari variabel in-memory (dummy)
+### Middleware & Keamanan Rute
+- [ ] Buat plugin Elysia (middleware) untuk mengecek validitas token sesi.
+- [ ] Lindungi prefix rute `/dashboard/*` agar hanya bisa diakses oleh user yang sudah login dan rolenya sesuai (Role-Based Access Control / RBAC).
 
 ---
 
-## Struktur Folder Akhir
+## 3. UI Dashboard Profesional (Style: TailAdmin)
 
-```
-├── public/
-│   ├── index.html            # Landing page utama
-│   ├── css/
-│   │   └── style.css         # Semua styling
-│   ├── js/
-│   │   └── main.js           # Carousel, counter, interaksi
-│   └── assets/
-│       ├── logo.png           # Logo Logos LAB
-│       └── games/             # Thumbnail game placeholder
-│           ├── game1.png
-│           └── ...
-├── src/
-│   ├── index.ts              # Entry point — tambah static serving + route "/"
-│   ├── db/
-│   │   ├── db.ts
-│   │   └── schema.ts
-│   └── routes/
-│       └── users.ts
-└── ...
-```
+Gunakan **@elysiajs/html** untuk me-render HTML dari server dan **Tailwind CSS** untuk styling antarmuka. 
+
+### Struktur Layout
+- [ ] Pisahkan arsitektur tampilan ke dalam komponen-komponen yang dapat digunakan ulang (reusable components).
+- [ ] Buat **Satu Komponen Base Sidebar** yang isinya dirender dinamis (conditional rendering) tergantung `role` yang dikirimkan oleh backend.
+
+### Elemen Sidebar
+- [ ] **Sidebar Brand**: Ganti teks logo biasa menjadi:
+  - Baris 1: **[Username]** (Teks Bold)
+  - Baris 2: **[Role Name]** (Teks Muted/Lebih kecil)
+
+### Dinamika Menu Berdasarkan Role
+- [ ] **Semua Role**: Memiliki akses ke menu **"Edit Profile"** (Berisi form untuk mengubah Username dan Foto Profil).
+- [ ] **KETUA_TIM**:
+  - Menu "Semua Proyek"
+  - Menu "Proyek Game" (Dropdown: Draft, Review, Accept, Publish)
+  - Menu "Proyek Materi" (Dropdown: Draft, Review, Accept, Publish)
+- [ ] **PEMBUAT_GAME**:
+  - Menu "Proyek Saya" (Hanya menampilkan daftar proyek bertipe `GAME` yang di-assign padanya).
+- [ ] **PEMBUAT_MATERI**:
+  - Menu "Proyek Saya" (Hanya menampilkan daftar proyek bertipe `MATERI` - Teks/Video).
+- [ ] **PAKAR**:
+  - Menu "Proyek Saya" (Menampilkan daftar proyek Game atau Materi yang sedang menunggu proses validasi atau review).
 
 ---
 
-## Checklist Akhir
+## 4. Checklist Teknis Implementasi
 
-- [ ] Akses `http://localhost:3000/` → tampil Landing Page
-- [ ] Semua section tampil dengan benar (Header, Hero, Games, Materi, Footer)
-- [ ] Carousel bisa di-scroll atau diklik panah
-- [ ] Card materi menampilkan icon yang sesuai (PDF vs Video)
-- [ ] Live counter di footer menampilkan angka user dari DB
-- [ ] Responsive di mobile dan desktop
-- [ ] Tidak ada error di console browser
+1. [ ] Update skema Drizzle dan apply migrasi ke database.
+2. [ ] Install dan konfigurasi Tailwind CSS serta plugin pendukung (jika belum ada).
+3. [ ] Konfigurasi `@elysiajs/html` sebagai renderer template HTML.
+4. [ ] Implementasikan endpoint Authentication (Manual & OAuth).
+5. [ ] Implementasikan session management (JWT / Cookie).
+6. [ ] Buat Middleware proteksi rute RBAC (Role-Based Access Control).
+7. [ ] Buat struktur komponen Base HTML (Sidebar, Header, Content).
+8. [ ] Implementasikan logika render dinamis pada Sidebar sesuai role.
+9. [ ] Siapkan halaman Dashboard dummy untuk tiap-tiap role.
+10. [ ] Lakukan testing flow (Login ➔ Cek Role ➔ Redirect ➔ Render Sidebar Dinamis).
