@@ -63,6 +63,9 @@ const app = new Elysia()
       .get("/:role", ({ params, user }) => {
         if (!user || !(user as any).role) return "Unauthorized";
         
+        const userRole = (user as any).role as string;
+        const username = (user as any).username as string;
+
         const getRoleName = (r: string) => {
           switch (r) {
             case "KETUA_TIM": return "Ketua Tim";
