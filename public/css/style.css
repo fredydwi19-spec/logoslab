@@ -747,6 +747,53 @@ ul, ol {
   color: var(--clr-text-muted);
 }
 
+/* --- Bible Verse Section --- */
+.verse-section {
+  position: relative;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('/public/assets/library_bg.png') no-repeat center center/cover;
+  background-attachment: fixed;
+  padding: var(--space-4xl) 0;
+  overflow: hidden;
+  text-align: center;
+}
+
+.verse-section__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+
+.verse-section .container {
+  position: relative;
+  z-index: 2;
+}
+
+.verse-section__title {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: var(--space-lg);
+  letter-spacing: -0.01em;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.verse-section__text {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-weight: 400;
+  font-style: italic;
+}
+
 /* --- Scroll Reveal Animation --- */
 .reveal {
   opacity: 0;
