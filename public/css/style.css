@@ -747,6 +747,120 @@ ul, ol {
   color: var(--clr-text-muted);
 }
 
+/* --- Engagement & Stats Section --- */
+.stats-engagement {
+  background: var(--clr-bg-primary);
+}
+
+.stats-engagement__grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: var(--space-4xl);
+  align-items: center;
+}
+
+/* Engagement Platform (Column 1) */
+.engagement {
+  background: var(--clr-bg-card);
+  padding: var(--space-2xl);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--clr-border-glass);
+}
+
+.engagement__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+
+.engagement__line {
+  height: 32px;
+  width: 4px;
+  background: var(--clr-accent-teal);
+  border-radius: var(--radius-full);
+}
+
+.engagement__title {
+  font-family: var(--font-heading);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+}
+
+.engagement__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.progress-group__info {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+  color: var(--clr-text-secondary);
+}
+
+.progress-bar {
+  height: 24px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0d9488, #14b8a6);
+  border-radius: var(--radius-full);
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--space-md);
+  font-size: 10px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.engagement__footer {
+  margin-top: var(--space-xl);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  color: var(--clr-text-muted);
+  text-align: center;
+}
+
+/* Live Stats (Column 2) */
+.live-stats__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.live-stats .stat-card {
+  flex-direction: row;
+  justify-content: space-between;
+  padding: var(--space-xl);
+  width: 100%;
+}
+
+.live-stats .stat-card__number {
+  font-size: var(--fs-4xl);
+}
+
+.live-stats .stat-card__label {
+  text-align: right;
+}
+
+@media (max-width: 992px) {
+  .stats-engagement__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+}
+
 /* --- Bible Verse Section --- */
 .verse-section {
   position: relative;
