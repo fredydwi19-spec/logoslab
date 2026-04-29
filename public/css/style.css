@@ -203,10 +203,18 @@ ul, ol {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
   padding: var(--space-4xl) 0;
   overflow: hidden;
+}
+
+.hero .container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .hero__bg {
@@ -218,88 +226,93 @@ ul, ol {
 .hero__bg::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -20%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  top: -20%;
+  left: -10%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
   border-radius: 50%;
-  animation: float-orb 8s ease-in-out infinite;
+  animation: float-orb 15s ease-in-out infinite;
+  filter: blur(60px);
 }
 
 .hero__bg::after {
   content: '';
   position: absolute;
-  bottom: -30%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+  bottom: -10%;
+  right: -5%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
   border-radius: 50%;
-  animation: float-orb 10s ease-in-out infinite reverse;
+  animation: float-orb 18s ease-in-out infinite reverse;
+  filter: blur(60px);
 }
 
 @keyframes float-orb {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -30px) scale(1.05); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
+  33% { transform: translate(50px, -50px) scale(1.1); }
+  66% { transform: translate(-40px, 40px) scale(0.9); }
 }
 
 .hero__content {
-  position: relative;
-  z-index: 1;
-  max-width: 800px;
+  max-width: 900px;
+  width: 100%;
 }
 
 .hero__badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
-  background: var(--clr-bg-glass);
+  padding: var(--space-xs) var(--space-lg);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--clr-border-glass);
   border-radius: var(--radius-full);
   font-size: var(--fs-sm);
+  font-weight: 500;
   color: var(--clr-accent-warm);
   margin-bottom: var(--space-xl);
-  animation: fade-in-up 0.6s ease both;
+  backdrop-filter: blur(10px);
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero__badge svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .hero__title {
   font-family: var(--font-heading);
-  font-size: var(--fs-5xl);
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.05;
   margin-bottom: var(--space-lg);
-  animation: fade-in-up 0.6s ease 0.1s both;
+  letter-spacing: -0.02em;
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 }
 
 .hero__title .highlight {
-  background: var(--gradient-hero);
+  background: linear-gradient(to right, #818cf8, #c084fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
 }
 
 .hero__desc {
-  font-size: var(--fs-lg);
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
   color: var(--clr-text-secondary);
-  max-width: 600px;
-  margin: 0 auto var(--space-2xl);
-  line-height: 1.8;
-  animation: fade-in-up 0.6s ease 0.2s both;
+  max-width: 700px;
+  margin: 0 auto var(--space-3xl);
+  line-height: 1.7;
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 
 .hero__cta {
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-md) var(--space-2xl);
+  padding: var(--space-md) var(--space-3xl);
   background: var(--gradient-hero);
   color: #fff;
   font-family: var(--font-heading);
@@ -308,9 +321,9 @@ ul, ol {
   border: none;
   border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-  animation: fade-in-up 0.6s ease 0.3s both;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
 }
 
 .hero__cta:hover {
