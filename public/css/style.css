@@ -4,31 +4,33 @@
    ============================================ */
 
 /* --- Google Font Import --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 /* --- CSS Custom Properties --- */
 :root {
   /* Colors */
-  --clr-bg-primary: #0a0e1a;
-  --clr-bg-secondary: #111827;
-  --clr-bg-card: rgba(17, 24, 39, 0.7);
-  --clr-bg-glass: rgba(255, 255, 255, 0.04);
-  --clr-border-glass: rgba(255, 255, 255, 0.08);
+  --clr-bg-primary: #1A237E;
+  --clr-bg-secondary: #121858;
+  --clr-bg-card: #F5F5F5;
+  --clr-bg-glass: rgba(255, 255, 255, 0.08);
+  --clr-border-glass: rgba(255, 255, 255, 0.15);
 
-  --clr-accent-primary: #6366f1;     /* Indigo */
-  --clr-accent-secondary: #8b5cf6;   /* Violet */
-  --clr-accent-warm: #f59e0b;        /* Amber */
-  --clr-accent-teal: #14b8a6;        /* Teal */
-  --clr-accent-rose: #f43f5e;        /* Rose */
+  --clr-accent-primary: #FF5722;
+  --clr-accent-secondary: #E64A19;
+  --clr-accent-warm: #FF5722;
+  --clr-accent-teal: #14b8a6;
+  --clr-accent-rose: #f43f5e;
 
   --clr-text-primary: #f1f5f9;
-  --clr-text-secondary: #94a3b8;
-  --clr-text-muted: #64748b;
+  --clr-text-secondary: #cbd5e1;
+  --clr-text-muted: #94a3b8;
+  --clr-text-card: #1f2937;
+  --clr-text-card-secondary: #4b5563;
 
-  --gradient-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+  --gradient-hero: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
   --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
   --gradient-teal: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
-  --gradient-dark: linear-gradient(180deg, #0a0e1a 0%, #111827 100%);
+  --gradient-dark: linear-gradient(180deg, #1A237E 0%, #121858 100%);
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -41,7 +43,7 @@
   --space-4xl: 6rem;
 
   /* Typography */
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -64,7 +66,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
+  --shadow-glow: 0 0 40px rgba(255, 87, 34, 0.2);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -130,7 +132,7 @@ ul, ol {
 }
 
 .header.scrolled {
-  background: rgba(10, 14, 26, 0.85);
+  background: rgba(26, 35, 126, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 1px 0 var(--clr-border-glass);
@@ -234,7 +236,7 @@ ul, ol {
   left: -10%;
   width: 800px;
   height: 800px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 87, 34, 0.2) 0%, transparent 70%);
   border-radius: 50%;
   animation: float-orb 15s ease-in-out infinite;
   filter: blur(60px);
@@ -247,7 +249,7 @@ ul, ol {
   right: -5%;
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(230, 74, 25, 0.15) 0%, transparent 70%);
   border-radius: 50%;
   animation: float-orb 18s ease-in-out infinite reverse;
   filter: blur(60px);
@@ -296,7 +298,7 @@ ul, ol {
 }
 
 .hero__title .highlight {
-  background: linear-gradient(to right, #818cf8, #c084fc);
+  background: linear-gradient(to right, #FF5722, #FF8A65);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -381,7 +383,15 @@ ul, ol {
 
 /* --- Games Carousel --- */
 .games {
-  background: var(--clr-bg-secondary);
+  background: var(--clr-bg-card); /* Soft Grey #F5F5F5 */
+}
+
+.games .section__title, .materi .section__title {
+  color: var(--clr-text-card);
+}
+
+.games .section__subtitle, .materi .section__subtitle {
+  color: var(--clr-text-card-secondary);
 }
 
 .carousel {
@@ -409,7 +419,8 @@ ul, ol {
   scroll-snap-align: start;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--clr-bg-card);
+  background: #ffffff;
+  color: var(--clr-text-card);
   border: 1px solid var(--clr-border-glass);
   transition: all var(--transition-slow);
   cursor: pointer;
@@ -418,7 +429,7 @@ ul, ol {
 .carousel__item:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-glow);
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: rgba(255, 87, 34, 0.3);
 }
 
 .carousel__img {
@@ -436,6 +447,7 @@ ul, ol {
   font-size: var(--fs-base);
   font-weight: 600;
   margin-bottom: var(--space-xs);
+  color: var(--clr-text-card);
 }
 
 .carousel__tag {
@@ -480,6 +492,10 @@ ul, ol {
 }
 
 /* --- Materi Pembelajaran --- */
+.materi {
+  background: var(--clr-bg-card); /* Soft Grey #F5F5F5 */
+}
+
 .materi__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -487,7 +503,8 @@ ul, ol {
 }
 
 .materi-card {
-  background: var(--clr-bg-card);
+  background: #ffffff;
+  color: var(--clr-text-card);
   border: 1px solid var(--clr-border-glass);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -497,7 +514,7 @@ ul, ol {
 .materi-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .materi-card__thumb {
@@ -603,14 +620,16 @@ ul, ol {
   font-size: var(--fs-base);
   font-weight: 600;
   margin-bottom: var(--space-xs);
+  color: var(--clr-text-card);
 }
 
 .materi-card__desc {
   font-size: var(--fs-sm);
-  color: var(--clr-text-secondary);
+  color: var(--clr-text-card-secondary);
   margin-bottom: var(--space-md);
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -649,6 +668,44 @@ ul, ol {
 .materi-card__action svg {
   width: 16px;
   height: 16px;
+}
+
+/* --- Bible Verse Section --- */
+.verse-section {
+  position: relative;
+  background-image: url('/public/assets/bg-verse.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding: var(--space-4xl) 0;
+  text-align: center;
+  color: #fff;
+}
+
+.verse-section__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 35, 126, 0.75); /* Deep Navy with transparency */
+}
+
+.verse-section__content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.verse-section__title {
+  font-family: var(--font-heading);
+  font-size: var(--fs-3xl);
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+.verse-section__text {
+  font-size: var(--fs-xl);
+  font-style: italic;
+  font-weight: 300;
 }
 
 /* --- Footer --- */
@@ -818,7 +875,7 @@ ul, ol {
 
 /* --- Engagement & Stats Section --- */
 .stats-engagement {
-  background: linear-gradient(180deg, var(--clr-bg-primary) 0%, #0f172a 100%);
+  background: var(--clr-bg-primary); /* Deep Navy */
   padding: var(--space-4xl) 0;
 }
 
@@ -831,11 +888,12 @@ ul, ol {
 
 /* Engagement Chart (Column 1) */
 .engagement {
-  background: var(--clr-bg-card);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
   padding: var(--space-2xl);
   border-radius: var(--radius-2xl);
   border: 1px solid var(--clr-border-glass);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .engagement__header {

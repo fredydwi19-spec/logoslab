@@ -6,7 +6,8 @@
   <meta name="description" content="Logos LAB — Platform edukasi Alkitab dan berpikir kritis. Belajar melalui game interaktif, materi PDF, dan video pembelajaran.">
   <title>Logos LAB — Edukasi Alkitab dan Berpikir Kritis</title>
   <link rel="icon" href="/public/assets/logo.png" type="image/png">
-  <link rel="stylesheet" href="/public/css/style.css?v=2.0">
+  <link rel="stylesheet" href="/public/css/style.css?v=3.2">
+  <link rel="stylesheet" href="/public/css/auth-modal.css?v=2.3">
 </head>
 <body>
 
@@ -18,13 +19,13 @@
         <span>Logos LAB</span>
       </a>
       <nav class="header__nav">
-        <button class="btn-login" id="btn-login-trigger">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="btn-login" id="btn-login-trigger" style="background-color: var(--clr-accent-primary); color: white; border: none; padding: 10px 24px; border-radius: 50px; font-weight: 600; box-shadow: 0 4px 12px rgba(255, 87, 34, 0.4); transition: transform 0.3s ease; display: flex; align-items: center; gap: 8px; font-family: var(--font-heading);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>
             <line x1="15" y1="12" x2="3" y2="12"/>
           </svg>
-          Login
+          Masuk / Daftar
         </button>
       </nav>
     </div>
@@ -334,54 +335,75 @@
   <!-- ========== FOOTER ========== -->
   <footer class="footer" id="footer">
     <div class="container">
-      <div class="footer__inner">
-        <div class="footer__brand">
+      <div class="footer__inner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div class="footer__brand" style="flex: 1; min-width: 300px;">
           <div class="footer__logo">
             <img src="/public/assets/logo.png" alt="Logos LAB">
             <span>Logos LAB</span>
           </div>
-          <p class="footer__tagline">Membangun generasi yang memahami Alkitab dan mampu berpikir kritis.</p>
+          <p class="footer__tagline" style="margin-top: 10px;">Membangun generasi yang memahami Alkitab dan mampu berpikir kritis.</p>
         </div>
-      </div>
-      <div class="footer__bottom">
-        <p class="footer__copyright">&copy; 2026 FDS. All rights reserved.</p>
+        <div class="footer__copyright" style="text-align: right; color: var(--clr-text-secondary);">
+          <p>&copy; 2026 FDS. All rights reserved.</p>
+        </div>
       </div>
     </div>
   </footer>
 
-  <!-- ========== LOGIN MODAL ========== -->
-  <div class="modal" id="login-modal">
-    <div class="modal__overlay" id="login-modal-overlay"></div>
-    <div class="modal__content">
-      <button class="modal__close" id="login-modal-close">&times;</button>
-      <div class="modal__header">
-        <h2 class="modal__title">Selamat Datang Kembali</h2>
-        <p class="modal__subtitle">Masuk ke akun Logos LAB Anda</p>
+  <!-- ========== UNIFIED AUTH MODAL ========== -->
+  <div class="auth-modal" id="auth-modal">
+    <div class="auth-container" id="auth-container">
+      <button class="close-auth" id="auth-modal-close">&times;</button>
+      
+      <div class="form-container sign-up-container">
+        <form action="#" id="signup-form">
+          <h2>Buat Akun</h2>
+          <div class="social-container">
+            <a href="/api/auth/google" class="social"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20"></a>
+          </div>
+          <span>atau gunakan email untuk registrasi</span>
+          <input type="text" name="name" placeholder="Nama Lengkap" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <input type="password" name="password" placeholder="Password" required />
+          <input type="password" name="password_confirm" placeholder="Konfirmasi Password" required />
+          <div id="signup-error" class="form-error" style="display: none; color: red; font-size: 12px; margin-top: 5px;"></div>
+          <div id="signup-success" class="form-success" style="display: none; color: green; font-size: 12px; margin-top: 5px;"></div>
+          <button type="submit" class="primary-btn" id="signup-submit-btn">Daftar</button>
+        </form>
       </div>
-      <form class="modal__form" id="login-form">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" placeholder="Masukkan username Anda" required>
+      
+      <div class="form-container sign-in-container">
+        <form action="#" id="login-form">
+          <h2>Masuk</h2>
+          <div class="social-container">
+            <a href="/api/auth/google" class="social"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20"></a>
+          </div>
+          <span>atau gunakan akun email Anda</span>
+          <input type="text" name="username" placeholder="Email/Username" required />
+          <input type="password" name="password" placeholder="Password" required />
+          <a href="#">Lupa password?</a>
+          <div id="login-error" class="form-error" style="display: none; color: red; font-size: 12px; margin-bottom: 5px;"></div>
+          <button type="submit" class="primary-btn" id="login-submit-btn">Masuk</button>
+        </form>
+      </div>
+      
+      <div class="overlay-container">
+        <div class="overlay">
+          <div class="overlay-panel overlay-left">
+            <h2>Selamat Datang Kembali!</h2>
+            <p>Untuk tetap terhubung dengan kami, silakan login dengan info personal Anda</p>
+            <button class="ghost-btn" id="signIn">Masuk</button>
+          </div>
+          <div class="overlay-panel overlay-right">
+            <h2>Halo, Teman!</h2>
+            <p>Daftarkan data personal Anda dan mulai perjalanan bersama Logos LAB</p>
+            <button class="ghost-btn" id="signUp">Daftar</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Masukkan password Anda" required>
-        </div>
-        <div id="login-error" class="form-error" style="display: none;"></div>
-        <button type="submit" class="btn-submit" id="login-submit-btn">
-          Masuk Sekarang
-        </button>
-      </form>
-      <div class="modal__footer">
-        <p>Atau masuk dengan</p>
-        <a href="/api/auth/google" class="btn-google">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-          Google
-        </a>
       </div>
     </div>
   </div>
 
-  <script src="/public/js/main.js?v=1.3"></script>
+  <script src="/public/js/main.js?v=1.4"></script>
 </body>
 </html>

@@ -8,69 +8,145 @@ document.addEventListener('DOMContentLoaded', () => {
   initRevealAnimations();
   initCounters();
 
-  // ========== LOGIN MODAL LOGIC ==========
-  const loginModal = document.getElementById('login-modal');
-  const loginTrigger = document.getElementById('btn-login-trigger');
-  const loginClose = document.getElementById('login-modal-close');
-  const loginOverlay = document.getElementById('login-modal-overlay');
-  const loginForm = document.getElementById('login-form');
-  const loginError = document.getElementById('login-error');
-  const loginSubmitBtn = document.getElementById('login-submit-btn');
+  // ========== UNIFIED AUTH MODAL LOGIC ==========
+  const authModal = document.getElementById('auth-modal');
+  const authContainer = document.getElementById('auth-container');
+  const authTrigger = document.getElementById('btn-login-trigger');
+  const authClose = document.getElementById('auth-modal-close');
+  const signUpBtn = document.getElementById('signUp');
+  const signInBtn = document.getElementById('signIn');
 
-  if (loginTrigger && loginModal) {
-    loginTrigger.addEventListener('click', () => {
-      loginModal.classList.add('active');
-      document.body.style.overflow = 'hidden'; // Prevent scroll
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const loginError = document.getElementById('login-error');
+  const signupError = document.getElementById('signup-error');
+  const signupSuccess = document.getElementById('signup-success');
+  const loginSubmitBtn = document.getElementById('login-submit-btn');
+  const signupSubmitBtn = document.getElementById('signup-submit-btn');
+
+  if (authTrigger && authModal && authContainer) {
+    authTrigger.addEventListener('click', () => {
+      authModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
     });
 
-    const closeModal = () => {
-      loginModal.classList.remove('active');
+    const closeAuthModal = () => {
+      authModal.classList.remove('active');
       document.body.style.overflow = '';
-      loginError.style.display = 'none';
-      loginForm.reset();
+      if(loginError) loginError.style.display = 'none';
+      if(signupError) signupError.style.display = 'none';
+      if(signupSuccess) signupSuccess.style.display = 'none';
+      if(loginForm) loginForm.reset();
+      if(signupForm) signupForm.reset();
+      authContainer.classList.remove('right-panel-active');
     };
 
-    loginClose.addEventListener('click', closeModal);
-    loginOverlay.addEventListener('click', closeModal);
-
-    // Handle Form Submission
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginError.style.display = 'none';
-      loginSubmitBtn.disabled = true;
-      loginSubmitBtn.textContent = 'Memproses...';
-
-      const formData = new FormData(loginForm);
-      const payload = Object.fromEntries(formData.entries());
-
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          // Success! Redirect to dashboard
-          window.location.href = result.redirect;
-        } else {
-          // Error
-          loginError.textContent = result.error || 'Login gagal. Silakan coba lagi.';
-          loginError.style.display = 'block';
-        }
-      } catch (err) {
-        console.error('Login error:', err);
-        loginError.textContent = 'Terjadi kesalahan koneksi.';
-        loginError.style.display = 'block';
-      } finally {
-        loginSubmitBtn.disabled = false;
-        loginSubmitBtn.textContent = 'Masuk Sekarang';
-      }
+    if (authClose) authClose.addEventListener('click', closeAuthModal);
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) closeAuthModal();
     });
+
+    if (signUpBtn) {
+      signUpBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        authContainer.classList.add('right-panel-active');
+      });
+    }
+
+    if (signInBtn) {
+      signInBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        authContainer.classList.remove('right-panel-active');
+      });
+    }
+
+    // Handle Login Submission
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginError.style.display = 'none';
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.textContent = 'Memproses...';
+
+        const formData = new FormData(loginForm);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            window.location.href = result.redirect;
+          } else {
+            loginError.textContent = result.error || 'Login gagal. Silakan coba lagi.';
+            loginError.style.display = 'block';
+          }
+        } catch (err) {
+          console.error('Login error:', err);
+          loginError.textContent = 'Terjadi kesalahan koneksi.';
+          loginError.style.display = 'block';
+        } finally {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Masuk';
+        }
+      });
+    }
+
+    // Handle Signup Submission
+    if (signupForm) {
+      signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        signupError.style.display = 'none';
+        signupSuccess.style.display = 'none';
+
+        const formData = new FormData(signupForm);
+        const payload = Object.fromEntries(formData.entries());
+
+        if (payload.password !== payload.password_confirm) {
+          signupError.textContent = 'Konfirmasi password tidak cocok.';
+          signupError.style.display = 'block';
+          return;
+        }
+
+        signupSubmitBtn.disabled = true;
+        signupSubmitBtn.textContent = 'Memproses...';
+
+        try {
+          const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: payload.name,
+              email: payload.email,
+              password: payload.password
+            })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            signupSuccess.textContent = result.message || 'Pendaftaran berhasil. Silakan cek email Anda.';
+            signupSuccess.style.display = 'block';
+            signupForm.reset();
+          } else {
+            signupError.textContent = result.error || 'Pendaftaran gagal.';
+            signupError.style.display = 'block';
+          }
+        } catch (err) {
+          console.error('Signup error:', err);
+          signupError.textContent = 'Terjadi kesalahan koneksi.';
+          signupError.style.display = 'block';
+        } finally {
+          signupSubmitBtn.disabled = false;
+          signupSubmitBtn.textContent = 'Daftar';
+        }
+      });
+    }
   }
 });
 
