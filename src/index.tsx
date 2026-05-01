@@ -5,6 +5,11 @@ import { userRoutes } from "./routes/users";
 import { authRoutes } from "./routes/auth";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
+import { Navbar } from "./views/components/Navbar";
+import { EditProfilePage } from "./views/pages/EditProfile";
+import { db } from "./db/db";
+import { users } from "./db/schema";
+import { eq } from "drizzle-orm";
 
 const app = new Elysia()
   .use(staticPlugin({
@@ -17,7 +22,33 @@ const app = new Elysia()
       secret: process.env.JWT_SECRET || "super-secret-key",
     })
   )
-  .get("/", () => Bun.file("public/index.html"))
+  .get("/", async ({ jwt, cookie: { auth } }) => {
+    let user = null;
+    if (auth?.value) {
+      user = await jwt.verify(auth.value as string);
+    }
+    
+    const html = await Bun.file("public/index.html").text();
+    const navbarHtml = Navbar({ user });
+    
+    // Replace the static navbar with the dynamic one
+    const dynamicHtml = html.replace(
+      /<nav class="header__nav">[\s\S]*?<\/nav>/,
+      navbarHtml
+    );
+    
+    const responseHeaders: Record<string, string> = {
+      "Content-Type": "text/html; charset=utf8"
+    };
+
+    if (user) {
+      responseHeaders["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate";
+    }
+
+    return new Response(dynamicHtml, {
+      headers: responseHeaders
+    });
+  })
   .onError(({ code, error }) => {
     console.error(`[Error] ${code}:`, error);
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -33,7 +64,7 @@ const app = new Elysia()
   .use(authRoutes)
   .group("/dashboard", (app) =>
     app
-      .onBeforeHandle(async ({ jwt, cookie }) => {
+      .onBeforeHandle(async ({ jwt, cookie, set }) => {
         const auth = cookie.auth;
         if (!auth?.value) {
           return Response.redirect("/", 302);
@@ -42,6 +73,11 @@ const app = new Elysia()
         if (!payload) {
           return Response.redirect("/", 302);
         }
+        
+        // Security: Prevent browser back to dashboard after logout
+        set.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate";
+        set.headers["Pragma"] = "no-cache";
+        set.headers["Expires"] = "0";
       })
       .derive(async ({ jwt, cookie }) => {
         const auth = cookie.auth;
@@ -247,8 +283,39 @@ const app = new Elysia()
         });
 
         return new Response(htmlResponse, {
+          headers: { 
+            "Content-Type": "text/html; charset=utf8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+          }
+        });
+      })
+  )
+  .group("/profile", (app) => 
+    app
+      .onBeforeHandle(async ({ jwt, cookie, set }) => {
+        const auth = cookie.auth;
+        if (!auth?.value) return Response.redirect("/", 302);
+        const payload = await jwt.verify(auth.value as string);
+        if (!payload) return Response.redirect("/", 302);
+        
+        set.headers["Cache-Control"] = "no-store";
+      })
+      .get("/edit", async ({ jwt, cookie }) => {
+        const payload: any = await jwt.verify(cookie.auth!.value as string);
+        const [user] = await db.select().from(users).where(eq(users.id, payload.id));
+        
+        // Render Edit Profile Page (I will create this view next)
+        return new Response(EditProfilePage({ user }), {
           headers: { "Content-Type": "text/html; charset=utf8" }
         });
+      })
+      .post("/edit", async ({ body, jwt, cookie }) => {
+        const payload: any = await jwt.verify(cookie.auth!.value as string);
+        const { name } = body as { name: string };
+        
+        await db.update(users).set({ name }).where(eq(users.id, payload.id));
+        
+        return { success: true, message: "Profil berhasil diperbarui" };
       })
   )
   .listen(3000);
