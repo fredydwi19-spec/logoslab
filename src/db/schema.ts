@@ -10,6 +10,8 @@ export const users = mysqlTable("users", {
   role: mysqlEnum("role", ["KETUA_TIM", "PEMBUAT_GAME", "PEMBUAT_MATERI", "PAKAR", "USER"]).default("USER").notNull(),
   isVerified: boolean("is_verified").default(false),
   profilePicture: varchar("profile_picture", { length: 255 }),
+  hasOnboarded: boolean("has_onboarded").default(false),
+  interests: varchar("interests", { length: 500 }), // Store as comma-separated or JSON string
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
@@ -25,6 +27,7 @@ export const projects = mysqlTable("projects", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   type: mysqlEnum("type", ["GAME", "MATERI"]).notNull(),
+  category: varchar("category", { length: 100 }), // Matching user interests
   status: mysqlEnum("status", ["DRAFT", "REVIEW", "ACCEPTED", "PUBLISHED"]).default("DRAFT").notNull(),
   idPembuat: bigint("id_pembuat", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
   idPakar: bigint("id_pakar", { mode: 'number', unsigned: true }).references(() => users.id),

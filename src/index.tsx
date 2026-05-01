@@ -6,10 +6,13 @@ import { authRoutes } from "./routes/auth";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
-import { EditProfilePage } from "./views/pages/EditProfile";
+import { OnboardingModal } from "./views/components/OnboardingModal";
+import { PersonalizedGames } from "./views/components/PersonalizedGames";
+import { GamesSection } from "./views/components/GamesSection";
+import { ProfilePage } from "./views/pages/EditProfile";
 import { db } from "./db/db";
-import { users } from "./db/schema";
-import { eq } from "drizzle-orm";
+import { users, projects } from "./db/schema";
+import { eq, inArray, and } from "drizzle-orm";
 
 const app = new Elysia()
   .use(staticPlugin({
@@ -23,19 +26,73 @@ const app = new Elysia()
     })
   )
   .get("/", async ({ jwt, cookie: { auth } }) => {
-    let user = null;
+    let user: any = null;
+    let personalizedGamesHtml = "";
+    let onboardingModalHtml = "";
+
     if (auth?.value) {
-      user = await jwt.verify(auth.value as string);
+      const payload: any = await jwt.verify(auth.value as string);
+      if (payload) {
+        const [userData] = await db.select().from(users).where(eq(users.id, payload.id));
+        user = userData;
+
+        if (user) {
+          if (user.role === "USER" && !user.hasOnboarded) {
+            onboardingModalHtml = OnboardingModal();
+          }
+
+          if (user.role === "USER" && user.interests) {
+            const userInterests = user.interests.split(",");
+            const matchingGames = await db.select().from(projects).where(
+              and(
+                inArray(projects.category, userInterests),
+                eq(projects.type, "GAME"),
+                eq(projects.status, "PUBLISHED")
+              )
+            ).limit(10); // Ensure at least up to 10 for carousel
+            personalizedGamesHtml = PersonalizedGames({ games: matchingGames });
+          }
+        }
+      }
     }
+
+    // Fetch all games for the main section
+    const allGames = await db.select().from(projects).where(
+      and(
+        eq(projects.type, "GAME"),
+        eq(projects.status, "PUBLISHED")
+      )
+    ).limit(25);
+
+    const popularGames = [...allGames].sort(() => 0.5 - Math.random()).slice(0, 10);
+    const gamesSectionHtml = GamesSection({ allGames, popularGames });
     
     const html = await Bun.file("public/index.html").text();
     const navbarHtml = Navbar({ user });
     
-    // Replace the static navbar with the dynamic one
-    const dynamicHtml = html.replace(
+    // Inject components
+    let dynamicHtml = html.replace(
       /<nav class="header__nav">[\s\S]*?<\/nav>/,
       navbarHtml
     );
+
+    // Replace static games section with dynamic one
+    dynamicHtml = dynamicHtml.replace(
+      /<section class="section games" id="games">[\s\S]*?<\/section>/,
+      gamesSectionHtml
+    );
+
+    if (onboardingModalHtml) {
+      dynamicHtml = dynamicHtml.replace("</body>", `${onboardingModalHtml}</body>`);
+    }
+
+    if (personalizedGamesHtml) {
+      // Inject between Hero and Games Populer
+      dynamicHtml = dynamicHtml.replace(
+        /<\/section>\s*<!-- ========== GAMES CAROUSEL ========== -->/,
+        `</section>${personalizedGamesHtml}<!-- ========== GAMES CAROUSEL ========== -->`
+      );
+    }
     
     const responseHeaders: Record<string, string> = {
       "Content-Type": "text/html; charset=utf8"
@@ -300,22 +357,37 @@ const app = new Elysia()
         
         set.headers["Cache-Control"] = "no-store";
       })
-      .get("/edit", async ({ jwt, cookie }) => {
+      .get("/", async ({ jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
         const [user] = await db.select().from(users).where(eq(users.id, payload.id));
         
-        // Render Edit Profile Page (I will create this view next)
-        return new Response(EditProfilePage({ user }), {
+        return new Response(ProfilePage({ user }), {
           headers: { "Content-Type": "text/html; charset=utf8" }
         });
       })
-      .post("/edit", async ({ body, jwt, cookie }) => {
+      .post("/update", async ({ body, jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const { name } = body as { name: string };
+        const { name, interests } = body as { name: string, interests?: string[] };
         
-        await db.update(users).set({ name }).where(eq(users.id, payload.id));
+        const updateData: any = { name };
+        if (interests) {
+          updateData.interests = interests.join(",");
+        }
+
+        await db.update(users).set(updateData).where(eq(users.id, payload.id));
         
         return { success: true, message: "Profil berhasil diperbarui" };
+      })
+      .post("/onboarding", async ({ body, jwt, cookie }) => {
+        const payload: any = await jwt.verify(cookie.auth!.value as string);
+        const { interests } = body as { interests: string[] };
+        
+        await db.update(users).set({ 
+          interests: interests.join(","),
+          hasOnboarded: true 
+        }).where(eq(users.id, payload.id));
+        
+        return { success: true, message: "Onboarding berhasil" };
       })
   )
   .listen(3000);
