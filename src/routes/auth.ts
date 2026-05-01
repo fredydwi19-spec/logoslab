@@ -77,7 +77,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
 
       return {
         message: "Login successful",
-        redirect: redirectUrl,
+        redirect: "/",
       };
     },
     {
@@ -172,10 +172,9 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
         path: "/",
       });
 
-      // 5. Redirect ke dashboard yang sesuai
-      const rolePath = user.role.toLowerCase().split('_')[0];
+      // 5. Redirect ke landing page (/)
       console.log(`✅ User ${user.email} logged in successfully as ${user.role}`);
-      return Response.redirect(`/dashboard/${rolePath}`);
+      return Response.redirect("/");
       
     } catch (error) {
       console.error("❌ Google Auth Error:", error);
