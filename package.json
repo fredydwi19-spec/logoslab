@@ -1,11 +1,11 @@
 {
   "name": "github",
-  "module": "src/index.ts",
+  "module": "src/index.tsx",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.tsx",
+    "start": "bun run src/index.tsx",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
@@ -23,9 +23,11 @@
     "@elysiajs/html": "^1.4.2",
     "@elysiajs/jwt": "^1.4.2",
     "@elysiajs/static": "^1.4.10",
+    "@types/nodemailer": "^8.0.0",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "elysia": "^1.4.28",
-    "mysql2": "^3.22.3"
+    "mysql2": "^3.22.3",
+    "nodemailer": "^8.0.7"
   }
 }

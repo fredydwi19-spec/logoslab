@@ -1,74 +1,53 @@
-/** @jsx html */
-import { html } from "@elysiajs/html";
-
 export const Sidebar = ({ username, role }: { username: string; role: string }) => {
-  const getRoleName = (r: string) => {
-    switch (r) {
-      case "KETUA_TIM": return "Ketua Tim";
-      case "PEMBUAT_GAME": return "Pembuat Game";
-      case "PEMBUAT_MATERI": return "Pembuat Materi";
-      case "PAKAR": return "Pakar";
-      default: return "Member";
-    }
-  };
+  const menuItems: { label: string; icon: string; link: string }[] = [
+    { label: "Dashboard", icon: "🏠", link: `/dashboard/${role.toLowerCase().split('_')[0]}` },
+  ];
 
-  const menuItems = [];
-
-  // Common items
-  menuItems.push({ label: "Dashboard", icon: "🏠", link: `/dashboard/${role.toLowerCase().split('_')[0]}` });
-  menuItems.push({ label: "Edit Profile", icon: "👤", link: "/dashboard/profile" });
-
-  // Role specific items
   if (role === "KETUA_TIM") {
     menuItems.push({ label: "Semua Proyek", icon: "📊", link: "/dashboard/projects" });
-    menuItems.push({ label: "Proyek Game", icon: "🎮", link: "/dashboard/projects/game", dropdown: ["Draft Review", "Accept", "Publish"] });
-    menuItems.push({ label: "Proyek Materi", icon: "📚", link: "/dashboard/projects/materi", dropdown: ["Draft Review", "Accept", "Publish"] });
   } else if (role === "PEMBUAT_GAME") {
-    menuItems.push({ label: "Proyek Saya", icon: "🎮", link: "/dashboard/my-projects" });
+    menuItems.push({ label: "Proyek Saya", icon: "🎮", link: "/dashboard/game" });
   } else if (role === "PEMBUAT_MATERI") {
-    menuItems.push({ label: "Proyek Saya", icon: "📚", link: "/dashboard/my-projects" });
+    menuItems.push({ label: "Proyek Saya", icon: "📚", link: "/dashboard/materi" });
   } else if (role === "PAKAR") {
-    menuItems.push({ label: "Proyek Saya", icon: "⚖️", link: "/dashboard/validation" });
+    menuItems.push({ label: "Proyek Review", icon: "⚖️", link: "/dashboard/pakar" });
+  } else if (role === "USER") {
+    menuItems.push({ label: "Pencapaian Saya", icon: "🏆", link: "/dashboard/user" });
   }
 
-  return (
-    <aside id="sidebar" class="fixed left-0 top-0 z-50 h-screen w-64 bg-slate-900 text-white transition-transform overflow-y-auto">
-      <div class="flex flex-col h-full">
-        {/* Brand Section */}
-        <div class="px-6 py-8 border-b border-slate-800">
-          <div class="flex flex-col">
-            <span class="text-xl font-bold truncate">{username}</span>
-            <span class="text-sm text-slate-400 font-medium">{getRoleName(role)}</span>
+  const roleName = role.replace('_', ' ');
+
+  return `
+    <div class="sidebar w-64 bg-white border-r border-slate-200 h-screen fixed left-0 top-0 flex flex-col">
+      <div class="p-8 flex items-center gap-3">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">L</div>
+        <span class="text-xl font-bold text-slate-800">Logos LAB</span>
+      </div>
+      
+      <div class="flex-1 mt-4">
+        <p class="px-8 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Menu Utama</p>
+        ${menuItems.map(item => `
+          <a href="${item.link}" class="flex items-center px-8 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+            <span class="mr-3 text-lg">${item.icon}</span>
+            <span class="font-medium">${item.label}</span>
+          </a>
+        `).join('')}
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50">
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+            ${username.charAt(0).toUpperCase()}
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-sm font-bold text-slate-800 truncate">${username}</p>
+            <p class="text-[10px] text-slate-500 uppercase tracking-tight">${roleName}</p>
           </div>
         </div>
-
-        {/* Navigation */}
-        <nav class="flex-1 px-4 py-6 space-y-2">
-          {menuItems.map((item) => (
-            <div class="space-y-1">
-              <a href={item.link} class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors group">
-                <span class="text-xl">{item.icon}</span>
-                <span class="font-medium text-slate-300 group-hover:text-white">{item.label}</span>
-              </a>
-              {item.dropdown && (
-                <div class="ml-9 space-y-1 border-l border-slate-800 pl-4">
-                  {item.dropdown.map(d => (
-                    <a href="#" class="block py-1 text-sm text-slate-400 hover:text-white transition-colors">{d}</a>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div class="p-4 border-t border-slate-800">
-          <a href="/api/auth/logout" class="flex items-center gap-3 px-3 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-            <span>🚪</span>
-            <span class="font-medium">Logout</span>
-          </a>
-        </div>
+        <a href="/api/auth/logout" class="mt-4 block w-full text-center py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-red-100">
+          Keluar (Logout)
+        </a>
       </div>
-    </aside>
-  );
+    </div>
+  `;
 };

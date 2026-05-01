@@ -67,3 +67,44 @@
     jangan terlalu low level atau detail
     cukup instruksikan secara high level
     nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan
+
+7. bun run dev
+
+8. Buatkan github issue.md berisi planning untuk membuat ini:
+
+Role: Security & Backend Architect
+
+Task: Tambahkan fitur Sign Up (Pendaftaran) dan Verifikasi Email ke dalam sistem autentikasi.
+
+1. Alur Pendaftaran (Sign Up):
+
+Form UI: Buat halaman pendaftaran dengan input: Nama Lengkap, Email, dan Password (dengan validasi konfirmasi password).
+
+Logic: >    - Simpan user baru ke tabel users dengan status is_verified: false.
+
+Role default saat mendaftar adalah USER.
+
+Gunakan bcrypt untuk hashing password sebelum disimpan ke database.
+
+2. Sistem Konfirmasi Email (Security):
+
+Email Provider: Gunakan library seperti nodemailer atau integrasikan dengan penyedia layanan email (seperti Gmail SMTP atau Resend).
+
+Verification Token: Setelah user klik daftar, generate token unik yang disimpan di database (tabel baru verification_tokens) dengan masa berlaku tertentu.
+
+Email Template: Kirim email otomatis berisi link konfirmasi (Contoh: http://localhost:3000/verify-email?token=...).
+
+Action: Jika user mengklik link tersebut, ubah status is_verified menjadi true di database.
+
+3. Keamanan Login:
+
+Pastikan user yang belum verifikasi email tidak bisa login atau diarahkan ke halaman "Tolong cek email Anda".
+
+4. Integrasi Dashboard:
+
+Setelah verifikasi sukses, arahkan user langsung ke Dashboard Member.
+
+Output: Tulis langkah-langkah setup SMTP email dan migrasi tabel token di issue.md.
+jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan

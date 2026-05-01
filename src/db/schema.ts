@@ -1,4 +1,4 @@
-import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint } from "drizzle-orm/mysql-core";
+import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: serial("id").primaryKey(),
@@ -8,9 +8,17 @@ export const users = mysqlTable("users", {
   password: varchar("password", { length: 255 }),
   googleId: varchar("google_id", { length: 255 }).unique(),
   role: mysqlEnum("role", ["KETUA_TIM", "PEMBUAT_GAME", "PEMBUAT_MATERI", "PAKAR", "USER"]).default("USER").notNull(),
+  isVerified: boolean("is_verified").default(false),
   profilePicture: varchar("profile_picture", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const verificationTokens = mysqlTable("verification_tokens", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
 });
 
 export const projects = mysqlTable("projects", {

@@ -5,9 +5,10 @@
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
     "types": ["bun"],
+    "jsx": "react",
+    "jsxFactory": "html",
+    "jsxFragmentFactory": "html.Fragment",
 
     // Bundler mode
     "moduleResolution": "bundler",
