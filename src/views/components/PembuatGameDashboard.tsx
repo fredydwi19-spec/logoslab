@@ -197,53 +197,102 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                <button x-show="!isReadOnly()" @click="removeQuestion(idx)" class="absolute top-4 right-4 text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-red-50 p-2 rounded-full hover:bg-red-500 hover:text-white">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                </button>
-               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
-                 <div class="col-span-full">
-                    <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Konten Pertanyaan</label>
-                    <textarea x-model="q.question" @input="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#FFC107] outline-none font-bold transition-all min-h-[100px]" placeholder="Ketik pertanyaan di sini..."></textarea>
-                 </div>
-                 
-                 <div class="space-y-3">
-                   <div class="flex items-center gap-3">
-                     <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">A</span>
-                     <input type="text" x-model="q.optionA" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+
+               <!-- Quiz Editor -->
+               <template x-if="activeProject?.gameType === 'QUIZ'">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
+                   <div class="col-span-full">
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Konten Pertanyaan</label>
+                      <textarea x-model="q.question" @input="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#FFC107] outline-none font-bold transition-all min-h-[100px]" placeholder="Ketik pertanyaan di sini..."></textarea>
                    </div>
-                   <div class="flex items-center gap-3">
-                     <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">B</span>
-                     <input type="text" x-model="q.optionB" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+                   
+                   <div class="space-y-3">
+                     <div class="flex items-center gap-3">
+                       <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">A</span>
+                       <input type="text" x-model="q.optionA" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+                     </div>
+                     <div class="flex items-center gap-3">
+                       <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">B</span>
+                       <input type="text" x-model="q.optionB" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+                     </div>
+                   </div>
+                   <div class="space-y-3">
+                     <div class="flex items-center gap-3">
+                       <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">C</span>
+                       <input type="text" x-model="q.optionC" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+                     </div>
+                     <div class="flex items-center gap-3">
+                       <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">D</span>
+                       <input type="text" x-model="text" x-model="q.optionD" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+                     </div>
+                   </div>
+                   
+                   <div>
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Kunci Jawaban Benar</label>
+                      <select x-model="q.correctAnswer" @change="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#FFC107] outline-none font-black transition-all appearance-none cursor-pointer">
+                        <option value="A">Pilihan A</option><option value="B">Pilihan B</option><option value="C">Pilihan C</option><option value="D">Pilihan D</option>
+                      </select>
+                   </div>
+                   <div>
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Parameter Kesulitan</label>
+                      <select x-model="q.difficulty" @change="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#FFC107] outline-none font-black transition-all appearance-none cursor-pointer">
+                        <option value="RENDAH">Mudah (10 Poin)</option>
+                        <option value="SEDANG">Menengah (20 Poin)</option>
+                        <option value="SULIT">Tantangan (50 Poin)</option>
+                        <option value="BONUS">Hadiah (30 Poin)</option>
+                      </select>
+                   </div>
+                   <div class="col-span-full">
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Penjelasan Edukatif (Muncul saat salah)</label>
+                      <input type="text" x-model="q.explanation" @input="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold transition-all italic text-slate-500" placeholder="Berikan alasan mengapa jawaban tersebut benar...">
                    </div>
                  </div>
-                 <div class="space-y-3">
-                   <div class="flex items-center gap-3">
-                     <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">C</span>
-                     <input type="text" x-model="q.optionC" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+               </template>
+
+               <!-- Fill The Blank Editor -->
+               <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                 <div class="grid grid-cols-1 gap-6 pl-8">
+                   <div class="col-span-full">
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Teks Lengkap (Highlight Kata untuk dijadikan rumpang)</label>
+                      <div class="relative">
+                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#FFC107] outline-none font-bold transition-all min-h-[150px]" placeholder="Masukkan teks lengkap di sini..."></textarea>
+                        <div class="absolute right-4 bottom-4">
+                          <button @click="makeBlank(idx)" :disabled="isReadOnly()" class="bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-lg text-[10px] font-black uppercase shadow-sm hover:bg-yellow-500 transition-all">Jadikan Rumpang</button>
+                        </div>
+                      </div>
                    </div>
-                   <div class="flex items-center gap-3">
-                     <span class="h-8 w-8 bg-slate-100 flex items-center justify-center rounded-lg font-black text-slate-400">D</span>
-                     <input type="text" x-model="q.optionD" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold transition-all shadow-sm">
+
+                   <div class="col-span-full space-y-4">
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest">Daftar Bagian Rumpang & Penjelasan</label>
+                      <template x-for="(ans, aidx) in q.answers" :key="aidx">
+                        <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-100 flex flex-col md:flex-row gap-4 items-start md:items-center animate-in fade-in slide-in-from-left-2">
+                           <div class="flex items-center gap-2">
+                             <span class="bg-[#1A237E] text-[#FFC107] h-6 w-6 flex items-center justify-center rounded-full text-[10px] font-black" x-text="aidx + 1"></span>
+                             <span class="px-3 py-1 bg-white border border-slate-200 rounded font-black text-xs text-[#1A237E]" x-text="ans.word"></span>
+                           </div>
+                           <input type="text" x-model="ans.explanation" @input="debouncedSave" :disabled="isReadOnly()" class="flex-1 border-2 border-white rounded-lg p-2 focus:border-[#FFC107] outline-none text-xs font-bold shadow-sm" placeholder="Masukkan penjelasan teologis/edukatif untuk kata ini...">
+                           <button @click="q.answers.splice(aidx, 1); debouncedSave();" :disabled="isReadOnly()" class="text-red-400 hover:text-red-600">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                           </button>
+                        </div>
+                      </template>
+                      <template x-if="!q.answers || q.answers.length === 0">
+                        <div class="text-center py-4 border-2 border-dashed border-slate-100 rounded-xl">
+                          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Belum ada bagian rumpang. Sorot teks di atas lalu klik tombol "Jadikan Rumpang".</p>
+                        </div>
+                      </template>
+                   </div>
+
+                   <div class="w-1/2">
+                      <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Parameter Kesulitan</label>
+                      <select x-model="q.difficulty" @change="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#FFC107] outline-none font-black transition-all appearance-none cursor-pointer">
+                        <option value="RENDAH">Mudah (10 Poin)</option>
+                        <option value="SEDANG">Menengah (20 Poin)</option>
+                        <option value="SULIT">Tantangan (50 Poin)</option>
+                      </select>
                    </div>
                  </div>
-                 
-                 <div>
-                    <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Kunci Jawaban Benar</label>
-                    <select x-model="q.correctAnswer" @change="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#FFC107] outline-none font-black transition-all appearance-none cursor-pointer">
-                      <option value="A">Pilihan A</option><option value="B">Pilihan B</option><option value="C">Pilihan C</option><option value="D">Pilihan D</option>
-                    </select>
-                 </div>
-                 <div>
-                    <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Parameter Kesulitan</label>
-                    <select x-model="q.difficulty" @change="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#FFC107] outline-none font-black transition-all appearance-none cursor-pointer">
-                      <option value="RENDAH">Mudah (10 Poin)</option>
-                      <option value="SEDANG">Menengah (20 Poin)</option>
-                      <option value="SULIT">Tantangan (50 Poin)</option>
-                      <option value="BONUS">Hadiah (30 Poin)</option>
-                    </select>
-                 </div>
-                 <div class="col-span-full">
-                    <label class="block text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-2">Penjelasan Edukatif (Muncul saat salah)</label>
-                    <input type="text" x-model="q.explanation" @input="debouncedSave" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold transition-all italic text-slate-500" placeholder="Berikan alasan mengapa jawaban tersebut benar...">
-                 </div>
-               </div>
+               </template>
             </div>
           </template>
         </div>
@@ -282,43 +331,75 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
 
                <div class="text-center w-full max-w-2xl">
                   <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
-                  <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <template x-for="opt in ['A', 'B', 'C', 'D']">
-                       <button @click="checkAnswer(opt)" 
-                          :class="{
-                            'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
-                            'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
-                            'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
-                            'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
-                          }"
-                          class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
-                          :disabled="showExplanation">
-                          <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
-                                :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
-                            <span x-text="opt"></span>
-                          </span>
-                          <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
-                       </button>
-                     </template>
-                  </div>
+                  
+                  <!-- Quiz Content -->
+                  <template x-if="activeProject?.gameType === 'QUIZ'">
+                    <div>
+                      <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <template x-for="opt in ['A', 'B', 'C', 'D']">
+                           <button @click="checkAnswerQuiz(opt)" 
+                              :class="{
+                                'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
+                                'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
+                                'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
+                                'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
+                              }"
+                              class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
+                              :disabled="showExplanation">
+                              <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
+                                    :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
+                                <span x-text="opt"></span>
+                              </span>
+                              <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
+                           </button>
+                         </template>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Fill The Blank Content -->
+                  <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                    <div>
+                      <div class="text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 rounded-3xl shadow-inner border-2 border-slate-100" 
+                           x-html="renderFTB(questions[currentQuestionIndex])"></div>
+                      
+                      <div class="mt-8 flex justify-center">
+                        <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-[#E64A19] transition-all">PERIKSA JAWABAN</button>
+                      </div>
+                    </div>
+                  </template>
 
                   <!-- Explanation Box -->
                   <div x-show="showExplanation" x-transition class="mt-8 p-6 rounded-2xl text-left border-2 border-dashed"
-                       :class="selectedAnswer === questions[currentQuestionIndex].correctAnswer ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                       :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
                      <div class="flex items-center gap-3 mb-2">
-                        <template x-if="selectedAnswer === questions[currentQuestionIndex].correctAnswer">
+                        <template x-if="isCorrect">
                            <span class="bg-green-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>
                         </template>
-                        <template x-if="selectedAnswer !== questions[currentQuestionIndex].correctAnswer">
+                        <template x-if="!isCorrect">
                            <span class="bg-red-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></span>
                         </template>
-                        <span class="font-black text-xs uppercase tracking-widest" :class="selectedAnswer === questions[currentQuestionIndex].correctAnswer ? 'text-green-800' : 'text-red-800'" x-text="selectedAnswer === questions[currentQuestionIndex].correctAnswer ? 'Jawaban Benar!' : 'Jawaban Salah!'"></span>
+                        <span class="font-black text-xs uppercase tracking-widest" :class="isCorrect ? 'text-green-800' : 'text-red-800'" x-text="isCorrect ? 'Luar Biasa!' : 'Belum Tepat!'"></span>
                      </div>
-                     <p class="text-sm font-bold text-slate-700 italic" x-text="questions[currentQuestionIndex].explanation"></p>
+                     <div class="space-y-3">
+                       <template x-if="activeProject?.gameType === 'QUIZ'">
+                         <p class="text-sm font-bold text-slate-700 italic" x-text="questions[currentQuestionIndex].explanation"></p>
+                       </template>
+                       <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                         <div class="space-y-2">
+                           <template x-for="(ans, aidx) in questions[currentQuestionIndex].answers" :key="aidx">
+                             <div class="text-xs font-bold border-l-4 pl-3" :class="userFTBAnswers[aidx]?.toLowerCase() === ans.word.toLowerCase() ? 'border-green-400' : 'border-red-400'">
+                               <span class="text-[#1A237E] uppercase tracking-tighter" x-text="ans.word"></span>: 
+                               <span class="text-slate-500 italic" x-text="ans.explanation"></span>
+                             </div>
+                           </template>
+                         </div>
+                       </template>
+                     </div>
                   </div>
 
-                  <div class="mt-12 flex justify-center" x-show="currentQuestionIndex === questions.length - 1">
+                  <div class="mt-12 flex justify-center" x-show="showExplanation && (currentQuestionIndex === questions.length - 1)">
                      <button @click="showPreview = false" class="bg-[#1A237E] text-white px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-2xl flex items-center gap-3 transform hover:scale-110">
                         SELESAI REVIEW
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#FFC107]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
@@ -344,6 +425,8 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
           currentQuestionIndex: 0,
           selectedAnswer: null,
           showExplanation: false,
+          isCorrect: false,
+          userFTBAnswers: [],
           
           async openProject(id) {
             const res = await fetch('/api/projects/' + id);
@@ -374,10 +457,16 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
           },
           
           addQuestion() {
-            this.questions.push({
-              question: '', optionA: '', optionB: '', optionC: '', optionD: '',
-              correctAnswer: 'A', difficulty: 'RENDAH', explanation: ''
-            });
+            if (this.activeProject?.gameType === 'QUIZ') {
+              this.questions.push({
+                question: '', optionA: '', optionB: '', optionC: '', optionD: '',
+                correctAnswer: 'A', difficulty: 'RENDAH', explanation: ''
+              });
+            } else {
+              this.questions.push({
+                fullText: '', answers: [], difficulty: 'RENDAH'
+              });
+            }
             this.debouncedSave();
           },
           
@@ -386,6 +475,29 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
               this.questions.splice(idx, 1);
               this.debouncedSave();
             }
+          },
+
+          makeBlank(idx) {
+            const textarea = document.getElementById('ftb-text-' + idx);
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end).trim();
+
+            if (!selectedText) {
+              alert("Silakan sorot kata atau frasa terlebih dahulu.");
+              return;
+            }
+
+            if (!this.questions[idx].answers) this.questions[idx].answers = [];
+            
+            this.questions[idx].answers.push({
+              word: selectedText,
+              explanation: ''
+            });
+
+            this.debouncedSave();
           },
           
           // Hybrid Autosave
@@ -490,18 +602,52 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
             this.currentQuestionIndex = 0;
             this.selectedAnswer = null;
             this.showExplanation = false;
+            this.isCorrect = false;
+            this.userFTBAnswers = [];
             this.showPreview = true;
           },
           
-          checkAnswer(opt) {
+          checkAnswerQuiz(opt) {
             if(this.showExplanation) return;
             this.selectedAnswer = opt;
+            this.isCorrect = opt === this.questions[this.currentQuestionIndex].correctAnswer;
             this.showExplanation = true;
           },
 
-          checkAnswer(opt) {
-            if(this.showExplanation) return;
-            this.selectedAnswer = opt;
+          renderFTB(q) {
+            if(!q || !q.fullText) return '';
+            let text = q.fullText;
+            const answers = q.answers || [];
+            
+            // Sort answers by length descending to avoid partial replacement issues
+            const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
+            
+            sortedAnswers.forEach((ans, i) => {
+              const regex = new RegExp(ans.word, 'gi');
+              text = text.replace(regex, '<input type="text" class="ftb-input border-b-2 border-[#1A237E] outline-none text-center px-2 text-[#FF5722] bg-slate-50 rounded-t w-24 mx-1" placeholder="..." onchange="window.updateFTB(' + i + ', this.value)">');
+            });
+            
+            // Expose update function to global for x-html
+            window.updateFTB = (idx, val) => {
+              this.userFTBAnswers[idx] = val;
+            };
+            
+            return text;
+          },
+
+          checkAnswerFTB() {
+            const q = this.questions[this.currentQuestionIndex];
+            const answers = q.answers || [];
+            let allCorrect = true;
+
+            answers.forEach((ans, i) => {
+              const userVal = (this.userFTBAnswers[i] || '').trim().toLowerCase();
+              if (userVal !== ans.word.trim().toLowerCase()) {
+                allCorrect = false;
+              }
+            });
+
+            this.isCorrect = allCorrect;
             this.showExplanation = true;
           },
 
@@ -510,10 +656,8 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
               this.currentQuestionIndex++;
               this.selectedAnswer = null;
               this.showExplanation = false;
+              this.userFTBAnswers = [];
             } else {
-              this.currentQuestionIndex = 0;
-              this.selectedAnswer = null;
-              this.showExplanation = false;
               this.showPreview = false;
             }
           },
@@ -523,6 +667,7 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
               this.currentQuestionIndex--;
               this.selectedAnswer = null;
               this.showExplanation = false;
+              this.userFTBAnswers = [];
             }
           },
 

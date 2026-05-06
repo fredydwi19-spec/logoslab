@@ -134,8 +134,56 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
       </div>
 
       <!-- Modals (Create, Preview) -->
-      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-50">
-         <!-- ... (existing create modal content remains same, just ensure close calls Alpine or same function) ... -->
+      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+         <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-[#1A237E] flex flex-col overflow-hidden animate-in zoom-in duration-300">
+            <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center border-b-4 border-[#FFC107] shrink-0">
+               <h3 class="font-black uppercase tracking-widest">Penugasan Proyek Baru</h3>
+               <button onclick="closeCreateGameModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="overflow-y-auto flex-1 custom-scrollbar">
+              <form id="createGameForm" class="p-8 space-y-6">
+                 <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Judul Permainan</label>
+                    <input type="text" name="title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-slate-50/50">
+                 </div>
+                 <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deskripsi / Instruksi</label>
+                    <textarea name="description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-32 focus:border-[#1A237E] outline-none font-medium text-slate-600 bg-slate-50/50 resize-none"></textarea>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
+                      <select name="gameType" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white cursor-pointer text-slate-700">
+                         <option value="QUIZ">Quiz Interaktif</option>
+                         <option value="FILL_THE_BLANK">Fill The Blank</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pilih Pembuat Game</label>
+                      <select name="idPembuat" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white cursor-pointer text-slate-700">
+                         ${pembuatGames.map(u => `<option value="${u.id}">${u.username}</option>`).join('')}
+                      </select>
+                    </div>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                       <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Thumbnail URL (Opsional)</label>
+                       <input type="text" name="thumbnailUrl" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-medium text-slate-500 bg-slate-50/50" placeholder="https://...">
+                    </div>
+                    <div>
+                       <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deadline Produksi</label>
+                       <input type="date" name="deadline" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-slate-50/50">
+                    </div>
+                 </div>
+                 <div class="pt-6">
+                    <button type="submit" class="w-full bg-[#1A237E] text-[#FFC107] py-5 rounded-xl font-black uppercase tracking-widest shadow-xl hover:bg-indigo-900 transition-all transform active:scale-95 flex items-center justify-center gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                      TUGASKAN PROYEK
+                    </button>
+                 </div>
+              </form>
+            </div>
+         </div>
       </div>
 
       <!-- Preview Game Modal (Consistent) -->
@@ -153,37 +201,80 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
                </button>
 
-               <div class="text-center w-full max-w-2xl">
-                  <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
-                  <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <template x-for="opt in ['A', 'B', 'C', 'D']">
-                       <button @click="checkAnswer(opt)" 
-                          :class="{
-                            'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
-                            'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
-                            'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
-                            'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
-                          }"
-                          class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
-                          :disabled="showExplanation">
-                          <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
-                                :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
-                            <span x-text="opt"></span>
-                          </span>
-                          <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
-                       </button>
-                     </template>
+                <div class="text-center w-full max-w-2xl">
+                   <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
+                   
+                   <!-- Quiz Content -->
+                   <template x-if="activeProject?.gameType === 'QUIZ'">
+                     <div>
+                       <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <template x-for="opt in ['A', 'B', 'C', 'D']">
+                            <button @click="checkAnswerQuiz(opt)" 
+                               :class="{
+                                 'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
+                                 'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
+                                 'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
+                                 'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
+                               }"
+                               class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
+                               :disabled="showExplanation">
+                               <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
+                                     :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
+                                 <span x-text="opt"></span>
+                               </span>
+                               <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
+                            </button>
+                          </template>
+                       </div>
+                     </div>
+                   </template>
+
+                   <!-- Fill The Blank Content -->
+                   <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                     <div>
+                       <div class="text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 rounded-3xl shadow-inner border-2 border-slate-100" 
+                            x-html="renderFTB(questions[currentQuestionIndex])"></div>
+                       
+                       <div class="mt-8 flex justify-center">
+                         <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-[#E64A19] transition-all">PERIKSA JAWABAN</button>
+                       </div>
+                     </div>
+                   </template>
+
+                   <!-- Explanation Box -->
+                   <div x-show="showExplanation" x-transition class="mt-8 p-6 rounded-2xl text-left border-2 border-dashed"
+                        :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                     <div class="flex items-center gap-3 mb-2">
+                        <template x-if="isCorrect">
+                           <span class="bg-green-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>
+                        </template>
+                        <template x-if="!isCorrect">
+                           <span class="bg-red-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></span>
+                        </template>
+                        <span class="font-black text-xs uppercase tracking-widest" :class="isCorrect ? 'text-green-800' : 'text-red-800'" x-text="isCorrect ? 'Luar Biasa!' : 'Belum Tepat!'"></span>
+                     </div>
+                     <div class="space-y-3">
+                       <template x-if="activeProject?.gameType === 'QUIZ'">
+                         <p class="text-sm font-bold text-slate-700 italic" x-text="questions[currentQuestionIndex]?.explanation"></p>
+                       </template>
+                       <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                         <div class="space-y-2">
+                           <template x-for="(ans, aidx) in questions[currentQuestionIndex]?.answers" :key="aidx">
+                             <div class="text-xs font-bold border-l-4 pl-3" :class="userFTBAnswers[aidx]?.toLowerCase() === ans.word.toLowerCase() ? 'border-green-400' : 'border-red-400'">
+                               <span class="text-[#1A237E] uppercase tracking-tighter" x-text="ans.word"></span>: 
+                               <span class="text-slate-500 italic" x-text="ans.explanation"></span>
+                             </div>
+                           </template>
+                         </div>
+                       </template>
+                     </div>
                   </div>
 
-                  <div x-show="showExplanation" x-transition class="mt-8 p-6 rounded-2xl text-left border-2 border-dashed"
-                       :class="selectedAnswer === questions[currentQuestionIndex]?.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
-                     <p class="text-sm font-bold text-slate-700 italic" x-text="questions[currentQuestionIndex]?.explanation"></p>
-                  </div>
-                  
-                  <div class="mt-12 flex justify-center" x-show="currentQuestionIndex === questions.length - 1">
-                     <button @click="showPreview = false" class="bg-[#1A237E] text-white px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-2xl flex items-center gap-3">
+                  <div class="mt-12 flex justify-center" x-show="showExplanation && (currentQuestionIndex === questions.length - 1)">
+                     <button @click="showPreview = false" class="bg-[#1A237E] text-white px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-2xl flex items-center gap-3 transform hover:scale-110">
                         SELESAI REVIEW
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#FFC107]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
                      </button>
                   </div>
                </div>
@@ -203,6 +294,9 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
           currentQuestionIndex: 0,
           selectedAnswer: null,
           showExplanation: false,
+          
+          isCorrect: false,
+          userFTBAnswers: [],
           
           async openProject(id) {
             const res = await fetch(\`/api/projects/\${id}\`);
@@ -230,12 +324,50 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
             this.currentQuestionIndex = 0;
             this.selectedAnswer = null;
             this.showExplanation = false;
+            this.isCorrect = false;
+            this.userFTBAnswers = [];
             this.showPreview = true;
           },
 
-          checkAnswer(opt) {
+          checkAnswerQuiz(opt) {
             if(this.showExplanation) return;
             this.selectedAnswer = opt;
+            this.isCorrect = opt === this.questions[this.currentQuestionIndex].correctAnswer;
+            this.showExplanation = true;
+          },
+
+          renderFTB(q) {
+            if(!q || !q.fullText) return '';
+            let text = q.fullText;
+            const answers = q.answers || [];
+            
+            const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
+            
+            sortedAnswers.forEach((ans, i) => {
+              const regex = new RegExp(ans.word, 'gi');
+              text = text.replace(regex, '<input type="text" class="ftb-input border-b-2 border-[#1A237E] outline-none text-center px-2 text-[#FF5722] bg-slate-50 rounded-t w-24 mx-1" placeholder="..." onchange="window.updateKetuaFTB(' + i + ', this.value)">');
+            });
+            
+            window.updateKetuaFTB = (idx, val) => {
+              this.userFTBAnswers[idx] = val;
+            };
+            
+            return text;
+          },
+
+          checkAnswerFTB() {
+            const q = this.questions[this.currentQuestionIndex];
+            const answers = q.answers || [];
+            let allCorrect = true;
+
+            answers.forEach((ans, i) => {
+              const userVal = (this.userFTBAnswers[i] || '').trim().toLowerCase();
+              if (userVal !== ans.word.trim().toLowerCase()) {
+                allCorrect = false;
+              }
+            });
+
+            this.isCorrect = allCorrect;
             this.showExplanation = true;
           },
 
@@ -244,6 +376,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
               this.currentQuestionIndex++;
               this.selectedAnswer = null;
               this.showExplanation = false;
+              this.userFTBAnswers = [];
             } else {
               this.showPreview = false;
             }
@@ -254,6 +387,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
               this.currentQuestionIndex--;
               this.selectedAnswer = null;
               this.showExplanation = false;
+              this.userFTBAnswers = [];
             }
           },
 
@@ -282,7 +416,25 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
       function closeCreateGameModal() {
         document.getElementById('createGameModal').classList.add('hidden');
       }
-      // ... (other functions keep working via script tag)
+
+      document.getElementById('createGameForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        data.type = "GAME";
+        
+        const res = await fetch('/api/projects', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        
+        if(res.ok) window.location.reload();
+        else {
+          const err = await res.json();
+          alert('Gagal membuat proyek: ' + (err.error || 'Terjadi kesalahan sistem'));
+        }
+      });
     </script>
   `;
 };

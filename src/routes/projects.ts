@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank } from "../db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 
 export const projectRoutes = new Elysia({ prefix: "/api/projects" })
@@ -33,7 +33,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       instructions,
       gameType,
       type: "GAME",
-      deadline: new Date(deadline),
+      deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       idPembuat: Number(idPembuat),
       status: "DRAFT"
     });
@@ -68,7 +68,16 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
     }
 
-    const questions = await db.select().from(questionBank).where(eq(questionBank.projectId, Number(id)));
+    let questions: any[] = [];
+    if (project.gameType === "QUIZ") {
+      questions = await db.select().from(questionBank).where(eq(questionBank.projectId, Number(id)));
+    } else if (project.gameType === "FILL_THE_BLANK") {
+      const qData = await db.select().from(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, Number(id)));
+      questions = qData.map(q => ({
+        ...q,
+        answers: JSON.parse(q.answers)
+      }));
+    }
     
     const history = await db.select({
       id: reviewsHistory.id,
@@ -174,26 +183,105 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Project is read-only" }), { status: 403 });
     }
 
-    // Delete existing and insert new (simple sync strategy for autosave)
-    await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
-    
-    if (questions && questions.length > 0) {
-      const qValues = questions.map(q => ({
-        projectId,
-        question: q.question,
-        optionA: q.optionA,
-        optionB: q.optionB,
-        optionC: q.optionC,
-        optionD: q.optionD,
-        correctAnswer: q.correctAnswer,
-        difficulty: q.difficulty,
-        score: q.difficulty === "RENDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
-        explanation: q.explanation || ""
-      }));
-      await db.insert(questionBank).values(qValues as any);
+    if (project.gameType === "QUIZ") {
+      // Delete existing and insert new (simple sync strategy for autosave)
+      await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
+      
+      if (questions && questions.length > 0) {
+        const qValues = questions.map(q => ({
+          projectId,
+          question: q.question,
+          optionA: q.optionA,
+          optionB: q.optionB,
+          optionC: q.optionC,
+          optionD: q.optionD,
+          correctAnswer: q.correctAnswer,
+          difficulty: q.difficulty,
+          score: q.difficulty === "RENDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
+          explanation: q.explanation || ""
+        }));
+        await db.insert(questionBank).values(qValues as any);
+      }
+    } else if (project.gameType === "FILL_THE_BLANK") {
+      await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
+
+      if (questions && questions.length > 0) {
+        const qValues = questions.map(q => ({
+          projectId,
+          fullText: q.fullText,
+          answers: JSON.stringify(q.answers), // Array of { word, explanation }
+          difficulty: q.difficulty,
+          score: q.difficulty === "RENDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
+        }));
+        await db.insert(gameFillTheBlank).values(qValues as any);
+
+        // Logic for Bank Soal: Insert into gameQuestionsBank if not already there
+        for (const q of questions) {
+           await db.insert(gameQuestionsBank).values({
+             content: q.fullText,
+             category: project.category || "General",
+             difficulty: q.difficulty as any
+           }).onDuplicateKeyUpdate({
+             set: { updatedAt: new Date() }
+           });
+        }
+      }
     }
 
     return { success: true, message: "Saved to cloud" };
+  })
+  // Submit Answer (User Gameplay)
+  .post("/:id/submit", async ({ params: { id }, body, user }) => {
+    const projectId = Number(id);
+    const { questionId, userAnswers } = body as any; // userAnswers: Array<string> matching the placeholders
+
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
+
+    if (project.gameType === "FILL_THE_BLANK") {
+      const [question] = await db.select().from(gameFillTheBlank).where(eq(gameFillTheBlank.id, questionId));
+      if (!question) return new Response(JSON.stringify({ error: "Question Not Found" }), { status: 404 });
+
+      const correctAnswers = JSON.parse(question.answers) as Array<{ word: string, explanation: string }>;
+      const results = correctAnswers.map((correct, index) => {
+        const userAnswer = userAnswers[index] || "";
+        const isCorrect = userAnswer.trim().toLowerCase() === correct.word.trim().toLowerCase();
+        return {
+          isCorrect,
+          correctAnswer: correct.word,
+          explanation: correct.explanation,
+          userAnswer
+        };
+      });
+
+      const allCorrect = results.every(r => r.isCorrect);
+      const scoreEarned = allCorrect ? question.score : 0;
+
+      // TODO: Accumulate score in user profile/project score if needed
+
+      return {
+        success: true,
+        allCorrect,
+        scoreEarned,
+        details: results
+      };
+    } else if (project.gameType === "QUIZ") {
+      const [question] = await db.select().from(questionBank).where(eq(questionBank.id, questionId));
+      if (!question) return new Response(JSON.stringify({ error: "Question Not Found" }), { status: 404 });
+
+      const isCorrect = userAnswers[0] === question.correctAnswer;
+      const scoreEarned = isCorrect ? question.score : 0;
+
+      return {
+        success: true,
+        isCorrect,
+        scoreEarned,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation
+      };
+    }
+
+    return new Response(JSON.stringify({ error: "Unsupported Game Type" }), { status: 400 });
   })
   // AI Thumbnail Generation via Hugging Face FLUX
   .post("/generate-thumbnail", async ({ body }) => {
