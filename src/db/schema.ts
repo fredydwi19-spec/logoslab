@@ -57,6 +57,27 @@ export const questionBank = mysqlTable("question_bank", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
 
+export const gameQuestionsBank = mysqlTable("game_questions_bank", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 100 }),
+  difficulty: mysqlEnum("difficulty", ["RENDAH", "SEDANG", "SULIT"]).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const gameFillTheBlank = mysqlTable("game_fill_the_blank", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  questionBankId: bigint("question_bank_id", { mode: 'number', unsigned: true }).references(() => gameQuestionsBank.id),
+  fullText: text("full_text").notNull(),
+  answers: text("answers").notNull(), // JSON string: Array<{ word: string, explanation: string }>
+  difficulty: mysqlEnum("difficulty", ["RENDAH", "SEDANG", "SULIT"]).notNull(),
+  score: int("score").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
 export const reviewsHistory = mysqlTable("reviews_history", {
   id: serial("id").primaryKey(),
   projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),

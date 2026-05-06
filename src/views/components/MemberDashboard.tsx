@@ -103,44 +103,74 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                   <!-- Progress Bar -->
                   <div class="h-2 w-full bg-slate-100 relative">
                      <div class="h-full bg-[#FF5722] transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
-                  </div>
-
-                  <!-- Question Body -->
+                              <!-- Question Body -->
                   <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
                      <div class="w-full max-w-3xl text-center">
-                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + getPoints(questions[currentIndex]?.difficulty) + ' POIN)'"></div>
-                        <h2 class="text-xl md:text-3xl font-black text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
                         
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                           <template x-for="opt in ['A', 'B', 'C', 'D']">
-                              <button @click="selectAnswer(opt)" 
-                                 :class="{
-                                    'border-[#FFC107] bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
-                                    'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === questions[currentIndex]?.correctAnswer,
-                                    'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
-                                    'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
-                                 }"
-                                 class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
-                                 :disabled="showFeedback">
-                                 <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-sm md:text-lg transition-colors" 
-                                       :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
-                                    <span x-text="opt"></span>
-                                 </span>
-                                 <span class="text-[#1A237E] font-black text-sm md:text-lg" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
-                              </button>
-                           </template>
-                        </div>
+                        <!-- Quiz Content -->
+                        <template x-if="activeGame?.gameType === 'QUIZ'">
+                          <div>
+                            <h2 class="text-xl md:text-3xl font-black text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                               <template x-for="opt in ['A', 'B', 'C', 'D']">
+                                  <button @click="selectAnswer(opt)" 
+                                     :class="{
+                                        'border-[#FFC107] bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
+                                        'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === questions[currentIndex]?.correctAnswer,
+                                        'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
+                                        'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
+                                     }"
+                                     class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
+                                     :disabled="showFeedback">
+                                     <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-sm md:text-lg transition-colors" 
+                                           :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
+                                        <span x-text="opt"></span>
+                                     </span>
+                                     <span class="text-[#1A237E] font-black text-sm md:text-lg" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                                  </button>
+                               </template>
+                            </div>
+                          </div>
+                        </template>
+
+                        <!-- Fill The Blank Content -->
+                        <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
+                          <div class="flex flex-col items-center">
+                            <div class="text-xl md:text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                                 x-html="renderFTB(questions[currentIndex])"></div>
+                            
+                            <div class="mt-4" x-show="!showFeedback">
+                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
+                            </div>
+                          </div>
+                        </template>
 
                         <!-- Educational Feedback -->
                         <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-8 rounded-2xl md:rounded-3xl text-left border-4 border-dashed"
-                             :class="selectedAnswer === questions[currentIndex]?.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                             :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
                            <div class="flex items-center gap-3 mb-2 md:mb-3">
-                              <span class="text-xl md:text-2xl" x-text="selectedAnswer === questions[currentIndex]?.correctAnswer ? '✨' : '💡'"></span>
-                              <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="selectedAnswer === questions[currentIndex]?.correctAnswer ? 'text-green-800' : 'text-red-800'">
-                                 <span x-text="selectedAnswer === questions[currentIndex]?.correctAnswer ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
+                              <span class="text-xl md:text-2xl" x-text="isCorrect ? '✨' : '💡'"></span>
+                              <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="isCorrect ? 'text-green-800' : 'text-red-800'">
+                                 <span x-text="isCorrect ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
                               </h4>
                            </div>
-                           <p class="text-slate-700 font-bold italic text-sm md:text-base leading-relaxed" x-text="questions[currentIndex]?.explanation"></p>
+                           
+                           <div class="space-y-3">
+                             <template x-if="activeGame?.gameType === 'QUIZ'">
+                               <p class="text-slate-700 font-bold italic text-sm md:text-base leading-relaxed" x-text="questions[currentIndex]?.explanation"></p>
+                             </template>
+                             <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
+                               <div class="space-y-3">
+                                 <template x-for="(res, ridx) in submissionResults" :key="ridx">
+                                   <div class="text-xs md:text-sm font-bold border-l-4 pl-4 py-1" :class="res.isCorrect ? 'border-green-400 bg-green-100/30' : 'border-red-400 bg-red-100/30'">
+                                     <span class="text-[#1A237E] uppercase tracking-tighter" x-text="res.correctAnswer"></span>: 
+                                     <span class="text-slate-500 italic" x-text="res.explanation"></span>
+                                   </div>
+                                 </template>
+                               </div>
+                             </template>
+                           </div>
                            
                            <div class="mt-4 md:mt-6 flex justify-end">
                               <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
@@ -195,6 +225,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
     </div>
     <style>
       [x-cloak] { display: none !important; }
+      .ftb-input::placeholder { color: #cbd5e1; opacity: 0.5; }
     </style>
     
     <script>
@@ -212,6 +243,9 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           wrongCount: 0,
           gameFinished: false,
           username: '${username}',
+          isCorrect: false,
+          userFTBAnswers: [],
+          submissionResults: [],
           
           async playGame(id) {
             console.log('Playing game:', id);
@@ -225,7 +259,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                    alert('Game ini belum memiliki soal.');
                    return;
                 }
-                this.maxScore = this.questions.reduce((acc, q) => acc + this.getPoints(q.difficulty), 0);
+                this.maxScore = this.questions.reduce((acc, q) => acc + (q.score || this.getPoints(q.difficulty)), 0);
                 this.currentIndex = 0;
                 this.currentScore = 0;
                 this.correctCount = 0;
@@ -233,6 +267,8 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                 this.selectedAnswer = null;
                 this.showFeedback = false;
                 this.gameFinished = false;
+                this.userFTBAnswers = [];
+                this.submissionResults = [];
                 this.isPlaying = true;
               } else {
                  alert('Gagal memuat game dari server.');
@@ -251,13 +287,55 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           selectAnswer(opt) {
             if(this.showFeedback) return;
             this.selectedAnswer = opt;
-            this.showFeedback = true;
             
             if(opt === this.questions[this.currentIndex].correctAnswer) {
-               this.currentScore += this.getPoints(this.questions[this.currentIndex].difficulty);
+               this.currentScore += (this.questions[this.currentIndex].score || this.getPoints(this.questions[this.currentIndex].difficulty));
                this.correctCount++;
+               this.isCorrect = true;
             } else {
                this.wrongCount++;
+               this.isCorrect = false;
+            }
+            this.showFeedback = true;
+          },
+
+          renderFTB(q) {
+            if(!q || !q.fullText) return '';
+            let text = q.fullText;
+            const answers = q.answers || [];
+            
+            // Sort answers by length descending to avoid partial replacement issues
+            const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
+            
+            sortedAnswers.forEach((ans, i) => {
+              const regex = new RegExp(ans.word, 'gi');
+              text = text.replace(regex, '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updateMemberFTB(' + i + ', this.value)">');
+            });
+            
+            window.updateMemberFTB = (idx, val) => {
+              this.userFTBAnswers[idx] = val;
+            };
+            
+            return text;
+          },
+
+          async checkAnswerFTB() {
+            const question = this.questions[this.currentIndex];
+            const res = await fetch(\`/api/projects/\${this.activeGame.id}/submit\`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                questionId: question.id,
+                userAnswers: this.userFTBAnswers
+              })
+            });
+            const json = await res.json();
+            if(json.success) {
+              this.isCorrect = json.allCorrect;
+              this.currentScore += json.scoreEarned;
+              if(this.isCorrect) this.correctCount++; else this.wrongCount++;
+              this.submissionResults = json.details;
+              this.showFeedback = true;
             }
           },
 
@@ -266,6 +344,8 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
               this.currentIndex++;
               this.selectedAnswer = null;
               this.showFeedback = false;
+              this.userFTBAnswers = [];
+              this.submissionResults = [];
             } else {
               this.gameFinished = true;
             }
