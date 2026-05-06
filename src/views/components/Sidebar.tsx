@@ -15,37 +15,37 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
     menuItems.push({ label: "Pencapaian Saya", icon: "🏆", link: "/dashboard/user" });
   }
 
-  const roleName = role.replace('_', ' ');
-
   return `
-    <div class="sidebar w-64 bg-white border-r border-slate-200 h-screen fixed left-0 top-0 flex flex-col">
-      <div class="p-8 flex items-center gap-3">
-        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">L</div>
-        <span class="text-xl font-bold text-slate-800">Logos LAB</span>
+    <div class="sidebar w-64 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100]">
+      <!-- Brand Area -->
+      <div class="p-8 border-b border-white/10 flex flex-col items-center">
+        <img src="/public/assets/Logo LogosLAB.png" alt="Logos LAB" class="h-16 w-auto mb-4 bg-white p-2 rounded-xl shadow-lg"/>
+        <div class="text-center">
+          <span class="text-xl font-black text-white tracking-widest uppercase">LOGOS LAB</span>
+          <p class="text-[10px] text-[#FFC107] font-bold tracking-[0.2em] uppercase mt-1">Dashboard Portal</p>
+        </div>
       </div>
       
-      <div class="flex-1 mt-4">
-        <p class="px-8 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Menu Utama</p>
+      <!-- Menu Navigation -->
+      <div class="flex-1 mt-8 space-y-1">
+        <p class="px-8 text-[10px] font-black text-blue-300 uppercase tracking-[0.2em] mb-4 opacity-50">Navigasi Utama</p>
         ${menuItems.map(item => `
-          <a href="${item.link}" class="flex items-center px-8 py-3 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-            <span class="mr-3 text-lg">${item.icon}</span>
-            <span class="font-medium">${item.label}</span>
+          <a href="${item.link}" class="flex items-center px-8 py-4 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
+            <span class="mr-4 text-xl transition-transform group-hover:scale-110">${item.icon}</span>
+            <span class="font-bold uppercase tracking-wider text-xs">${item.label}</span>
           </a>
         `).join('')}
       </div>
 
-      <div class="p-4 border-t border-slate-100 bg-slate-50">
-        <div class="flex items-center gap-3 p-2">
-          <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-            ${username.charAt(0).toUpperCase()}
-          </div>
-          <div class="overflow-hidden">
-            <p class="text-sm font-bold text-slate-800 truncate">${username}</p>
-            <p class="text-[10px] text-slate-500 uppercase tracking-tight">${roleName}</p>
-          </div>
-        </div>
-        <a href="/api/auth/logout" class="mt-4 block w-full text-center py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-red-100">
-          Keluar (Logout)
+      <!-- Action Footer -->
+      <div class="p-6 space-y-3 bg-black/20 border-t border-white/5">
+        <a href="/" class="flex items-center justify-center gap-2 w-full py-3 text-xs font-black text-white bg-[#FF5722] hover:bg-[#E64A19] rounded-xl transition-all shadow-lg uppercase tracking-widest">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+           KE BERANDA
+        </a>
+        <a href="/api/auth/logout" class="flex items-center justify-center gap-2 w-full py-3 text-xs font-black text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all uppercase tracking-widest border border-white/10">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+           LOGOUT
         </a>
       </div>
     </div>
