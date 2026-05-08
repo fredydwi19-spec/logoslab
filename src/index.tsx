@@ -4,6 +4,7 @@ import { jwt } from "@elysiajs/jwt";
 import { userRoutes } from "./routes/users";
 import { authRoutes } from "./routes/auth";
 import { projectRoutes } from "./routes/projects";
+import { wordSearchRoutes } from "./routes/word_search";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
@@ -111,7 +112,16 @@ const app = new Elysia()
       headers: responseHeaders
     });
   })
-  .onError(({ code, error }) => {
+  .onError(({ code, error, set }) => {
+    if (code === 'NOT_FOUND') {
+      set.status = 404;
+      return {
+        status: 404,
+        error: "Resource not found",
+        code: "NOT_FOUND"
+      };
+    }
+
     console.error(`[Error] ${code}:`, error);
     const message = error instanceof Error ? error.message : "Unknown error";
     const stack = error instanceof Error ? error.stack : "";
@@ -125,6 +135,7 @@ const app = new Elysia()
   .use(userRoutes)
   .use(authRoutes)
   .use(projectRoutes)
+  .use(wordSearchRoutes)
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
@@ -152,7 +163,7 @@ const app = new Elysia()
         
         const userRole = (user as any).role as string;
         const username = (user as any).username as string;
-        const userId = (user as any).id as number;
+        const userId = Number((user as any).id);
         const rolePath = userRole.toLowerCase().split('_')[0];
 
         if (params.role !== rolePath) {
@@ -161,25 +172,47 @@ const app = new Elysia()
 
         let allProjectsData: any[] = [];
         let pembuatGamesData: any[] = [];
+        let pakarData: any[] = [];
         let myProjectsData: any[] = [];
 
+        const projectSelectFields = {
+          id: projects.id,
+          title: projects.title,
+          description: projects.description,
+          instructions: projects.instructions,
+          gameType: projects.gameType,
+          type: projects.type,
+          category: projects.category,
+          status: projects.status,
+          revisionCount: projects.revisionCount,
+          deadline: projects.deadline,
+          idPembuat: projects.idPembuat,
+          idPakar: projects.idPakar,
+          createdAt: projects.createdAt,
+          updatedAt: projects.updatedAt
+        };
+
         if (userRole === "KETUA_TIM") {
-          allProjectsData = await db.select().from(projects);
+          allProjectsData = await db.select(projectSelectFields).from(projects);
           pembuatGamesData = await db.select().from(users).where(eq(users.role, "PEMBUAT_GAME"));
+          pakarData = await db.select().from(users).where(eq(users.role, "PAKAR"));
         } else if (userRole === "PEMBUAT_GAME") {
-          myProjectsData = await db.select().from(projects).where(eq(projects.idPembuat, userId));
+          myProjectsData = await db.select(projectSelectFields).from(projects).where(eq(projects.idPembuat, userId));
         } else if (userRole === "PAKAR") {
-          // Pakar can review both game and materi, but based on prompt we focus on games assigned to pakar or draft/review
-          // The prompt says: "Menu: Tabel 'Proyek Saya' dengan tab status..."
-          myProjectsData = await db.select().from(projects).where(eq(projects.type, "GAME")); // For demo, allow pakar to see games to review
+          myProjectsData = await db.select(projectSelectFields).from(projects).where(
+            and(
+              eq(projects.idPakar, userId),
+              inArray(projects.status, ["REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR"])
+            )
+          );
         } else if (userRole === "USER") {
-          allProjectsData = await db.select().from(projects).where(eq(projects.status, "PUBLISHED"));
+          allProjectsData = await db.select(projectSelectFields).from(projects).where(eq(projects.status, "PUBLISHED"));
         }
 
         const renderContent = () => {
           switch (userRole) {
             case "KETUA_TIM":
-              return KetuaTimDashboard({ allProjects: allProjectsData, pembuatGames: pembuatGamesData });
+              return KetuaTimDashboard({ allProjects: allProjectsData, pembuatGames: pembuatGamesData, pakars: pakarData });
 
             case "PEMBUAT_GAME":
               return PembuatGameDashboard({ myProjects: myProjectsData });

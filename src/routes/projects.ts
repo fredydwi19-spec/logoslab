@@ -1,9 +1,16 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch } from "../db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
+import { jwt } from "@elysiajs/jwt";
 
 export const projectRoutes = new Elysia({ prefix: "/api/projects" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET || "super-secret-key",
+    })
+  )
   .onBeforeHandle(async ({ jwt, cookie }) => {
     const auth = cookie.auth;
     if (!auth?.value) {
@@ -16,7 +23,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
   })
   .derive(async ({ jwt, cookie }) => {
     const auth = cookie.auth;
-    const payload = await jwt.verify(auth.value as string);
+    const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
     return { user: payload as any };
   })
   // Create Project (Ketua Tim)
@@ -25,7 +32,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
     }
 
-    const { title, description, instructions, gameType, deadline, idPembuat } = body as any;
+    const { title, description, instructions, gameType, deadline, idPembuat, idPakar, category, thumbnailUrl } = body as any;
 
     const [result] = await db.insert(projects).values({
       title,
@@ -33,8 +40,11 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       instructions,
       gameType,
       type: "GAME",
+      category: category || null,
+      thumbnailUrl: thumbnailUrl || null,
       deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       idPembuat: Number(idPembuat),
+      idPakar: idPakar ? Number(idPakar) : null,
       status: "DRAFT"
     });
 
@@ -45,11 +55,20 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       projectId: result.insertId
     });
 
+    // Send notification to Pakar if assigned
+    if (idPakar) {
+      await db.insert(notifications).values({
+        userId: Number(idPakar),
+        message: `Anda ditunjuk sebagai Pakar untuk proyek: ${title}`,
+        projectId: result.insertId
+      });
+    }
+
     return { success: true, projectId: result.insertId };
   })
   // Get Projects by Role
   .get("/", async ({ user }) => {
-    let projectList = [];
+    let projectList: any[] = [];
     if (user.role === "PEMBUAT_GAME") {
       projectList = await db.select().from(projects).where(eq(projects.idPembuat, user.id));
     } else if (user.role === "PAKAR") {
@@ -63,7 +82,39 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
   })
   // Get Project Details
   .get("/:id", async ({ params: { id }, user }) => {
-    const [project] = await db.select().from(projects).where(eq(projects.id, Number(id)));
+    const [projectWithPics] = await db.select({
+      id: projects.id,
+      title: projects.title,
+      description: projects.description,
+      instructions: projects.instructions,
+      gameType: projects.gameType,
+      status: projects.status,
+      deadline: projects.deadline,
+      idPembuat: projects.idPembuat,
+      idPakar: projects.idPakar,
+      category: projects.category,
+      thumbnailUrl: projects.thumbnailUrl,
+      pembuatName: users.name,
+    })
+    .from(projects)
+    .leftJoin(users, eq(projects.idPembuat, users.id))
+    .where(eq(projects.id, Number(id)));
+
+    if (!projectWithPics) {
+      return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
+    }
+
+    // Get Pakar Name separately or with another join
+    const [pakarData] = await db.select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, projectWithPics.idPakar || 0));
+
+    const project = { 
+      ...projectWithPics, 
+      pembuatName: projectWithPics.pembuatName || "Belum Ditentukan",
+      pakarName: pakarData?.name || "Belum Ditentukan"
+    };
+
     if (!project) {
       return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
     }
@@ -77,8 +128,17 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         ...q,
         answers: JSON.parse(q.answers)
       }));
+    } else if (project.gameType === "WORD_SEARCH") {
+      const [wsData] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, Number(id)));
+      if (wsData && wsData.words) {
+        try {
+          questions = JSON.parse(wsData.words);
+        } catch (e) {
+          questions = [];
+        }
+      }
     }
-    
+
     const history = await db.select({
       id: reviewsHistory.id,
       feedback: reviewsHistory.feedback,
@@ -106,18 +166,25 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     let targetUserId = project.idPembuat;
     let notificationMsg = "";
 
-    // Security: Only authorized roles can transition specific states
     if (user.role === "PAKAR") {
-      if (!["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR"].includes(project.status)) {
+      if (!["REVIEW_PAKAR", "REVISI_PAKAR"].includes(project.status)) {
         return new Response(JSON.stringify({ error: "Proyek tidak dalam antrean review Pakar" }), { status: 400 });
       }
       
       if (statusGiven === "ACCEPT") {
         newStatus = "ACCEPTED_PAKAR";
-        notificationMsg = `Pakar telah menyetujui proyek: ${project.title}`;
+        targetUserId = 0; // Notify Ketua Tim (fetched below)
+        notificationMsg = `Pakar telah menyetujui proyek "${project.title}". Silakan lakukan review akhir.`;
       } else if (statusGiven === "REVISI") {
         newStatus = "REVISI_PAKAR";
-        notificationMsg = `Pakar memberikan revisi pada proyek: ${project.title}`;
+        targetUserId = project.idPembuat;
+        notificationMsg = `Pakar membutuhkan revisi pada proyek "${project.title}". Mohon cek feedback dari Pakar.`;
+      }
+
+      // If ACCEPT, notify Ketua Tim
+      if (statusGiven === "ACCEPT") {
+        const [ketuaTim] = await db.select().from(users).where(eq(users.role, "KETUA_TIM")).limit(1);
+        targetUserId = ketuaTim?.id || 0;
       }
     } else if (user.role === "KETUA_TIM") {
       if (!["ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA"].includes(project.status)) {
@@ -126,10 +193,12 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
       if (statusGiven === "ACCEPT") {
         newStatus = "PUBLISHED";
-        notificationMsg = `Proyek ${project.title} telah di-publish!`;
+        targetUserId = project.idPembuat;
+        notificationMsg = `Selamat! Proyek "${project.title}" telah di-publish oleh Ketua Tim.`;
       } else if (statusGiven === "REVISI") {
         newStatus = "REVISI_KETUA";
-        notificationMsg = `Ketua Tim memberikan revisi pada proyek: ${project.title}`;
+        targetUserId = project.idPembuat;
+        notificationMsg = `Ketua Tim membutuhkan revisi pada proyek "${project.title}". Mohon cek feedback.`;
       }
     } else if (user.role === "PEMBUAT_GAME") {
       if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
@@ -140,12 +209,14 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       // Otherwise, go to Expert (Pakar).
       if (project.status === "REVISI_KETUA") {
         newStatus = "REVIEW_KETUA";
+        const [ketuaTim] = await db.select().from(users).where(eq(users.role, "KETUA_TIM")).limit(1);
+        targetUserId = ketuaTim?.id || 0;
+        notificationMsg = `Pembuat Game telah menyelesaikan revisi proyek "${project.title}". Silakan lakukan review akhir.`;
       } else {
         newStatus = "REVIEW_PAKAR";
+        targetUserId = project.idPakar || 0;
+        notificationMsg = `Proyek "${project.title}" siap untuk di-review oleh Pakar.`;
       }
-      
-      notificationMsg = `Pembuat Game telah mengirim proyek untuk di-review: ${project.title}`;
-      targetUserId = newStatus === "REVIEW_KETUA" ? 1 : project.idPakar; // Notify Chairman (assuming ID 1 for now) or assigned Pakar
     } else {
       return new Response(JSON.stringify({ error: "Akses Ditolak" }), { status: 403 });
     }
@@ -322,7 +393,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
-        const json = await response.json();
+        const json = (await response.json()) as any;
         if (json.error && json.error.includes("loading")) {
            throw new Error("MODEL_LOADING");
         }
@@ -363,4 +434,72 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         message: "Semua engine AI sedang sibuk. Silakan coba beberapa saat lagi." 
       };
     }
-  });
+  })
+  // Delete Project (Ketua Tim)
+  .delete("/:id", async ({ params: { id }, user }) => {
+    if (user.role !== "KETUA_TIM") return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
+
+    // Delete dependent records first to avoid foreign key constraints
+    await db.delete(notifications).where(eq(notifications.projectId, projectId));
+    await db.delete(reviewsHistory).where(eq(reviewsHistory.projectId, projectId));
+    await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
+    await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
+    await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
+
+    await db.delete(projects).where(eq(projects.id, projectId));
+    return { success: true, message: "Proyek berhasil dihapus" };
+  })
+  // Unpublish Project (Ketua Tim)
+  .patch("/:id/unpublish", async ({ params: { id }, user }) => {
+    if (user.role !== "KETUA_TIM") return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
+
+    // Allow unpublish from any status that is not DRAFT/UNPUBLISHED
+    if (project.status === "UNPUBLISHED" || project.status === "DRAFT") {
+      return new Response(JSON.stringify({ error: "Proyek sudah dalam status DRAFT atau UNPUBLISHED" }), { status: 400 });
+    }
+
+    await db.update(projects).set({ status: "UNPUBLISHED" }).where(eq(projects.id, projectId));
+    
+    // Send notification to Pembuat Game
+    await db.insert(notifications).values({
+      userId: project.idPembuat,
+      message: `Proyek "${project.title}" telah ditarik dari publikasi oleh Ketua Tim.`,
+      projectId: project.id
+    });
+
+    return { success: true, message: "Proyek berhasil diunpublish" };
+  })
+  // Update Project Info (Ketua Tim - specifically for Edit button in DRAFT)
+  .patch("/:id", async ({ params: { id }, body, user }) => {
+    if (user.role !== "KETUA_TIM") return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    const projectId = Number(id);
+    const { title, description, instructions, deadline, idPembuat, idPakar, gameType, thumbnailUrl, category } = body as any;
+
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
+
+    if (project.status !== "DRAFT") {
+      return new Response(JSON.stringify({ error: "Hanya proyek DRAFT yang dapat diedit infonya" }), { status: 400 });
+    }
+
+    await db.update(projects).set({
+      title,
+      description,
+      instructions,
+      gameType,
+      category: category || project.category,
+      thumbnailUrl: thumbnailUrl || project.thumbnailUrl,
+      deadline: deadline ? new Date(deadline) : project.deadline,
+      idPembuat: idPembuat ? Number(idPembuat) : project.idPembuat,
+      idPakar: idPakar ? Number(idPakar) : project.idPakar
+    }).where(eq(projects.id, projectId));
+
+    return { success: true, message: "Proyek berhasil diperbarui" };
+  })
+

@@ -1,325 +1,121 @@
-import { projects, users, notifications } from "../../db/schema";
+import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
+import { WordSearchEditorScript } from "./WordSearchEditor";
+import { ProjectHeader } from "./ProjectHeader";
 
-export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: any[], pembuatGames: any[] }) => {
+export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { allProjects: any[], pembuatGames: any[], pakars?: any[] }) => {
   const gameProjects = allProjects.filter(p => p.type === "GAME");
-  
+  const gameProjectsJson = JSON.stringify(gameProjects).replace(/</g, '\\u003c');
+  const pembuatOptions = pembuatGames.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+  const pakarOptions = pakars.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+
   return `
-    <div class="space-y-8" x-data="ketuaDashboard()">
-      <!-- Header with Logo -->
-      <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
-        <div class="flex items-center gap-4">
-          <img src="/public/assets/Logo LogosLAB.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
-          <h2 class="text-2xl font-extrabold text-white tracking-tight">Manajemen Proyek Game</h2>
-        </div>
-        <button @click="openCreateModal()" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-6 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105 shadow-lg flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-          TAMBAH PROYEK BARU
-        </button>
-      </div>
-
-      <!-- List View -->
-      <div x-show="!activeProject" class="bg-white p-8 rounded-xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in duration-500">
-        <div class="flex justify-between items-center mb-8">
-          <div class="flex items-center gap-3">
-            <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
-            <h2 class="text-xl font-bold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left">
-            <thead>
-              <tr class="border-b border-slate-100 text-slate-400 text-sm">
-                <th class="pb-4 font-semibold">ID</th>
-                <th class="pb-4 font-semibold">Thumbnail</th>
-                <th class="pb-4 font-semibold">Judul Game</th>
-                <th class="pb-4 font-semibold">Status</th>
-                <th class="pb-4 font-semibold text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="text-slate-600">
-              ${gameProjects.map(p => `
-                <tr class="border-b border-slate-50 hover:bg-blue-50/30 transition-colors group">
-                  <td class="py-5 font-bold text-[#1A237E]">#G${p.id}</td>
-                  <td class="py-5">
-                    <div class="relative h-14 w-20 rounded-lg overflow-hidden border-2 border-slate-100 shadow-sm group-hover:border-[#FFC107] transition-all">
-                      <img src="${p.thumbnailUrl || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover" />
-                    </div>
-                  </td>
-                  <td class="py-5">
-                    <div class="font-bold text-slate-800 text-lg">${p.title}</div>
-                    <div class="flex items-center gap-2 mt-1">
-                      <span class="text-[10px] bg-[#1A237E] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">${p.gameType}</span>
-                    </div>
-                  </td>
-                  <td class="py-5">
-                    <span class="px-3 py-1 bg-slate-100 text-[#1A237E] border border-[#1A237E]/20 rounded-full text-xs font-bold uppercase tracking-tighter shadow-sm">${p.status.replace('_', ' ')}</span>
-                  </td>
-                  <td class="py-5 text-right">
-                    <button @click="openProject(${p.id})" class="bg-[#1A237E] text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 shadow-md transition-all">DETAIL & REVIEW</button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Detail & Review View (Consistent with Pakar) -->
-      <div x-show="activeProject" style="display: none;" class="space-y-6 animate-in slide-in-from-bottom duration-500">
-        <button @click="closeProject()" class="text-slate-500 hover:text-slate-800 mb-4 flex items-center gap-2 font-bold transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Kembali ke Dashboard
-        </button>
-
-        <div class="bg-[#1A237E] p-8 rounded-2xl border-b-8 border-[#FFC107] text-white shadow-2xl relative overflow-hidden">
-          <div class="flex flex-col md:flex-row justify-between items-start gap-6 relative z-10">
-             <div class="flex-1">
-                <div class="flex items-center gap-3 mb-4">
-                  <span class="text-[10px] bg-[#FFC107] text-[#1A237E] px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-lg" x-text="activeProject?.gameType"></span>
-                  <span class="text-[10px] bg-white/10 text-white border border-white/20 px-3 py-1 rounded-full font-bold uppercase tracking-widest" x-text="activeProject?.status.replace('_', ' ')"></span>
-                </div>
-                <h3 class="text-3xl font-black leading-tight mb-2 uppercase tracking-tight" x-text="activeProject?.title"></h3>
-                <p class="text-blue-100 font-medium text-sm italic max-w-2xl" x-text="activeProject?.description"></p>
-             </div>
-             <button @click="previewGame()" class="bg-[#FFC107] text-[#1A237E] px-8 py-4 rounded-xl font-black uppercase tracking-widest transition-all hover:bg-yellow-400 shadow-xl flex items-center gap-3 transform hover:scale-105">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                SIMULASI GAME
-             </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div class="lg:col-span-2 space-y-6">
-            <!-- Review Form -->
-            <div class="bg-white p-8 border-2 border-slate-100 rounded-2xl shadow-xl">
-              <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
-                <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
-                Lembar Persetujuan Ketua Tim
-              </h4>
-              <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-[#1A237E] outline-none font-medium transition-all mb-6" placeholder="Tuliskan catatan akhir atau instruksi revisi final..."></textarea>
-              
-              <div class="flex gap-4">
-                <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-[#FF5722] text-[#FF5722] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
-                <button @click="submitReview('ACCEPT')" class="flex-1 bg-[#1A237E] text-[#FFC107] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg">SETUJUI & PUBLISH</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- History Log -->
-          <div class="space-y-6">
-            <div class="bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
-              <h4 class="text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-4 flex items-center gap-2">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                 Riwayat Audit (Log Revisi)
-              </h4>
-              <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                 <template x-for="log in activeProject?.history || []" :key="log.id">
-                   <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-                      <div class="absolute left-0 top-0 h-full w-1" :class="log.statusGiven === 'ACCEPT' ? 'bg-green-500' : 'bg-orange-500'"></div>
-                      <div class="flex justify-between items-center mb-1">
-                        <div class="text-[9px] font-black uppercase tracking-tighter" :class="log.statusGiven === 'ACCEPT' ? 'text-green-600' : 'text-orange-600'" x-text="log.statusGiven"></div>
-                        <div class="text-[8px] text-slate-400 font-black uppercase tracking-widest" x-text="log.reviewerName"></div>
-                      </div>
-                      <p class="text-xs text-slate-700 font-bold italic leading-relaxed" x-text="log.feedback"></p>
-                      <div class="text-[8px] text-slate-400 mt-2 font-black opacity-50" x-text="new Date(log.createdAt).toLocaleString('id-ID', { hour12: false })"></div>
-                   </div>
-                 </template>
-                 <template x-if="!(activeProject?.history?.length)">
-                   <div class="text-center py-10 text-slate-400 text-[10px] italic font-black uppercase tracking-widest opacity-40">Belum ada aktivitas audit.</div>
-                 </template>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modals (Create, Preview) -->
-      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-         <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-[#1A237E] flex flex-col overflow-hidden animate-in zoom-in duration-300">
-            <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center border-b-4 border-[#FFC107] shrink-0">
-               <h3 class="font-black uppercase tracking-widest">Penugasan Proyek Baru</h3>
-               <button onclick="closeCreateGameModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
-            </div>
-            <div class="overflow-y-auto flex-1 custom-scrollbar">
-              <form id="createGameForm" class="p-8 space-y-6">
-                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Judul Permainan</label>
-                    <input type="text" name="title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-slate-50/50">
-                 </div>
-                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deskripsi / Instruksi</label>
-                    <textarea name="description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-32 focus:border-[#1A237E] outline-none font-medium text-slate-600 bg-slate-50/50 resize-none"></textarea>
-                 </div>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
-                      <select name="gameType" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white cursor-pointer text-slate-700">
-                         <option value="QUIZ">Quiz Interaktif</option>
-                         <option value="FILL_THE_BLANK">Fill The Blank</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pilih Pembuat Game</label>
-                      <select name="idPembuat" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white cursor-pointer text-slate-700">
-                         ${pembuatGames.map(u => `<option value="${u.id}">${u.username}</option>`).join('')}
-                      </select>
-                    </div>
-                 </div>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                       <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Thumbnail URL (Opsional)</label>
-                       <input type="text" name="thumbnailUrl" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-medium text-slate-500 bg-slate-50/50" placeholder="https://...">
-                    </div>
-                    <div>
-                       <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deadline Produksi</label>
-                       <input type="date" name="deadline" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-slate-50/50">
-                    </div>
-                 </div>
-                 <div class="pt-6">
-                    <button type="submit" class="w-full bg-[#1A237E] text-[#FFC107] py-5 rounded-xl font-black uppercase tracking-widest shadow-xl hover:bg-indigo-900 transition-all transform active:scale-95 flex items-center justify-center gap-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                      TUGASKAN PROYEK
-                    </button>
-                 </div>
-              </form>
-            </div>
-         </div>
-      </div>
-
-      <!-- Preview Game Modal (Consistent) -->
-      <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
-         <div class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
-            <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-[#FF5722] z-10 text-3xl transition-colors font-black">&times;</button>
-            <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-[0.2em] border-b-4 border-[#FFC107]">
-              SIMULASI GAME: <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
-            </div>
-            <div class="p-12 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center relative">
-               <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 z-20 border border-slate-200">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
-               </button>
-               <button @click="nextQuestion()" x-show="currentQuestionIndex < questions.length - 1" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 z-20 border border-slate-200">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-               </button>
-
-                <div class="text-center w-full max-w-2xl">
-                   <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
-                   
-                   <!-- Quiz Content -->
-                   <template x-if="activeProject?.gameType === 'QUIZ'">
-                     <div>
-                       <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
-                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <template x-for="opt in ['A', 'B', 'C', 'D']">
-                            <button @click="checkAnswerQuiz(opt)" 
-                               :class="{
-                                 'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
-                                 'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
-                                 'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
-                                 'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
-                               }"
-                               class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
-                               :disabled="showExplanation">
-                               <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
-                                     :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
-                                 <span x-text="opt"></span>
-                               </span>
-                               <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
-                            </button>
-                          </template>
-                       </div>
-                     </div>
-                   </template>
-
-                   <!-- Fill The Blank Content -->
-                   <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
-                     <div>
-                       <div class="text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 rounded-3xl shadow-inner border-2 border-slate-100" 
-                            x-html="renderFTB(questions[currentQuestionIndex])"></div>
-                       
-                       <div class="mt-8 flex justify-center">
-                         <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-[#E64A19] transition-all">PERIKSA JAWABAN</button>
-                       </div>
-                     </div>
-                   </template>
-
-                   <!-- Explanation Box -->
-                   <div x-show="showExplanation" x-transition class="mt-8 p-6 rounded-2xl text-left border-2 border-dashed"
-                        :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
-                     <div class="flex items-center gap-3 mb-2">
-                        <template x-if="isCorrect">
-                           <span class="bg-green-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>
-                        </template>
-                        <template x-if="!isCorrect">
-                           <span class="bg-red-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></span>
-                        </template>
-                        <span class="font-black text-xs uppercase tracking-widest" :class="isCorrect ? 'text-green-800' : 'text-red-800'" x-text="isCorrect ? 'Luar Biasa!' : 'Belum Tepat!'"></span>
-                     </div>
-                     <div class="space-y-3">
-                       <template x-if="activeProject?.gameType === 'QUIZ'">
-                         <p class="text-sm font-bold text-slate-700 italic" x-text="questions[currentQuestionIndex]?.explanation"></p>
-                       </template>
-                       <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
-                         <div class="space-y-2">
-                           <template x-for="(ans, aidx) in questions[currentQuestionIndex]?.answers" :key="aidx">
-                             <div class="text-xs font-bold border-l-4 pl-3" :class="userFTBAnswers[aidx]?.toLowerCase() === ans.word.toLowerCase() ? 'border-green-400' : 'border-red-400'">
-                               <span class="text-[#1A237E] uppercase tracking-tighter" x-text="ans.word"></span>: 
-                               <span class="text-slate-500 italic" x-text="ans.explanation"></span>
-                             </div>
-                           </template>
-                         </div>
-                       </template>
-                     </div>
-                  </div>
-
-                  <div class="mt-12 flex justify-center" x-show="showExplanation && (currentQuestionIndex === questions.length - 1)">
-                     <button @click="showPreview = false" class="bg-[#1A237E] text-white px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-2xl flex items-center gap-3 transform hover:scale-110">
-                        SELESAI REVIEW
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#FFC107]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-                     </button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script id="ketuaProjectsData" type="application/json">${gameProjectsJson}</script>
     <script>
       document.addEventListener('alpine:init', () => {
         Alpine.data('ketuaDashboard', () => ({
           activeProject: null,
           questions: [],
+          gameData: null,
           feedback: '',
+          editMode: false,
+          editProjectData: null,
           showPreview: false,
+          showAuditLog: false,
           currentQuestionIndex: 0,
           selectedAnswer: null,
           showExplanation: false,
-          
           isCorrect: false,
           userFTBAnswers: [],
-          
+          filterType: 'ALL',
+          allProjects: JSON.parse(document.getElementById('ketuaProjectsData').textContent || '[]'),
+          selectedCategories: [],
+          availableCategories: [
+            "Biblical Knowledge",
+            "Eksegesis & Hermeneutik",
+            "Biblical Theory",
+            "Homiletika",
+            "Apologetika"
+          ],
+
+          filteredProjects() {
+            if (this.filterType === 'ALL') return this.allProjects;
+            return this.allProjects.filter(p => p.gameType === this.filterType);
+          },
+
           async openProject(id) {
-            const res = await fetch(\`/api/projects/\${id}\`);
-            const json = await res.json();
-            if(json.success) {
-              this.activeProject = json.data;
-              this.questions = json.data.questions || [];
-              this.feedback = '';
+            try {
+              const res = await fetch('/api/projects/' + id);
+              const json = await res.json();
+              if (json.success) {
+                this.activeProject = json.data;
+                this.questions = json.data.questions || [];
+                this.gameData = null;
+                this.showAuditLog = false;
+                if (this.activeProject.gameType === 'WORD_SEARCH') {
+                  const wsRes = await fetch('/api/word-search/' + id);
+                  const wsJson = await wsRes.json();
+                  if (wsJson.success) this.gameData = wsJson.data;
+                }
+              } else {
+                alert('Gagal memuat proyek: ' + (json.error || 'Terjadi kesalahan'));
+              }
+            } catch (err) {
+              console.error('openProject error:', err);
+              alert('Gagal terhubung ke server.');
             }
           },
-          
+
           closeProject() {
             this.activeProject = null;
+            this.showAuditLog = false;
+            this.showPreview = false;
+            this.feedback = '';
           },
 
           openCreateModal() {
+            this.editMode = false;
+            this.editProjectData = null;
+            this.selectedCategories = [];
+            const form = document.getElementById('createGameForm');
+            if (form) form.reset();
             document.getElementById('createGameModal').classList.remove('hidden');
           },
 
+          editProject(p) {
+            this.editMode = true;
+            this.editProjectData = p;
+            this.selectedCategories = p.category ? p.category.split(',').map(s=>s.trim()).filter(s=>s) : [];
+            document.getElementById('createGameModal').classList.remove('hidden');
+          },
+
+          addCategory(val) {
+            if (val && !this.selectedCategories.includes(val)) {
+              this.selectedCategories.push(val);
+            }
+          },
+
+          removeCategory(val) {
+            this.selectedCategories = this.selectedCategories.filter(c => c !== val);
+          },
+
+          async deleteProject(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus proyek ini secara permanen? Tindakan ini tidak dapat dibatalkan.')) return;
+            const res = await fetch('/api/projects/' + id, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
+            else {
+              const json = await res.json();
+              alert('Gagal menghapus proyek: ' + (json.error || 'Terjadi kesalahan'));
+            }
+          },
+
           previewGame() {
-            if(this.questions.length === 0) {
-               alert("Belum ada soal untuk di-preview.");
-               return;
+            if (this.activeProject?.gameType !== 'WORD_SEARCH' && this.questions.length === 0) {
+              alert("Belum ada soal untuk di-preview.");
+              return;
+            }
+            if (this.activeProject?.gameType === 'WORD_SEARCH' && (!this.gameData || !this.gameData.gridData)) {
+              alert("Data grid Word Search belum tersedia.");
+              return;
             }
             this.currentQuestionIndex = 0;
             this.selectedAnswer = null;
@@ -330,28 +126,22 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
           },
 
           checkAnswerQuiz(opt) {
-            if(this.showExplanation) return;
+            if (this.showExplanation) return;
             this.selectedAnswer = opt;
             this.isCorrect = opt === this.questions[this.currentQuestionIndex].correctAnswer;
             this.showExplanation = true;
           },
 
           renderFTB(q) {
-            if(!q || !q.fullText) return '';
+            if (!q || !q.fullText) return '';
             let text = q.fullText;
             const answers = q.answers || [];
-            
             const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
-            
             sortedAnswers.forEach((ans, i) => {
               const regex = new RegExp(ans.word, 'gi');
-              text = text.replace(regex, '<input type="text" class="ftb-input border-b-2 border-[#1A237E] outline-none text-center px-2 text-[#FF5722] bg-slate-50 rounded-t w-24 mx-1" placeholder="..." onchange="window.updateKetuaFTB(' + i + ', this.value)">');
+              text = text.replace(regex, '<input type="text" class="ftb-input border-b-2 border-blue-800 outline-none text-center px-2 text-orange-600 bg-slate-50 rounded-t w-24 mx-1" placeholder="..." onchange="window.updateKetuaFTB(' + i + ', this.value)">');
             });
-            
-            window.updateKetuaFTB = (idx, val) => {
-              this.userFTBAnswers[idx] = val;
-            };
-            
+            window.updateKetuaFTB = (idx, val) => { this.userFTBAnswers[idx] = val; };
             return text;
           },
 
@@ -359,20 +149,16 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
             const q = this.questions[this.currentQuestionIndex];
             const answers = q.answers || [];
             let allCorrect = true;
-
             answers.forEach((ans, i) => {
               const userVal = (this.userFTBAnswers[i] || '').trim().toLowerCase();
-              if (userVal !== ans.word.trim().toLowerCase()) {
-                allCorrect = false;
-              }
+              if (userVal !== ans.word.trim().toLowerCase()) allCorrect = false;
             });
-
             this.isCorrect = allCorrect;
             this.showExplanation = true;
           },
 
           nextQuestion() {
-            if(this.currentQuestionIndex < this.questions.length - 1) {
+            if (this.currentQuestionIndex < this.questions.length - 1) {
               this.currentQuestionIndex++;
               this.selectedAnswer = null;
               this.showExplanation = false;
@@ -383,7 +169,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
           },
 
           prevQuestion() {
-            if(this.currentQuestionIndex > 0) {
+            if (this.currentQuestionIndex > 0) {
               this.currentQuestionIndex--;
               this.selectedAnswer = null;
               this.showExplanation = false;
@@ -392,49 +178,304 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames }: { allProjects: 
           },
 
           async submitReview(statusGiven) {
-            if(statusGiven === 'REVISI' && !this.feedback) {
+            if (statusGiven === 'REVISI' && !this.feedback) {
               alert("Mohon isi masukan/feedback untuk revisi.");
               return;
             }
-            
-            const res = await fetch(\`/api/projects/\${this.activeProject.id}/review\`, {
+            const res = await fetch('/api/projects/' + this.activeProject.id + '/review', {
               method: 'POST',
-              headers: {'Content-Type': 'application/json'},
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ statusGiven, feedback: this.feedback })
             });
-            
-            if(res.ok) {
-              window.location.reload();
-            } else {
-              alert("Gagal submit review");
+            if (res.ok) window.location.reload();
+            else {
+              const err = await res.json();
+              alert("Gagal submit review: " + (err.error || 'Terjadi kesalahan'));
             }
           }
         }));
       });
 
-      // Existing non-alpine functions for create modal
       function closeCreateGameModal() {
         document.getElementById('createGameModal').classList.add('hidden');
       }
 
-      document.getElementById('createGameForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        data.type = "GAME";
-        
-        const res = await fetch('/api/projects', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data)
-        });
-        
-        if(res.ok) window.location.reload();
-        else {
-          const err = await res.json();
-          alert('Gagal membuat proyek: ' + (err.error || 'Terjadi kesalahan sistem'));
+      window.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('createGameForm');
+        if (form) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const projectId = data.id;
+            delete data.id;
+
+            const submitData = async (finalData) => {
+              const url = projectId ? '/api/projects/' + projectId : '/api/projects';
+              const method = projectId ? 'PATCH' : 'POST';
+              finalData.type = "GAME";
+              const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(finalData)
+              });
+              if (res.ok) window.location.reload();
+              else {
+                const err = await res.json();
+                alert('Gagal memproses proyek: ' + (err.error || 'Terjadi kesalahan sistem'));
+              }
+            };
+
+            const fileInput = document.getElementById('thumbnailFile');
+            if (fileInput && fileInput.files.length > 0) {
+              const file = fileInput.files[0];
+              const reader = new FileReader();
+              reader.onload = function(evt) {
+                data.thumbnailUrl = evt.target.result;
+                delete data.thumbnailFile;
+                submitData(data);
+              };
+              reader.readAsDataURL(file);
+            } else {
+              delete data.thumbnailFile;
+              submitData(data);
+            }
+          });
         }
       });
     </script>
+
+    <div class="space-y-8" x-data="ketuaDashboard()">
+      <!-- Header -->
+      <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
+        <div class="flex items-center gap-4">
+          <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
+          <h2 class="text-2xl font-extrabold text-white tracking-tight">Manajemen Proyek Game</h2>
+        </div>
+        <button @click="openCreateModal()" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-6 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+          + TAMBAH PROYEK BARU
+        </button>
+      </div>
+
+      <!-- List View -->
+      <div x-show="!activeProject" class="bg-white p-8 rounded-xl border border-slate-200 shadow-xl overflow-hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div class="flex items-center gap-3">
+            <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
+            <h2 class="text-xl font-bold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
+          </div>
+          <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">SEMUA</button>
+            <button @click="filterType = 'QUIZ'" :class="filterType === 'QUIZ' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">QUIZ</button>
+            <button @click="filterType = 'FILL_THE_BLANK'" :class="filterType === 'FILL_THE_BLANK' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">FTB</button>
+            <button @click="filterType = 'WORD_SEARCH'" :class="filterType === 'WORD_SEARCH' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">WORD SEARCH</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-slate-100 text-slate-400 text-sm">
+                <th class="pb-4 font-semibold">ID</th>
+                <th class="pb-4 font-semibold">Judul Game</th>
+                <th class="pb-4 font-semibold">Status</th>
+                <th class="pb-4 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-600">
+              <template x-for="p in filteredProjects()" :key="p.id">
+                <tr class="border-b border-slate-50 hover:bg-blue-50/30 transition-colors group">
+                  <td class="py-5 font-bold text-[#1A237E]" x-text="'#G' + p.id"></td>
+                  <td class="py-5">
+                    <div class="font-bold text-slate-800 text-lg" x-text="p.title"></div>
+                    <span class="text-[10px] bg-[#1A237E] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider" x-text="p.gameType"></span>
+                  </td>
+                  <td class="py-5">
+                    <span class="px-3 py-1 bg-slate-100 text-[#1A237E] border border-[#1A237E]/20 rounded-full text-xs font-bold uppercase tracking-tighter" x-text="p.status.replace(/_/g, ' ')"></span>
+                  </td>
+                  <td class="py-5 text-right">
+                    <div class="flex justify-end gap-2">
+                      <template x-if="p.status === 'DRAFT' || p.status === 'REVISI_KETUA' || p.status === 'REVISI_PAKAR'">
+                        <button @click="editProject(p)" class="bg-blue-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-blue-600 transition-all shadow-md font-bold">Edit</button>
+                      </template>
+                      <button @click="deleteProject(p.id)" class="bg-red-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-red-600 transition-all shadow-md font-bold">Hapus</button>
+                      <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 shadow-md transition-all uppercase tracking-widest">DETAIL</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+              <template x-if="filteredProjects().length === 0">
+                <tr><td colspan="4" class="text-center py-10 text-slate-400 italic">Tidak ada proyek ditemukan.</td></tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detail View -->
+      <div x-show="activeProject" style="display: none;" class="space-y-6">
+        <button @click="closeProject()" class="text-slate-500 hover:text-slate-800 mb-4 flex items-center gap-2 font-bold transition-colors">
+          ← Kembali ke Dashboard
+        </button>
+
+        ${ProjectHeader()}
+
+        <div class="bg-white p-8 border-2 border-slate-100 rounded-2xl shadow-xl">
+          <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
+            <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
+            Persetujuan Produksi
+          </h4>
+          <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-[#1A237E] outline-none font-medium transition-all mb-6" placeholder="Tuliskan catatan atau instruksi pengerjaan..."></textarea>
+          <div class="flex gap-4">
+            <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-[#FF5722] text-[#FF5722] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
+            <button @click="submitReview('ACCEPT')" class="flex-1 bg-[#1A237E] text-[#FFC107] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg">SETUJUI &amp; PUBLISH</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Modal -->
+      <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+          <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 z-10 text-3xl font-black">&times;</button>
+          <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
+            SIMULASI GAME: <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+          </div>
+          <div class="p-8 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center">
+            <div class="text-center w-full max-w-2xl space-y-6">
+              <template x-if="activeProject?.gameType === 'WORD_SEARCH' && gameData">
+                <div class="w-full">
+                  ${WordSearchGame({ projectVar: 'activeProject', gameDataVar: 'gameData' })}
+                </div>
+              </template>
+              <template x-if="activeProject?.gameType !== 'WORD_SEARCH'">
+                <div>
+                  <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
+                  <template x-if="activeProject?.gameType === 'QUIZ'">
+                    <div>
+                      <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <template x-for="opt in ['A','B','C','D']">
+                          <button @click="checkAnswerQuiz(opt)"
+                            :class="{
+                              'border-yellow-400 bg-yellow-50': selectedAnswer === opt && !showExplanation,
+                              'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
+                              'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
+                              'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
+                            }"
+                            class="border-4 p-5 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-3"
+                            :disabled="showExplanation">
+                            <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black bg-slate-100 shrink-0" x-text="opt"></span>
+                            <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                    <div>
+                      <div class="text-xl font-bold text-[#1A237E] mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(questions[currentQuestionIndex])"></div>
+                      <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest">PERIKSA JAWABAN</button>
+                    </div>
+                  </template>
+                  <div x-show="showExplanation" class="mt-6 p-5 rounded-2xl border-2 border-dashed text-left" :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                    <p class="font-black text-sm uppercase" :class="isCorrect ? 'text-green-700' : 'text-red-700'" x-text="isCorrect ? 'Benar!' : 'Belum Tepat!'"></p>
+                    <p class="text-sm text-slate-600 mt-1 italic" x-text="questions[currentQuestionIndex]?.explanation"></p>
+                  </div>
+                  <div class="flex gap-4 mt-6 justify-center">
+                    <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="bg-slate-100 text-slate-700 px-6 py-2 rounded-xl font-black">← Prev</button>
+                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < questions.length - 1 ? 'Berikutnya →' : 'Selesai'"></button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create/Edit Modal -->
+      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-[#1A237E] flex flex-col overflow-hidden">
+          <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+            <h3 class="font-black uppercase tracking-widest" x-text="editMode ? 'Edit Proyek' : 'Penugasan Proyek Baru'"></h3>
+            <button onclick="closeCreateGameModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
+          </div>
+          <div class="overflow-y-auto flex-1 p-8">
+            <form id="createGameForm" class="space-y-5">
+              <input type="hidden" name="id" :value="editProjectData?.id">
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Judul Permainan</label>
+                <input type="text" name="title" :value="editProjectData?.title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
+              </div>
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deskripsi Game</label>
+                <textarea name="description" :value="editProjectData?.description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
+              </div>
+              <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Instruksi</label>
+                <textarea name="instructions" :value="editProjectData?.instructions" class="w-full border-2 border-slate-100 rounded-xl p-4 h-28 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
+                  <select name="gameType" :value="editProjectData?.gameType" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                    <option value="QUIZ">Quiz</option>
+                    <option value="FILL_THE_BLANK">Fill The Blank</option>
+                    <option value="WORD_SEARCH">Word Search</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Klasifikasi Minat</label>
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <template x-for="cat in selectedCategories" :key="cat">
+                      <span class="bg-[#1A237E] text-white px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm border border-[#FFC107]/30">
+                        <span x-text="cat"></span>
+                        <button type="button" @click="removeCategory(cat)" class="hover:text-[#FFC107] transition-colors focus:outline-none text-sm">&times;</button>
+                      </span>
+                    </template>
+                  </div>
+                  <select @change="addCategory($event.target.value); $event.target.value=''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white text-slate-700">
+                    <option value="">+ Tambah Minat...</option>
+                    <template x-for="avail in availableCategories" :key="avail">
+                      <option :value="avail" x-text="avail" x-show="!selectedCategories.includes(avail)"></option>
+                    </template>
+                  </select>
+                  <input type="hidden" name="category" :value="selectedCategories.join(',')">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pembuat Game</label>
+                  <select name="idPembuat" :value="editProjectData?.idPembuat" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                    <option value="">Pilih Pembuat</option>
+                    ${pembuatOptions}
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">PIC Pakar</label>
+                  <select name="idPakar" :value="editProjectData?.idPakar" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                    <option value="">Pilih Pakar</option>
+                    ${pakarOptions}
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deadline</label>
+                  <input type="date" name="deadline" :value="editProjectData?.deadline ? new Date(editProjectData.deadline).toISOString().split('T')[0] : ''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Thumbnail Game</label>
+                  <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A237E] file:text-[#FFC107] hover:file:bg-indigo-900">
+                </div>
+              </div>
+              <button type="submit" class="w-full bg-[#1A237E] text-[#FFC107] py-4 rounded-xl font-black uppercase tracking-widest shadow-xl hover:bg-indigo-900 transition-all">
+                <span x-text="editMode ? 'SIMPAN PERUBAHAN' : 'TUGASKAN PROYEK'"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${WordSearchEditorScript()}
+    ${WordSearchGameScript()}
   `;
 };

@@ -19,7 +19,7 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
     <div class="sidebar w-64 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100]">
       <!-- Brand Area -->
       <div class="p-8 border-b border-white/10 flex flex-col items-center">
-        <img src="/public/assets/Logo LogosLAB.png" alt="Logos LAB" class="h-16 w-auto mb-4 bg-white p-2 rounded-xl shadow-lg"/>
+        <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-16 w-auto mb-4 bg-white p-2 rounded-xl shadow-lg"/>
         <div class="text-center">
           <span class="text-xl font-black text-white tracking-widest uppercase">LOGOS LAB</span>
           <p class="text-[10px] text-[#FFC107] font-bold tracking-[0.2em] uppercase mt-1">Dashboard Portal</p>

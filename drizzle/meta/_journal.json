@@ -43,6 +43,13 @@
       "when": 1778067989248,
       "tag": "0005_rare_speed",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1778118208024,
+      "tag": "0006_daffy_psylocke",
+      "breakpoints": true
     }
   ]
 }
