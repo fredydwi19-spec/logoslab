@@ -1,4 +1,4 @@
-import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean, text } from "drizzle-orm/mysql-core";
+import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean, text, longtext } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: serial("id").primaryKey(),
@@ -31,10 +31,10 @@ export const projects = mysqlTable("projects", {
   gameType: mysqlEnum("game_type", ["QUIZ", "FILL_THE_BLANK", "WORD_SEARCH", "CROSSWORD"]),
   type: mysqlEnum("type", ["GAME", "MATERI"]).notNull(),
   category: varchar("category", { length: 100 }), // Matching user interests
-  status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED"]).default("DRAFT").notNull(),
+  status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
   deadline: timestamp("deadline"),
-  thumbnailUrl: varchar("thumbnail_url", { length: 500 }),
+  thumbnailUrl: longtext("thumbnail_url"),
   idPembuat: bigint("id_pembuat", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
   idPakar: bigint("id_pakar", { mode: 'number', unsigned: true }).references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -94,4 +94,16 @@ export const notifications = mysqlTable("notifications", {
   projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id),
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const gameWordSearch = mysqlTable("game_word_search", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  words: text("words").notNull(), // JSON string: Array<{ word: string, explanation: string }>
+  gridSize: int("grid_size").notNull(),
+  difficulty: mysqlEnum("difficulty", ["EASY", "MEDIUM", "HARD"]).notNull(),
+  score: int("score").notNull(),
+  gridData: text("grid_data").notNull(), // JSON string: 2D array of characters
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });

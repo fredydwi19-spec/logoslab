@@ -1,3 +1,5 @@
+import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
+
 export const MemberDashboard = ({ publishedGames, username }: { publishedGames: any[], username: string }) => {
   return `
     <div class="space-y-10" x-data="memberDashboardData()">
@@ -78,12 +80,12 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-full md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
-            <template x-if="isPlaying && !gameFinished">
+            <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
                   <div class="bg-[#1A237E] px-6 md:px-10 py-4 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
                      <div class="flex items-center gap-3 md:gap-4">
-                        <img src="/public/assets/Logo LogosLAB.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
+                        <img src="/public/assets/logo-logoslab.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
                            <h3 class="text-xs md:text-sm font-black uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
                            <p class="text-[8px] md:text-[9px] font-bold opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
@@ -184,8 +186,15 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                </div>
             </template>
 
+            <!-- Word Search Gameplay -->
+            <template x-if="isPlaying && !gameFinished && activeGame?.gameType === 'WORD_SEARCH' && gameData">
+               <div class="flex-1 overflow-y-auto bg-slate-50">
+                   ${WordSearchGame({ projectVar: 'activeGame', gameDataVar: 'gameData' })}
+               </div>
+            </template>
+
             <!-- Result Screen -->
-            <template x-if="gameFinished">
+            <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
                <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
@@ -242,6 +251,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           correctCount: 0,
           wrongCount: 0,
           gameFinished: false,
+          gameData: null,
           username: '${username}',
           isCorrect: false,
           userFTBAnswers: [],
@@ -269,6 +279,19 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                 this.gameFinished = false;
                 this.userFTBAnswers = [];
                 this.submissionResults = [];
+                this.gameData = null;
+
+                if (this.activeGame.gameType === 'WORD_SEARCH') {
+                  const wsRes = await fetch('/api/word-search/' + id);
+                  const wsJson = await wsRes.json();
+                  if (wsJson.success && wsJson.data) {
+                    this.gameData = wsJson.data;
+                  } else {
+                    alert('Data Word Search tidak ditemukan.');
+                    return;
+                  }
+                }
+
                 this.isPlaying = true;
               } else {
                  alert('Gagal memuat game dari server.');
@@ -358,5 +381,6 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
         };
       };
     </script>
+    ${WordSearchGameScript()}
   `;
 };
