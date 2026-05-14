@@ -28,12 +28,12 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
       <div class="flex">
         ${Sidebar({ username, role })}
         
-        <div class="flex-1 ml-64 min-h-screen flex flex-col">
+        <div class="flex-1 ml-52 min-h-screen flex flex-col">
           <!-- Main Header -->
-          <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
+          <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
                <div class="h-6 w-1 bg-[#FFC107] rounded-full"></div>
-               <h1 class="text-xl font-black text-[#1A237E] uppercase tracking-widest">${title}</h1>
+               <h1 class="text-lg md:text-xl font-bold text-[#1A237E] uppercase tracking-widest leading-tight">${title}</h1>
             </div>
             
             <div class="flex items-center gap-8">
@@ -54,7 +54,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
                   <div class="max-h-[500px] overflow-y-auto divide-y divide-slate-50">
                     ${notifications.length === 0 ? '<div class="p-10 text-center text-xs text-slate-400 font-bold italic uppercase tracking-widest opacity-50">Tidak ada notifikasi baru.</div>' : notifications.map(n => `
                       <a href="/dashboard/${role.toLowerCase().split('_')[0]}" class="block p-6 hover:bg-slate-50 transition-all ${!n.isRead ? 'bg-blue-50/30' : ''} group">
-                        <p class="text-sm text-slate-800 ${!n.isRead ? 'font-black' : 'font-medium'} group-hover:text-[#1A237E] transition-colors">${n.message}</p>
+                        <p class="text-sm md:text-base text-slate-800 ${!n.isRead ? 'font-black' : 'font-medium'} group-hover:text-[#1A237E] transition-colors leading-relaxed">${n.message}</p>
                         <p class="text-[10px] text-slate-400 mt-2 font-black uppercase tracking-tighter">${new Date(n.createdAt).toLocaleString('id-ID')}</p>
                       </a>
                     `).join('')}
@@ -68,7 +68,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
                   ${username.charAt(0).toUpperCase()}
                 </div>
                 <div class="text-left">
-                  <div class="text-xs font-black text-[#1A237E] uppercase tracking-wide leading-none">${username}</div>
+                  <div class="text-xs md:text-sm font-bold text-[#1A237E] uppercase tracking-wide leading-none">${username}</div>
                   <div class="text-[8px] text-[#FF5722] font-black uppercase tracking-[0.2em] mt-1">${role.replace('_', ' ')}</div>
                 </div>
               </div>
@@ -76,12 +76,12 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
           </header>
 
           <!-- Main Content View -->
-          <main class="flex-1 p-10">
+          <main class="flex-1 p-6 md:p-8 leading-relaxed">
             ${children}
           </main>
 
           <!-- System Footer -->
-          <footer class="px-10 py-8 text-center text-slate-300 text-[10px] font-black uppercase tracking-[0.4em] opacity-40">
+          <footer class="px-8 py-6 text-center text-slate-300 text-[10px] font-black uppercase tracking-[0.4em] opacity-40">
             &copy; 2026 LOGOS LAB PRODUCTION &bull; FAITH MEETS TECHNOLOGY
           </footer>
         </div>

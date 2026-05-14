@@ -39,7 +39,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
              <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
-             <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-wider">Permainan Tersedia</h2>
+              <h2 class="text-xl md:text-2xl font-bold text-[#1A237E] uppercase tracking-wider">Permainan Tersedia</h2>
           </div>
           <a href="#" class="text-[10px] font-black text-[#FF5722] uppercase tracking-widest hover:underline">Lihat Semua &rarr;</a>
         </div>
@@ -55,8 +55,8 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                   <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-[#1A237E] uppercase tracking-widest shadow-sm">${game.gameType}</div>
                </div>
                <div class="p-6">
-                  <h4 class="text-lg font-black text-[#1A237E] mb-2 group-hover:text-[#FF5722] transition-colors line-clamp-1 cursor-pointer" @click="playGame(${game.id})">${game.title}</h4>
-                  <p class="text-slate-500 text-xs font-medium line-clamp-2 mb-4 italic leading-relaxed">${game.description || 'Mari asah pengetahuan Alkitabmu dengan game seru ini!'}</p>
+                  <h4 class="text-base md:text-lg font-semibold text-[#1A237E] mb-2 group-hover:text-[#FF5722] transition-colors line-clamp-1 cursor-pointer" @click="playGame(${game.id})">${game.title}</h4>
+                  <p class="text-slate-500 text-xs md:text-sm font-medium line-clamp-2 mb-4 italic leading-relaxed">${game.description || 'Mari asah pengetahuan Alkitabmu dengan game seru ini!'}</p>
                   <div class="flex items-center justify-between pt-4 border-t border-slate-50">
                      <div class="flex items-center gap-2">
                         <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">👤</div>
@@ -114,7 +114,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                         <!-- Quiz Content -->
                         <template x-if="activeGame?.gameType === 'QUIZ'">
                           <div>
-                            <h2 class="text-xl md:text-3xl font-black text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                            <h2 class="text-lg md:text-2xl font-bold text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                <template x-for="opt in ['A', 'B', 'C', 'D']">
                                   <button @click="selectAnswer(opt)" 
@@ -130,7 +130,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                                            :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
                                         <span x-text="opt"></span>
                                      </span>
-                                     <span class="text-[#1A237E] font-black text-sm md:text-lg" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                                     <span class="text-[#1A237E] font-semibold text-sm md:text-base" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
                                   </button>
                                </template>
                             </div>
@@ -140,7 +140,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                         <!-- Fill The Blank Content -->
                         <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
                           <div class="flex flex-col items-center">
-                            <div class="text-xl md:text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                            <div class="text-lg md:text-xl font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
                                  x-html="renderFTB(questions[currentIndex])"></div>
                             
                             <div class="mt-4" x-show="!showFeedback">

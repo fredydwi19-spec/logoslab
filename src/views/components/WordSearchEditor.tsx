@@ -187,16 +187,16 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
             <div>
-              <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-tighter leading-none">Editor Word Search</h2>
-              <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Generate tantangan pencarian kata teologis</p>
+              <h2 class="text-xl md:text-2xl font-bold text-[#1A237E] uppercase tracking-tighter leading-none">Editor Word Search</h2>
+              <p class="text-slate-400 text-xs md:text-sm font-medium uppercase tracking-[0.2em] mt-2">Generate tantangan pencarian kata teologis</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-3 w-full xl:w-auto">
-            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
+            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                GENERATE GRID
             </button>
-            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
+            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
                <span x-text="isSaving ? 'SAVING...' : 'SIMPAN KE CLOUD'"></span>
             </button>
           </div>
@@ -224,8 +224,8 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
 
             <div class="space-y-4">
               <div class="flex justify-between items-center">
-                <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest">Daftar Kata Teologis</h3>
-                <button @click="addWord()" class="text-[#FF5722] font-black text-xs uppercase tracking-widest flex items-center gap-1 hover:underline">
+                <h3 class="text-sm md:text-base font-semibold text-[#1A237E] uppercase tracking-widest">Daftar Kata Teologis</h3>
+                <button @click="addWord()" class="text-[#FF5722] font-semibold text-xs md:text-sm uppercase tracking-widest flex items-center gap-1 hover:underline">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                   Tambah Baris
                 </button>

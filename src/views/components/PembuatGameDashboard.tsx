@@ -312,7 +312,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
     <div class="bg-white p-0 rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" x-data="pembuatDashboard()">
       <div class="bg-[#1A237E] p-6 border-b-4 border-[#FFC107] flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <h2 class="text-xl font-black text-white uppercase tracking-widest" x-text="viewMode === 'all' ? 'Semua Proyek Saya' : 'Workspace Produksi Game'"></h2>
+          <h2 class="text-lg md:text-xl font-bold text-white uppercase tracking-widest leading-tight" x-text="viewMode === 'all' ? 'Semua Proyek Saya' : 'Workspace Produksi Game'"></h2>
         </div>
         <div class="flex items-center gap-4">
            <span x-show="activeProject" id="saveStatus" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner transition-all duration-500">CLOUD SYNC ACTIVE</span>
@@ -330,11 +330,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
           <!-- Header + Search -->
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
-              <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
+              <h2 class="text-base md:text-lg font-semibold text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
                 <span class="h-5 w-1.5 bg-[#FFC107] rounded-full"></span>
                 Proyek Yang Sedang Dikerjakan
               </h2>
-              <p class="text-xs text-slate-400 font-bold mt-1">Proyek aktif yang ditugaskan kepada Anda</p>
+              <p class="text-xs md:text-sm text-slate-400 font-medium mt-1">Proyek aktif yang ditugaskan kepada Anda</p>
             </div>
             <div class="relative w-full md:w-64">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -378,7 +378,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
             <div class="overflow-x-auto bg-white">
             <table class="w-full text-left">
               <thead class="bg-slate-50">
-                <tr class="text-slate-400 text-xs uppercase tracking-widest">
+                <tr class="text-slate-400 text-xs md:text-sm font-medium uppercase tracking-wider">
                   <th class="px-6 py-4 font-black">Judul Game</th>
                   <th class="px-6 py-4 font-black">Jenis</th>
                   <th class="px-6 py-4 font-black">Deadline</th>
@@ -391,7 +391,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                 <template x-for="p in filteredActiveProjects()" :key="p.id">
                   <tr class="hover:bg-blue-50/40 transition-all group">
                     <td class="px-6 py-5">
-                      <div class="font-black text-slate-800 group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
+                      <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
                       <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
                     </td>
                     <td class="px-6 py-5">
@@ -401,7 +401,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                       <span :class="new Date(p.deadline) < new Date() ? 'text-red-600 font-black' : 'text-slate-700 font-bold'" x-text="p.deadline ? new Date(p.deadline).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
                     </td>
                     <td class="px-6 py-5">
-                      <span class="text-sm font-bold text-slate-700" x-text="p.idPakar ? getUserName(p.idPakar) : 'Belum Ditentukan'"></span>
+                      <span class="text-sm md:text-base font-medium text-slate-700" x-text="p.idPakar ? getUserName(p.idPakar) : 'Belum Ditentukan'"></span>
                     </td>
                     <td class="px-6 py-5">
                       <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"

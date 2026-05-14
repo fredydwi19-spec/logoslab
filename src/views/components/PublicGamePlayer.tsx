@@ -15,14 +15,14 @@ export const PublicGamePlayer = () => {
                      <div class="flex items-center gap-3 md:gap-4">
                         <img src="/public/assets/logo-logoslab.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
-                           <h3 class="text-xs md:text-sm font-black uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
-                           <p class="text-[8px] md:text-[9px] font-bold opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
+                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
+                           <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
                         </div>
                      </div>
                      <div class="flex items-center gap-4 md:gap-6">
                         <div class="text-right hidden sm:block">
-                           <p class="text-[9px] font-black uppercase opacity-60">Skor Saat Ini</p>
-                           <div class="text-xl md:text-2xl font-black text-[#FFC107]" x-text="currentScore"></div>
+                           <p class="text-[9px] font-medium uppercase opacity-60">Skor Saat Ini</p>
+                           <div class="text-xl md:text-2xl font-bold text-[#FFC107]" x-text="currentScore"></div>
                         </div>
                         <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -38,12 +38,12 @@ export const PublicGamePlayer = () => {
                   <!-- Question Body -->
                   <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
                      <div class="w-full max-w-3xl text-center">
-                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
+                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-medium uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
                         
                         <!-- Quiz Content -->
                         <template x-if="activeGame?.gameType === 'QUIZ'">
                           <div>
-                            <h2 class="text-xl md:text-3xl font-black text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                            <h2 class="text-lg md:text-2xl font-bold text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                <template x-for="opt in ['A', 'B', 'C', 'D']">
                                   <button @click="selectAnswer(opt)" 
@@ -55,11 +55,11 @@ export const PublicGamePlayer = () => {
                                      }"
                                      class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
                                      :disabled="showFeedback">
-                                     <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-sm md:text-lg transition-colors" 
+                                     <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-sm md:text-lg transition-colors" 
                                            :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
                                         <span x-text="opt"></span>
                                      </span>
-                                     <span class="text-[#1A237E] font-black text-sm md:text-lg" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                                     <span class="text-[#1A237E] font-semibold text-sm md:text-base" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
                                   </button>
                                </template>
                             </div>
@@ -69,7 +69,7 @@ export const PublicGamePlayer = () => {
                         <!-- Fill The Blank Content -->
                         <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
                           <div class="flex flex-col items-center">
-                            <div class="text-xl md:text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                            <div class="text-lg md:text-xl font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
                                  x-html="renderFTB(questions[currentIndex])"></div>
                             
                             <div class="mt-4" x-show="!showFeedback">
@@ -129,25 +129,25 @@ export const PublicGamePlayer = () => {
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
                         <div class="text-6xl md:text-8xl mb-4 animate-bounce">🏆</div>
-                        <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-black shadow-xl ring-4 ring-white">100</div>
+                        <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
                      </div>
                      
-                     <h2 class="text-2xl md:text-4xl font-black text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
+                     <h2 class="text-xl md:text-3xl font-bold text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
                      <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
                      
                      <!-- Stats Grid -->
                      <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
-                           <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
-                           <div class="text-xl md:text-3xl font-black text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
+                           <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
+                           <div class="text-xl md:text-2xl font-bold text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-green-500">
-                           <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Benar</div>
-                           <div class="text-xl md:text-3xl font-black text-green-600" x-text="correctCount"></div>
+                           <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Benar</div>
+                           <div class="text-xl md:text-2xl font-bold text-green-600" x-text="correctCount"></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-red-500">
-                           <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salah</div>
-                           <div class="text-xl md:text-3xl font-black text-red-600" x-text="wrongCount"></div>
+                           <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Salah</div>
+                           <div class="text-xl md:text-2xl font-bold text-red-600" x-text="wrongCount"></div>
                         </div>
                      </div>
 

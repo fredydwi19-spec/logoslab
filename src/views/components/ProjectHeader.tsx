@@ -23,8 +23,8 @@ export const ProjectHeader = ({ projectVar = 'activeProject', showAuditLogVar = 
 
         <!-- Middle Row: Title & Description -->
         <div class="mb-10">
-          <h1 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4 leading-none" x-text="${projectVar}?.title"></h1>
-          <p class="text-blue-100/70 text-lg font-medium italic leading-relaxed max-w-3xl" x-text="${projectVar}?.description"></p>
+          <h1 class="text-2xl md:text-3xl font-bold text-white uppercase tracking-tight mb-4 leading-tight" x-text="${projectVar}?.title"></h1>
+          <p class="text-blue-100/70 text-sm md:text-base font-medium italic leading-relaxed max-w-3xl" x-text="${projectVar}?.description"></p>
         </div>
 
         <!-- Bottom Row: Info Grid -->
@@ -33,9 +33,9 @@ export const ProjectHeader = ({ projectVar = 'activeProject', showAuditLogVar = 
           <div class="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10">
             <div class="flex items-center gap-2 mb-3">
               <span class="text-[#FFC107]"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></span>
-              <span class="text-[10px] font-black text-[#FFC107] uppercase tracking-widest">Instruksi Pengerjaan</span>
+              <span class="text-xs md:text-sm font-medium text-[#FFC107] uppercase tracking-widest">Instruksi Pengerjaan</span>
             </div>
-            <p class="text-white text-xs font-bold leading-relaxed" x-text="${projectVar}?.instructions"></p>
+            <p class="text-white text-sm md:text-base font-medium leading-relaxed" x-text="${projectVar}?.instructions"></p>
           </div>
 
           <!-- PIC Info -->
@@ -43,15 +43,15 @@ export const ProjectHeader = ({ projectVar = 'activeProject', showAuditLogVar = 
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white font-black border border-white/20 shadow-inner">P</div>
               <div>
-                <div class="text-[8px] font-black text-blue-300 uppercase tracking-widest mb-0.5">PIC PAKAR</div>
-                <div class="text-white text-xs font-black uppercase tracking-tight" x-text="${projectVar}?.pakarName"></div>
+                <div class="text-[10px] font-medium text-blue-300 uppercase tracking-widest mb-0.5">PIC PAKAR</div>
+                <div class="text-white text-sm md:text-base font-medium uppercase tracking-tight" x-text="${projectVar}?.pakarName"></div>
               </div>
             </div>
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white font-black border border-white/20 shadow-inner">G</div>
               <div>
-                <div class="text-[8px] font-black text-blue-300 uppercase tracking-widest mb-0.5">PIC PEMBUAT GAME</div>
-                <div class="text-white text-xs font-black uppercase tracking-tight" x-text="${projectVar}?.pembuatName"></div>
+                <div class="text-[10px] font-medium text-blue-300 uppercase tracking-widest mb-0.5">PIC PEMBUAT GAME</div>
+                <div class="text-white text-sm md:text-base font-medium uppercase tracking-tight" x-text="${projectVar}?.pembuatName"></div>
               </div>
             </div>
           </div>
@@ -65,8 +65,8 @@ export const ProjectHeader = ({ projectVar = 'activeProject', showAuditLogVar = 
                 </div>
                 <div class="h-10 w-1 bg-[#FFC107] rounded-full opacity-30"></div>
                 <div class="text-right">
-                   <div class="text-[8px] font-black text-[#FFC107] uppercase tracking-widest mb-1">REVISI TERAKHIR</div>
-                   <div class="text-[10px] font-black text-white" x-text="${projectVar}?.history?.length > 0 ? new Date(${projectVar}.history[0].createdAt).toLocaleDateString('id-ID') : '-'"></div>
+                   <div class="text-[10px] font-medium text-[#FFC107] uppercase tracking-widest mb-1">REVISI TERAKHIR</div>
+                   <div class="text-xs font-medium text-white" x-text="${projectVar}?.history?.length > 0 ? new Date(${projectVar}.history[0].createdAt).toLocaleDateString('id-ID') : '-'"></div>
                 </div>
              </div>
              
