@@ -1,5 +1,6 @@
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
 import { WordSearchEditorScript } from "./WordSearchEditor";
+import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 import { ProjectHeader } from "./ProjectHeader";
 
 export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { allProjects: any[], pembuatGames: any[], pakars?: any[] }) => {
@@ -27,6 +28,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           isCorrect: false,
           userFTBAnswers: [],
           filterType: 'ALL',
+          statusTab: 'ALL',
           allProjects: JSON.parse(document.getElementById('ketuaProjectsData').textContent || '[]'),
           selectedCategories: [],
           availableCategories: [
@@ -42,6 +44,19 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
             return this.allProjects.filter(p => p.gameType === this.filterType);
           },
 
+          filteredByStatus() {
+            const base = this.filteredProjects();
+            if (this.statusTab === 'ALL') return base;
+            if (this.statusTab === 'DRAFT')         return base.filter(p => p.status === 'DRAFT');
+            if (this.statusTab === 'REVIEW_PAKAR')  return base.filter(p => p.status === 'REVIEW_PAKAR');
+            if (this.statusTab === 'REVISI_PAKAR')  return base.filter(p => p.status === 'REVISI_PAKAR');
+            if (this.statusTab === 'ACCEPTED_PAKAR')return base.filter(p => p.status === 'ACCEPTED_PAKAR');
+            if (this.statusTab === 'REVIEW_KETUA')  return base.filter(p => p.status === 'REVIEW_KETUA');
+            if (this.statusTab === 'REVISI_KETUA')  return base.filter(p => p.status === 'REVISI_KETUA');
+            if (this.statusTab === 'UNPUBLISHED')   return base.filter(p => p.status === 'UNPUBLISHED');
+            return base;
+          },
+
           async openProject(id) {
             try {
               const res = await fetch('/api/projects/' + id);
@@ -55,6 +70,10 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
                   const wsRes = await fetch('/api/word-search/' + id);
                   const wsJson = await wsRes.json();
                   if (wsJson.success) this.gameData = wsJson.data;
+                } else if (this.activeProject.gameType === 'CROSSWORD') {
+                  const cwRes = await fetch('/api/crossword/' + id);
+                  const cwJson = await cwRes.json();
+                  if (cwJson.success) this.gameData = cwJson.data;
                 }
               } else {
                 alert('Gagal memuat proyek: ' + (json.error || 'Terjadi kesalahan'));
@@ -115,6 +134,10 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
             }
             if (this.activeProject?.gameType === 'WORD_SEARCH' && (!this.gameData || !this.gameData.gridData)) {
               alert("Data grid Word Search belum tersedia.");
+              return;
+            }
+            if (this.activeProject?.gameType === 'CROSSWORD' && (!this.gameData || !this.gameData.clues)) {
+              alert("Data Crossword belum tersedia.");
               return;
             }
             this.currentQuestionIndex = 0;
@@ -259,7 +282,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
 
       <!-- List View -->
       <div x-show="!activeProject" class="bg-white p-8 rounded-xl border border-slate-200 shadow-xl overflow-hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div class="flex items-center gap-3">
             <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
             <h2 class="text-xl font-bold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
@@ -269,30 +292,90 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
             <button @click="filterType = 'QUIZ'" :class="filterType === 'QUIZ' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">QUIZ</button>
             <button @click="filterType = 'FILL_THE_BLANK'" :class="filterType === 'FILL_THE_BLANK' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">FTB</button>
             <button @click="filterType = 'WORD_SEARCH'" :class="filterType === 'WORD_SEARCH' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">WORD SEARCH</button>
+            <button @click="filterType = 'CROSSWORD'" :class="filterType === 'CROSSWORD' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">CROSSWORD</button>
           </div>
         </div>
-        <div class="overflow-x-auto">
+
+        <!-- Status Tab Panel -->
+        <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200">
+          <!-- Tab Bar -->
+          <div class="flex overflow-x-auto bg-[#1A237E]">
+            <button @click="statusTab = 'ALL'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'ALL' ? 'bg-white text-[#1A237E] border-[#FFC107] shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              🗂 Semua
+            </button>
+            <button @click="statusTab = 'DRAFT'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'DRAFT' ? 'bg-white text-yellow-600 border-yellow-400 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              📝 Draft
+            </button>
+            <button @click="statusTab = 'REVIEW_PAKAR'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'REVIEW_PAKAR' ? 'bg-white text-blue-600 border-blue-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              🔍 Review Pakar
+            </button>
+            <button @click="statusTab = 'REVISI_PAKAR'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              ✏️ Revisi Pakar
+            </button>
+            <button @click="statusTab = 'ACCEPTED_PAKAR'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'ACCEPTED_PAKAR' ? 'bg-white text-green-600 border-green-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              ✅ Disetujui Pakar
+            </button>
+            <button @click="statusTab = 'REVIEW_KETUA'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'REVIEW_KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              👑 Review Ketua
+            </button>
+            <button @click="statusTab = 'REVISI_KETUA'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'REVISI_KETUA' ? 'bg-white text-red-600 border-red-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              🔁 Revisi Ketua
+            </button>
+            <button @click="statusTab = 'UNPUBLISHED'"
+              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
+              :class="statusTab === 'UNPUBLISHED' ? 'bg-white text-slate-600 border-slate-400 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+              📦 Unpublished
+            </button>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto bg-white">
           <table class="w-full text-left">
             <thead>
               <tr class="border-b border-slate-100 text-slate-400 text-sm">
-                <th class="pb-4 font-semibold">ID</th>
-                <th class="pb-4 font-semibold">Judul Game</th>
-                <th class="pb-4 font-semibold">Status</th>
-                <th class="pb-4 font-semibold text-right">Aksi</th>
+                <th class="pb-4 pt-4 px-6 font-semibold">ID</th>
+                <th class="pb-4 pt-4 px-6 font-semibold">Judul Game</th>
+                <th class="pb-4 pt-4 px-6 font-semibold">Status</th>
+                <th class="pb-4 pt-4 px-6 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="text-slate-600">
-              <template x-for="p in filteredProjects()" :key="p.id">
+              <template x-for="p in filteredByStatus()" :key="p.id">
                 <tr class="border-b border-slate-50 hover:bg-blue-50/30 transition-colors group">
-                  <td class="py-5 font-bold text-[#1A237E]" x-text="'#G' + p.id"></td>
-                  <td class="py-5">
+                  <td class="py-5 px-6 font-bold text-[#1A237E]" x-text="'#G' + p.id"></td>
+                  <td class="py-5 px-6">
                     <div class="font-bold text-slate-800 text-lg" x-text="p.title"></div>
                     <span class="text-[10px] bg-[#1A237E] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider" x-text="p.gameType"></span>
                   </td>
-                  <td class="py-5">
-                    <span class="px-3 py-1 bg-slate-100 text-[#1A237E] border border-[#1A237E]/20 rounded-full text-xs font-bold uppercase tracking-tighter" x-text="p.status.replace(/_/g, ' ')"></span>
+                  <td class="py-5 px-6">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter"
+                      :class="{
+                        'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
+                        'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',
+                        'bg-orange-100 text-orange-800 border border-orange-200': p.status === 'REVISI_PAKAR',
+                        'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR',
+                        'bg-indigo-100 text-indigo-800 border border-indigo-200': p.status === 'REVIEW_KETUA',
+                        'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_KETUA',
+                        'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'UNPUBLISHED',
+                      }"
+                      x-text="p.status.replace(/_/g, ' ')">
+                    </span>
                   </td>
-                  <td class="py-5 text-right">
+                  <td class="py-5 px-6 text-right">
                     <div class="flex justify-end gap-2">
                       <template x-if="p.status === 'DRAFT' || p.status === 'REVISI_KETUA' || p.status === 'REVISI_PAKAR'">
                         <button @click="editProject(p)" class="bg-blue-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-blue-600 transition-all shadow-md font-bold">Edit</button>
@@ -303,13 +386,15 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
                   </td>
                 </tr>
               </template>
-              <template x-if="filteredProjects().length === 0">
+              <template x-if="filteredByStatus().length === 0">
                 <tr><td colspan="4" class="text-center py-10 text-slate-400 italic">Tidak ada proyek ditemukan.</td></tr>
               </template>
             </tbody>
           </table>
-        </div>
-      </div>
+          </div><!-- /overflow-x-auto -->
+        </div><!-- /tab-panel -->
+      </div><!-- /list view -->
+
 
       <!-- Detail View -->
       <div x-show="activeProject" style="display: none;" class="space-y-6">
@@ -344,6 +429,11 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
               <template x-if="activeProject?.gameType === 'WORD_SEARCH' && gameData">
                 <div class="w-full">
                   ${WordSearchGame({ projectVar: 'activeProject', gameDataVar: 'gameData' })}
+                </div>
+              </template>
+              <template x-if="activeProject?.gameType === 'CROSSWORD' && gameData">
+                <div class="w-full">
+                  ${CrosswordGame({ projectVar: 'activeProject', gameDataVar: 'gameData', isReadOnly: 'true' })}
                 </div>
               </template>
               <template x-if="activeProject?.gameType !== 'WORD_SEARCH'">
@@ -420,6 +510,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
                     <option value="QUIZ">Quiz</option>
                     <option value="FILL_THE_BLANK">Fill The Blank</option>
                     <option value="WORD_SEARCH">Word Search</option>
+                    <option value="CROSSWORD">Crossword</option>
                   </select>
                 </div>
                 <div>
@@ -477,5 +568,6 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
     </div>
     ${WordSearchEditorScript()}
     ${WordSearchGameScript()}
+    ${CrosswordGameScript()}
   `;
 };

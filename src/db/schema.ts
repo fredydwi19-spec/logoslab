@@ -107,3 +107,23 @@ export const gameWordSearch = mysqlTable("game_word_search", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
+
+export const gameCrossword = mysqlTable("game_crossword", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  clues: text("clues").notNull(), // JSON string: Array<{ number: number; direction: 'ACROSS'|'DOWN'; clue: string; answer: string; startRow: number; startCol: number; explanation: string; }>
+  gridSize: int("grid_size").notNull(),
+  difficulty: mysqlEnum("difficulty", ["EASY", "MEDIUM", "HARD"]).notNull(),
+  score: int("score").notNull(),
+  gridData: text("grid_data").notNull(), // JSON string: matriks 2D cell object Array<Array<{letter:string, isBlack:boolean, number:number|null}>>
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const userScores = mysqlTable("user_scores", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  score: int("score").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});

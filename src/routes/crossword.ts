@@ -1,10 +1,10 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, gameWordSearch, notifications, reviewsHistory } from "../db/schema";
+import { projects, gameCrossword, notifications, reviewsHistory, userScores } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 
-export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
+export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
   .use(
     jwt({
       name: "jwt",
@@ -16,7 +16,7 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     const path = url.pathname;
     
     // Allow public access to gameplay routes
-    if (request.method === "GET" && path.match(/^\/api\/word-search\/\d+$/)) return;
+    if (request.method === "GET" && path.match(/^\/api\/crossword\/\d+$/)) return;
 
     const auth = cookie.auth;
     if (!auth?.value) {
@@ -32,18 +32,17 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
     return { user: payload as any };
   })
-  // Get Word Search Details
+  // Get Crossword Details
   .get("/:projectId", async ({ params: { projectId }, user }) => {
     const pid = Number(projectId);
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
 
-    // removed invalid arguments[0] usage
     if (!user && project.status !== "PUBLISHED") {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const [gameData] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, pid));
+    const [gameData] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, pid));
     
     if (!gameData) return { success: true, data: null };
 
@@ -51,7 +50,7 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
       success: true, 
       data: {
         ...gameData,
-        words: JSON.parse(gameData.words),
+        clues: JSON.parse(gameData.clues),
         gridData: JSON.parse(gameData.gridData)
       } 
     };
@@ -63,7 +62,7 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     }
 
     const pid = Number(projectId);
-    const { words, gridSize, difficulty, score, gridData } = body as any;
+    const { clues, gridSize, difficulty, score, gridData } = body as any;
 
     // Check project status
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
@@ -79,11 +78,11 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     }
 
     // Upsert logic
-    const [existing] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, pid));
+    const [existing] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, pid));
     
     const values = {
         projectId: pid,
-        words: JSON.stringify(words),
+        clues: JSON.stringify(clues),
         gridSize,
         difficulty,
         score,
@@ -91,29 +90,35 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     };
 
     if (existing) {
-        await db.update(gameWordSearch).set(values).where(eq(gameWordSearch.projectId, pid));
+        await db.update(gameCrossword).set(values).where(eq(gameCrossword.projectId, pid));
     } else {
-        await db.insert(gameWordSearch).values(values);
+        await db.insert(gameCrossword).values(values);
     }
 
-    return { success: true, message: "Word Search questions saved" };
+    return { success: true, message: "Crossword questions saved" };
   })
   // Submit Gameplay
-  .post("/:projectId/submit", async ({ params: { projectId }, body }) => {
+  .post("/:projectId/submit", async ({ params: { projectId }, body, user }) => {
     const pid = Number(projectId);
-    const { foundWordsCount, totalWords, difficulty } = body as any;
+    const { scoreEarned } = body as any;
+
+    if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
 
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
 
-    // Scoring logic (Simplified)
-    const pointsPerWord = difficulty === "EASY" ? 10 : difficulty === "MEDIUM" ? 20 : 50;
-    const scoreEarned = foundWordsCount * pointsPerWord;
+    // Save score to user_scores
+    await db.insert(userScores).values({
+        userId: user.id,
+        projectId: pid,
+        score: scoreEarned
+    });
 
-    // TODO: Integrate with user_scores table
     return { 
       success: true, 
       scoreEarned,
-      message: `Selamat! Anda menemukan ${foundWordsCount}/${totalWords} kata.`
+      message: `Selamat! Skor Anda (${scoreEarned}) telah dicatat.`
     };
   });

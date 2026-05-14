@@ -13,15 +13,17 @@ export const GamesSection = ({ allGames, popularGames }: { allGames: any[], popu
             
             <div class="all-games-grid">
               ${allGames.slice(0, 25).map(game => `
-                <div class="game-card-mini reveal">
-                  <div class="game-card-mini__img">
-                    <img src="/public/assets/games/game${Math.floor(Math.random() * 4) + 1}.png" alt="${game.title}">
+                <a href="javascript:void(0)" onclick="if(window.triggerPublicGame) window.triggerPublicGame(${game.id})" style="text-decoration:none; color:inherit; display:block;">
+                  <div class="game-card-mini reveal">
+                    <div class="game-card-mini__img">
+                      <img src="/public/assets/games/game${Math.floor(Math.random() * 4) + 1}.png" alt="${game.title}">
+                    </div>
+                    <div class="game-card-mini__info">
+                      <h3>${game.title}</h3>
+                      <span>${game.category || 'General'}</span>
+                    </div>
                   </div>
-                  <div class="game-card-mini__info">
-                    <h3>${game.title}</h3>
-                    <span>${game.category || 'General'}</span>
-                  </div>
-                </div>
+                </a>
               `).join('')}
             </div>
           </div>
@@ -35,16 +37,18 @@ export const GamesSection = ({ allGames, popularGames }: { allGames: any[], popu
             
             <div class="popular-scroll-list">
               ${popularGames.slice(0, 10).map((game, index) => `
-                <div class="popular-item reveal">
-                  <div class="popular-item__rank">${index + 1}</div>
-                  <div class="popular-item__img">
-                    <img src="/public/assets/games/game${Math.floor(Math.random() * 4) + 1}.png" alt="${game.title}">
+                <a href="javascript:void(0)" onclick="if(window.triggerPublicGame) window.triggerPublicGame(${game.id})" style="text-decoration:none; color:inherit; display:block;">
+                  <div class="popular-item reveal">
+                    <div class="popular-item__rank">${index + 1}</div>
+                    <div class="popular-item__img">
+                      <img src="/public/assets/games/game${Math.floor(Math.random() * 4) + 1}.png" alt="${game.title}">
+                    </div>
+                    <div class="popular-item__info">
+                      <h4>${game.title}</h4>
+                      <p>${game.category || 'Edukasi'}</p>
+                    </div>
                   </div>
-                  <div class="popular-item__info">
-                    <h4>${game.title}</h4>
-                    <p>${game.category || 'Edukasi'}</p>
-                  </div>
-                </div>
+                </a>
               `).join('')}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword } from "../db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 
@@ -11,7 +11,14 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       secret: process.env.JWT_SECRET || "super-secret-key",
     })
   )
-  .onBeforeHandle(async ({ jwt, cookie }) => {
+  .onBeforeHandle(async ({ jwt, cookie, request }) => {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    
+    // Allow public access to gameplay routes
+    if (request.method === "GET" && path.match(/^\/api\/projects\/\d+$/)) return;
+    if (request.method === "POST" && path.match(/^\/api\/projects\/\d+\/submit$/)) return;
+
     const auth = cookie.auth;
     if (!auth?.value) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -119,6 +126,10 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
     }
 
+    if (!user && project.status !== "PUBLISHED") {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+
     let questions: any[] = [];
     if (project.gameType === "QUIZ") {
       questions = await db.select().from(questionBank).where(eq(questionBank.projectId, Number(id)));
@@ -133,6 +144,15 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       if (wsData && wsData.words) {
         try {
           questions = JSON.parse(wsData.words);
+        } catch (e) {
+          questions = [];
+        }
+      }
+    } else if (project.gameType === "CROSSWORD") {
+      const [cwData] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, Number(id)));
+      if (cwData && cwData.clues) {
+        try {
+          questions = JSON.parse(cwData.clues);
         } catch (e) {
           questions = [];
         }
@@ -448,6 +468,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
     await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
     await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
+    await db.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId));
 
     await db.delete(projects).where(eq(projects.id, projectId));
     return { success: true, message: "Proyek berhasil dihapus" };

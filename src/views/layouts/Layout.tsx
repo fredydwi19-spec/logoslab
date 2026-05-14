@@ -1,7 +1,11 @@
 import { Sidebar } from "../components/Sidebar";
+import { FloatingChatWidget } from "../components/FloatingChatWidget";
 
-export const Layout = ({ children, title, username, role, notifications = [] }: { children: string; title: string; username: string; role: string; notifications?: any[] }) => {
+export const Layout = ({ children, title, username, role, notifications = [], currentPage }: { children: string; title: string; username: string; role: string; notifications?: any[]; currentPage?: string }) => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
+  // Show AI widget for all team roles (not for regular USER)
+  const showChatWidget = role !== 'USER';
+  const widgetPageContext = currentPage || title;
   return `
     <!DOCTYPE html>
     <html lang="id">
@@ -82,6 +86,7 @@ export const Layout = ({ children, title, username, role, notifications = [] }: 
           </footer>
         </div>
       </div>
+      ${showChatWidget ? FloatingChatWidget({ role, currentPage: widgetPageContext }) : ''}
     </body>
     </html>
   `;

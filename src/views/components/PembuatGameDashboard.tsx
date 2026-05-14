@@ -1,13 +1,19 @@
 import { projects, questionBank } from "../../db/schema";
 import { WordSearchEditor, WordSearchEditorScript } from "./WordSearchEditor";
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
+import { CrosswordEditor, CrosswordEditorScript } from "./CrosswordEditor";
+import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 import { ProjectHeader } from "./ProjectHeader";
 
-export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
+export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }: { myProjects: any[], publishedProjects: any[], allUsers: any[] }) => {
   const myProjectsJson = JSON.stringify(myProjects).replace(/</g, '\\u003c');
+  const publishedProjectsJson = JSON.stringify(publishedProjects).replace(/</g, '\\u003c');
+  const allUsersJson = JSON.stringify(allUsers).replace(/</g, '\\u003c');
 
   return `
     <script id="pembuatProjectsData" type="application/json">${myProjectsJson}</script>
+    <script id="pembuatPublishedData" type="application/json">${publishedProjectsJson}</script>
+    <script id="pembuatUsersData" type="application/json">${allUsersJson}</script>
     <script>
       document.addEventListener('alpine:init', () => {
         Alpine.data('pembuatDashboard', () => ({
@@ -23,7 +29,40 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
             userFTBAnswers: [],
             saveTimeout: null,
             stagingQuestions: [],
+            viewMode: new URLSearchParams(window.location.search).get('view') === 'all' ? 'all' : 'active',
             myProjects: JSON.parse(document.getElementById('pembuatProjectsData').textContent || '[]'),
+            publishedProjects: JSON.parse(document.getElementById('pembuatPublishedData').textContent || '[]'),
+            allUsers: JSON.parse(document.getElementById('pembuatUsersData').textContent || '[]'),
+            activeTab: 'DRAFT',
+            searchActive: '',
+            searchPublished: '',
+
+            getUserName(id) {
+              const u = this.allUsers.find(u => u.id === id);
+              return u ? u.name : '-';
+            },
+
+            filteredActiveProjects() {
+              const statusMap = {
+                'DRAFT':          ['DRAFT'],
+                'REVIEW_PAKAR':   ['REVIEW_PAKAR'],
+                'REVISI_PAKAR':   ['REVISI_PAKAR', 'ACCEPTED_PAKAR'],
+                'REVIEW_KETUA':   ['REVIEW_KETUA'],
+                'REVISI_KETUA':   ['REVISI_KETUA', 'UNPUBLISHED'],
+              };
+              const allowed = statusMap[this.activeTab] || [];
+              return this.myProjects.filter(p => {
+                const matchTab = allowed.includes(p.status);
+                const matchSearch = !this.searchActive || p.title.toLowerCase().includes(this.searchActive.toLowerCase());
+                return matchTab && matchSearch;
+              });
+            },
+
+            filteredPublishedProjects() {
+              return this.publishedProjects.filter(p =>
+                !this.searchPublished || p.title.toLowerCase().includes(this.searchPublished.toLowerCase())
+              );
+            },
 
             async openProject(id) {
               try {
@@ -38,6 +77,10 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                     const wsRes = await fetch('/api/word-search/' + id);
                     const wsJson = await wsRes.json();
                     if (wsJson.success) this.gameData = wsJson.data;
+                  } else if (this.activeProject.gameType === 'CROSSWORD') {
+                    const cwRes = await fetch('/api/crossword/' + id);
+                    const cwJson = await cwRes.json();
+                    if (cwJson.success) this.gameData = cwJson.data;
                   }
                   this.checkLocalRecovery(id);
                   this.updateSaveIndicator('SYNCHRONIZED', 'bg-green-100 text-green-800');
@@ -182,8 +225,8 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
             },
 
             previewGame() {
-              if (this.activeProject?.gameType !== 'WORD_SEARCH' && this.questions.length === 0) { alert("Belum ada soal untuk di-preview."); return; }
               if (this.activeProject?.gameType === 'WORD_SEARCH' && (!this.gameData || !this.gameData.gridData)) { alert("Data grid Word Search belum tersedia."); return; }
+              if (this.activeProject?.gameType === 'CROSSWORD' && (!this.gameData || !this.gameData.clues)) { alert("Data Crossword belum tersedia."); return; }
               this.currentQuestionIndex = 0;
               this.selectedAnswer = null;
               this.showExplanation = false;
@@ -247,6 +290,8 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
             async submitForReview() {
               if (this.activeProject.gameType === 'WORD_SEARCH') {
                 if (!this.gameData || !this.gameData.words || this.gameData.words.length === 0) { alert("Minimal harus ada 1 kata di Word Search sebelum dikirim."); return; }
+              } else if (this.activeProject.gameType === 'CROSSWORD') {
+                if (!this.gameData || !this.gameData.clues || this.gameData.clues.length === 0) { alert("Minimal harus ada 1 clue di Crossword sebelum dikirim."); return; }
               } else if (this.questions.length === 0) {
                 alert("Minimal harus ada 1 soal sebelum dikirim."); return;
               }
@@ -266,63 +311,194 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
 
     <div class="bg-white p-0 rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" x-data="pembuatDashboard()">
       <div class="bg-[#1A237E] p-6 border-b-4 border-[#FFC107] flex items-center justify-between">
-        <h2 class="text-xl font-black text-white uppercase tracking-widest">Workspace Produksi Game</h2>
+        <div class="flex items-center gap-4">
+          <h2 class="text-xl font-black text-white uppercase tracking-widest" x-text="viewMode === 'all' ? 'Semua Proyek Saya' : 'Workspace Produksi Game'"></h2>
+        </div>
         <div class="flex items-center gap-4">
            <span x-show="activeProject" id="saveStatus" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner transition-all duration-500">CLOUD SYNC ACTIVE</span>
+           <div class="flex gap-2" x-show="!activeProject">
+             <a href="/dashboard/game" :class="viewMode === 'active' ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-white/10 text-white'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Proyek Dikerjakan</a>
+             <a href="/dashboard/game?view=all" :class="viewMode === 'all' ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-white/10 text-white'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Semua Proyek Saya</a>
+           </div>
         </div>
       </div>
       
       <div class="p-8">
-        <h2 x-show="!activeProject" class="text-lg font-bold text-[#1A237E] mb-6 flex items-center gap-2">
-          <span class="h-4 w-1 bg-[#FFC107] rounded-full"></span>
-          Penugasan Aktif
-        </h2>
-      
-        <!-- List View -->
-        <div x-show="!activeProject" class="overflow-x-auto">
-          <table class="w-full text-left">
-            <thead>
-              <tr class="border-b border-slate-100 text-slate-400 text-sm">
-                <th class="pb-4 font-semibold">ID</th>
-                <th class="pb-4 font-semibold">Nama Proyek</th>
-                <th class="pb-4 font-semibold">Deadline</th>
-                <th class="pb-4 font-semibold">Status</th>
-                <th class="pb-4 font-semibold text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="text-slate-600">
-              <template x-for="p in myProjects" :key="p.id">
-                <tr class="border-b border-slate-50 hover:bg-blue-50/50 transition-all">
-                  <td class="py-5 font-bold text-[#1A237E]" x-text="'#G' + p.id"></td>
-                  <td class="py-5 font-black text-slate-800 text-base" x-text="p.title"></td>
-                  <td class="py-5 text-sm">
-                    <div class="flex flex-col">
-                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tenggat Waktu</span>
-                      <span :class="new Date(p.deadline) < new Date() ? 'text-red-600 font-black' : 'font-bold'" x-text="new Date(p.deadline).toLocaleDateString()"></span>
-                    </div>
-                  </td>
-                  <td class="py-5">
-                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
-                    :class="{
-                      'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
-                      'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR' || p.status === 'REVIEW_KETUA',
-                      'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_PAKAR' || p.status === 'REVISI_KETUA',
-                      'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR' || p.status === 'PUBLISHED',
-                      'bg-slate-100 text-slate-600 border border-slate-200': !['DRAFT','REVIEW_PAKAR','REVIEW_KETUA','REVISI_PAKAR','REVISI_KETUA','ACCEPTED_PAKAR','PUBLISHED'].includes(p.status)
-                    }"
-                    x-text="p.status.replace(/_/g, ' ')">
-                  </span>
-                  </td>
-                  <td class="py-5 text-right">
-                    <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">DETAIL</button>
-                  </td>
+
+        <!-- ======= VIEW: PROYEK DIKERJAKAN (ACTIVE) ======= -->
+        <div x-show="viewMode === 'active' && !activeProject">
+          <!-- Header + Search -->
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+            <div>
+              <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
+                <span class="h-5 w-1.5 bg-[#FFC107] rounded-full"></span>
+                Proyek Yang Sedang Dikerjakan
+              </h2>
+              <p class="text-xs text-slate-400 font-bold mt-1">Proyek aktif yang ditugaskan kepada Anda</p>
+            </div>
+            <div class="relative w-full md:w-64">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <input type="text" x-model="searchActive" placeholder="Cari judul proyek..." class="w-full border-2 border-slate-100 rounded-xl pl-9 pr-4 py-2 text-sm font-bold focus:border-[#FFC107] outline-none shadow-inner">
+            </div>
+          </div>
+
+          <!-- Tab Panel -->
+          <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 mb-0">
+
+            <!-- Tab Bar -->
+            <div class="flex overflow-x-auto bg-[#1A237E] border-b-0">
+              <button @click="activeTab = 'DRAFT'"
+                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
+                :class="activeTab === 'DRAFT' ? 'bg-white text-yellow-600 border-yellow-400 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+                📝 Draft
+              </button>
+              <button @click="activeTab = 'REVIEW_PAKAR'"
+                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
+                :class="activeTab === 'REVIEW_PAKAR' ? 'bg-white text-blue-600 border-blue-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+                🔍 Review Pakar
+              </button>
+              <button @click="activeTab = 'REVISI_PAKAR'"
+                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
+                :class="activeTab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+                ✏️ Revisi Pakar
+              </button>
+              <button @click="activeTab = 'REVIEW_KETUA'"
+                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
+                :class="activeTab === 'REVIEW_KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+                👑 Review Ketua
+              </button>
+              <button @click="activeTab = 'REVISI_KETUA'"
+                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
+                :class="activeTab === 'REVISI_KETUA' ? 'bg-white text-red-600 border-red-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
+                🔁 Revisi Ketua
+              </button>
+            </div>
+
+            <!-- Active Projects Table -->
+            <div class="overflow-x-auto bg-white">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50">
+                <tr class="text-slate-400 text-xs uppercase tracking-widest">
+                  <th class="px-6 py-4 font-black">Judul Game</th>
+                  <th class="px-6 py-4 font-black">Jenis</th>
+                  <th class="px-6 py-4 font-black">Deadline</th>
+                  <th class="px-6 py-4 font-black">PIC Pakar</th>
+                  <th class="px-6 py-4 font-black">Status</th>
+                  <th class="px-6 py-4 font-black text-right">Aksi</th>
                 </tr>
-              </template>
-              <template x-if="myProjects.length === 0">
-                <tr><td colspan="5" class="text-center py-10 text-slate-400 italic font-medium">Anda belum memiliki penugasan aktif saat ini.</td></tr>
-              </template>
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="text-slate-600 divide-y divide-slate-50">
+                <template x-for="p in filteredActiveProjects()" :key="p.id">
+                  <tr class="hover:bg-blue-50/40 transition-all group">
+                    <td class="px-6 py-5">
+                      <div class="font-black text-slate-800 group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
+                      <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
+                    </td>
+                    <td class="px-6 py-5">
+                      <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-black uppercase border border-slate-200" x-text="p.gameType || '-'"></span>
+                    </td>
+                    <td class="px-6 py-5">
+                      <span :class="new Date(p.deadline) < new Date() ? 'text-red-600 font-black' : 'text-slate-700 font-bold'" x-text="p.deadline ? new Date(p.deadline).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
+                    </td>
+                    <td class="px-6 py-5">
+                      <span class="text-sm font-bold text-slate-700" x-text="p.idPakar ? getUserName(p.idPakar) : 'Belum Ditentukan'"></span>
+                    </td>
+                    <td class="px-6 py-5">
+                      <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                        :class="{
+                          'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
+                          'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',
+                          'bg-orange-100 text-orange-800 border border-orange-200': p.status === 'REVISI_PAKAR',
+                          'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR',
+                          'bg-indigo-100 text-indigo-800 border border-indigo-200': p.status === 'REVIEW_KETUA',
+                          'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_KETUA',
+                          'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'UNPUBLISHED',
+                        }"
+                        x-text="p.status.replace(/_/g, ' ')">
+                      </span>
+                    </td>
+                    <td class="px-6 py-5 text-right">
+                      <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">BUKA</button>
+                    </td>
+                  </tr>
+                </template>
+                <template x-if="filteredActiveProjects().length === 0">
+                  <tr><td colspan="6" class="text-center py-16 text-slate-400 italic font-bold">
+                    <div class="text-4xl mb-3 opacity-30">📭</div>
+                    <div class="text-xs uppercase tracking-widest">Tidak ada proyek dalam kategori ini.</div>
+                  </td></tr>
+                </template>
+              </tbody>
+            </table>
+            </div><!-- /overflow-x-auto -->
+          </div><!-- /tab-panel -->
+        </div><!-- /viewMode active -->
+
+        <!-- ======= VIEW: SEMUA PROYEK SAYA (PUBLISHED) ======= -->
+        <div x-show="viewMode === 'all' && !activeProject">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+              <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
+                <span class="h-5 w-1.5 bg-green-500 rounded-full"></span>
+                Proyek Telah Dipublikasikan
+              </h2>
+              <p class="text-xs text-slate-400 font-bold mt-1">Game yang telah selesai dikerjakan dan sudah live (Read-Only)</p>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="flex justify-end mb-6">
+            <div class="relative w-full md:w-72">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <input type="text" x-model="searchPublished" placeholder="Cari judul game..." class="w-full border-2 border-slate-100 rounded-xl pl-9 pr-4 py-2 text-sm font-bold focus:border-green-400 outline-none shadow-inner">
+            </div>
+          </div>
+
+          <!-- Published Projects Table -->
+          <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50">
+                <tr class="text-slate-400 text-xs uppercase tracking-widest">
+                  <th class="px-6 py-4 font-black">Judul Game</th>
+                  <th class="px-6 py-4 font-black">Jenis Game</th>
+                  <th class="px-6 py-4 font-black">Deadline</th>
+                  <th class="px-6 py-4 font-black">Tanggal Publish</th>
+                  <th class="px-6 py-4 font-black text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-600 divide-y divide-slate-50">
+                <template x-for="p in filteredPublishedProjects()" :key="p.id">
+                  <tr class="hover:bg-green-50/40 transition-all group">
+                    <td class="px-6 py-5">
+                      <div class="font-black text-slate-800 group-hover:text-green-700 transition-colors" x-text="p.title"></div>
+                      <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
+                    </td>
+                    <td class="px-6 py-5">
+                      <span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-lg font-black uppercase border border-green-200" x-text="p.gameType || '-'"></span>
+                    </td>
+                    <td class="px-6 py-5">
+                      <span class="text-slate-700 font-bold" x-text="p.deadline ? new Date(p.deadline).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
+                    </td>
+                    <td class="px-6 py-5">
+                      <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <span class="text-green-700 font-black text-sm" x-text="p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-5 text-right">
+                      <button @click="openProject(p.id)" class="bg-green-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">LIHAT DETAIL</button>
+                    </td>
+                  </tr>
+                </template>
+                <template x-if="filteredPublishedProjects().length === 0">
+                  <tr><td colspan="5" class="text-center py-16 text-slate-400 italic font-bold">
+                    <div class="text-4xl mb-3 opacity-30">🏆</div>
+                    <div class="text-xs uppercase tracking-widest">Belum ada game yang dipublikasikan.</div>
+                  </td></tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Editor View -->
@@ -340,8 +516,16 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                 </div>
              </div>
           </template>
+          
+          <template x-if="activeProject?.gameType === 'CROSSWORD'">
+              <div class="mb-10">
+                 <div class="bg-white p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-xl">
+                    ${CrosswordEditor({ projectVar: 'activeProject' })}
+                 </div>
+              </div>
+          </template>
 
-          <div x-show="activeProject?.gameType !== 'WORD_SEARCH'" class="space-y-6 mb-10">
+          <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6 mb-10">
             <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 gap-4">
               <div class="flex items-center gap-3">
                 <div class="h-8 w-1.5 bg-[#1A237E] rounded-full"></div>
@@ -395,7 +579,7 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
             </div>
           </template>
 
-          <div x-show="activeProject?.gameType !== 'WORD_SEARCH'" class="space-y-6">
+          <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6">
             <template x-for="(q, idx) in questions" :key="idx">
               <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
                 <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="idx + 1"></div>
@@ -405,28 +589,28 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                 <template x-if="activeProject?.gameType === 'QUIZ'">
                   <div class="space-y-8 pl-4">
                     <div>
-                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Butir Pertanyaan</label>
-                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-slate-50/30 transition-all" placeholder="Tuliskan pertanyaan di sini..."></textarea>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Butir Pertanyaan</label>
+                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <template x-for="opt in ['A', 'B', 'C', 'D']">
                         <div class="relative">
-                          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2" x-text="'Pilihan ' + opt"></label>
-                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-slate-50/30 transition-all pl-12" :placeholder="'Opsi ' + opt">
+                          <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" x-text="'Pilihan ' + opt"></label>
+                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white transition-all pl-12 shadow-sm" :placeholder="'Opsi ' + opt">
                           <div class="absolute left-4 top-10 font-black text-[#1A237E]" x-text="opt + '.'"></div>
                         </div>
                       </template>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
                       <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Jawaban Benar</label>
-                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E]">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Jawaban Benar</label>
+                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
                           <option value="A">Opsi A</option><option value="B">Opsi B</option><option value="C">Opsi C</option><option value="D">Opsi D</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kesulitan</label>
-                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E]">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Kesulitan</label>
+                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
                           <option value="RENDAH">RENDAH (10 Poin)</option>
                           <option value="SEDANG">SEDANG (20 Poin)</option>
                           <option value="SULIT">SULIT (50 Poin)</option>
@@ -434,8 +618,8 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                       </div>
                     </div>
                     <div>
-                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Penjelasan Edukatif</label>
-                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 italic bg-slate-50/30 transition-all" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Penjelasan Edukatif</label>
+                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 italic bg-white transition-all shadow-sm" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
                     </div>
                   </div>
                 </template>
@@ -444,16 +628,16 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                 <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
                   <div class="space-y-6 pl-4">
                      <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex justify-between">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex justify-between">
                            Teks Lengkap (Blok teks lalu klik 'Jadikan Blank')
                            <button x-show="!isReadOnly()" @click="makeBlank(idx)" class="bg-[#FFC107] text-[#1A237E] px-4 py-1 rounded-full hover:bg-yellow-400 transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase">
                              Jadikan Blank
                            </button>
                         </label>
-                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-2xl p-6 h-40 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-slate-50/30 transition-all" placeholder="Tuliskan kalimat di sini..."></textarea>
+                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-40 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan kalimat di sini..."></textarea>
                      </div>
                      <div class="space-y-3">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Daftar Kata Rumpang</label>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Daftar Kata Rumpang</label>
                         <template x-for="(ans, aidx) in q.answers" :key="aidx">
                            <div class="bg-slate-50 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-start border border-slate-100">
                               <div class="flex-none">
@@ -497,22 +681,38 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
       </div>
 
       <!-- Preview Game Modal -->
-      <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
-         <div class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+      <div x-show="showPreview" 
+           @open-preview.window="gameData = $event.detail; showPreview = true;"
+           style="display:none;" 
+           class="fixed inset-0 bg-black/90 flex items-center justify-center z-[200] backdrop-blur-md">
+         <div class="bg-white rounded-[3rem] w-full shadow-2xl overflow-hidden flex flex-col relative border-4 border-white/20 transition-all duration-500"
+              :class="activeProject?.gameType === 'WORD_SEARCH' || activeProject?.gameType === 'CROSSWORD' ? 'max-w-[95vw] h-[95vh]' : 'max-w-4xl h-[85vh]'">
             <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-[#FF5722] z-10 text-3xl transition-colors font-black">&times;</button>
-            <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-[0.2em] border-b-4 border-[#FFC107]">
-              SIMULASI GAME: <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+            <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-[0.2em] border-b-8 border-[#FFC107] flex justify-between px-10">
+              <div class="flex gap-2">
+                <span class="text-white/40">SIMULASI:</span>
+                <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+              </div>
+              <div class="flex gap-4 text-[10px]">
+                <span class="bg-white/10 px-3 py-1 rounded-full text-white" x-text="activeProject?.gameType"></span>
+              </div>
             </div>
-            <div class="p-12 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center relative">
-               <button @click="prevQuestion()" x-show="currentQuestionIndex > 0 && activeProject?.gameType !== 'WORD_SEARCH'" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 z-20 border border-slate-200">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
-               </button>
-               <button @click="nextQuestion()" x-show="currentQuestionIndex < questions.length - 1 && activeProject?.gameType !== 'WORD_SEARCH'" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 z-20 border border-slate-200">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-               </button>
+            <div class="p-0 flex-1 overflow-y-auto bg-slate-50 relative flex flex-col">
+               <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
+                 <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none z-20">
+                    <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="pointer-events-auto bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <button @click="nextQuestion()" x-show="currentQuestionIndex < questions.length - 1" class="pointer-events-auto bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                 </div>
+               </template>
 
-               <div class="text-center w-full max-w-2xl">
-                  <div x-show="activeProject?.gameType !== 'WORD_SEARCH'" class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
+               <div class="text-center w-full flex-1 flex flex-col justify-center">
+                  <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
+                    <div class="inline-block mx-auto bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest mt-10" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
+                  </template>
                   
                   <!-- Quiz Content -->
                   <template x-if="activeProject?.gameType === 'QUIZ'">
@@ -557,6 +757,12 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
                        ${WordSearchGame({ projectVar: 'activeProject', gameDataVar: 'gameData' })}
                     </div>
                   </template>
+                  
+                  <template x-if="showPreview && activeProject?.gameType === 'CROSSWORD' && gameData">
+                    <div class="w-full h-full flex items-center justify-center p-4 bg-[#1A237E]/5" :key="'cw-' + activeProject.id + '-' + (gameData?.updatedAt || Date.now())">
+                       ${CrosswordGame({ projectVar: 'activeProject', gameDataVar: 'gameData', isReadOnly: 'true' })}
+                    </div>
+                  </template>
 
                   <!-- Explanation Box -->
                   <div x-show="showExplanation" x-transition class="mt-8 p-6 rounded-2xl text-left border-2 border-dashed"
@@ -593,5 +799,7 @@ export const PembuatGameDashboard = ({ myProjects }: { myProjects: any[] }) => {
     </div>
     ${WordSearchEditorScript()}
     ${WordSearchGameScript()}
+    ${CrosswordEditorScript()}
+    ${CrosswordGameScript()}
   `;
 };

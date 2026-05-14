@@ -1,87 +1,14 @@
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
-import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 
-export const MemberDashboard = ({ publishedGames, username }: { publishedGames: any[], username: string }) => {
+export const PublicGamePlayer = () => {
   return `
-    <div class="space-y-10" x-data="memberDashboardData()">
-         
-      <!-- Stats Row -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-gradient-to-br from-[#1A237E] to-blue-700 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden group">
-          <div class="absolute -right-4 -bottom-4 text-9xl opacity-10 group-hover:scale-110 transition-transform">⭐</div>
-          <div class="relative z-10">
-            <h3 class="text-sm font-black uppercase tracking-[0.2em] opacity-80 mb-2">Peringkat Saya</h3>
-            <div class="text-4xl font-black mb-2">Level 12</div>
-            <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">Pelajar Alkitab Setia</p>
-          </div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl relative overflow-hidden group">
-           <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 text-slate-200">🎮</div>
-           <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Game Selesai</h3>
-           <div class="text-4xl font-black text-[#1A237E]">15</div>
-           <div class="mt-4 flex items-center gap-2">
-             <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-[#FFC107] w-[65%]"></div>
-             </div>
-             <span class="text-[10px] font-black text-slate-400">65%</span>
-           </div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl relative overflow-hidden group">
-           <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 text-slate-200">💎</div>
-           <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Total Skor</h3>
-           <div class="text-4xl font-black text-[#FF5722]">2,450</div>
-           <p class="text-[10px] text-slate-400 font-bold mt-2 uppercase">Kumpulkan poin untuk hadiah!</p>
-        </div>
-      </div>
-
-      <!-- Published Games Grid -->
-      <div class="space-y-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-             <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
-             <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-wider">Permainan Tersedia</h2>
-          </div>
-          <a href="#" class="text-[10px] font-black text-[#FF5722] uppercase tracking-widest hover:underline">Lihat Semua &rarr;</a>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          ${publishedGames.map(game => `
-            <div class="bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-slate-100 group transform hover:-translate-y-2">
-               <div class="relative h-48 overflow-hidden cursor-pointer" @click="playGame(${game.id})">
-                  <img src="${game.thumbnailUrl || 'https://via.placeholder.com/400x250?text=Logos+LAB'}" class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-[#1A237E]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                     <button class="w-full bg-[#FFC107] text-[#1A237E] py-3 rounded-xl font-black uppercase tracking-widest shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">Mainkan Sekarang</button>
-                  </div>
-                  <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-[#1A237E] uppercase tracking-widest shadow-sm">${game.gameType}</div>
-               </div>
-               <div class="p-6">
-                  <h4 class="text-lg font-black text-[#1A237E] mb-2 group-hover:text-[#FF5722] transition-colors line-clamp-1 cursor-pointer" @click="playGame(${game.id})">${game.title}</h4>
-                  <p class="text-slate-500 text-xs font-medium line-clamp-2 mb-4 italic leading-relaxed">${game.description || 'Mari asah pengetahuan Alkitabmu dengan game seru ini!'}</p>
-                  <div class="flex items-center justify-between pt-4 border-t border-slate-50">
-                     <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">👤</div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Logos Team</span>
-                     </div>
-                     <span class="text-[10px] font-black text-[#FFC107] bg-[#FFC107]/10 px-2 py-1 rounded-md uppercase tracking-tighter">Baru</span>
-                  </div>
-               </div>
-            </div>
-          `).join('')}
-          ${publishedGames.length === 0 ? `
-            <div class="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100">
-               <div class="text-6xl mb-4 opacity-20">💤</div>
-               <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Belum ada permainan yang dirilis saat ini.</p>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-
+    <div x-data="publicGamePlayerData()">
       <!-- Game Modal Player -->
       <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[200] backdrop-blur-xl p-4 md:p-10">
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-full md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
-            <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
+            <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
                   <div class="bg-[#1A237E] px-6 md:px-10 py-4 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
@@ -106,7 +33,9 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                   <!-- Progress Bar -->
                   <div class="h-2 w-full bg-slate-100 relative">
                      <div class="h-full bg-[#FF5722] transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
-                              <!-- Question Body -->
+                  </div>
+                  
+                  <!-- Question Body -->
                   <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
                      <div class="w-full max-w-3xl text-center">
                         <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
@@ -194,15 +123,8 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                </div>
             </template>
 
-            <!-- Crossword Gameplay -->
-            <template x-if="isPlaying && !gameFinished && activeGame?.gameType === 'CROSSWORD' && gameData">
-               <div class="flex-1 overflow-y-auto bg-slate-50">
-                   ${CrosswordGame({ projectVar: 'activeGame', gameDataVar: 'gameData' })}
-               </div>
-            </template>
-
             <!-- Result Screen -->
-            <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
+            <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
                <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
@@ -211,7 +133,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                      </div>
                      
                      <h2 class="text-2xl md:text-4xl font-black text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
-                     <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus, <span x-text="username"></span>!</p>
+                     <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
                      
                      <!-- Stats Grid -->
                      <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
@@ -230,8 +152,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                      </div>
 
                      <div class="space-y-4">
-                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">SIMPAN & SELESAI</button>
-                        <p class="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-50">Skor Anda akan tercatat di papan peringkat.</p>
+                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">TUTUP HASIL</button>
                      </div>
                   </div>
                </div>
@@ -246,7 +167,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
     </style>
     
     <script>
-      window.memberDashboardData = function() {
+      window.publicGamePlayerData = function() {
         return {
           activeGame: null,
           questions: [],
@@ -260,15 +181,21 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           wrongCount: 0,
           gameFinished: false,
           gameData: null,
-          username: '${username}',
           isCorrect: false,
           userFTBAnswers: [],
           submissionResults: [],
           
           async playGame(id) {
-            console.log('Playing game:', id);
+            console.log('Playing public game:', id);
             try {
               const res = await fetch('/api/projects/' + id);
+              if (res.status === 401) {
+                  alert('Silakan login untuk memainkan game ini.');
+                  if(document.getElementById('btn-login-trigger')){
+                      document.getElementById('btn-login-trigger').click();
+                  }
+                  return;
+              }
               const json = await res.json();
               if(json.success) {
                 this.activeGame = json.data;
@@ -296,15 +223,6 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                     this.gameData = wsJson.data;
                   } else {
                     alert('Data Word Search tidak ditemukan.');
-                    return;
-                  }
-                } else if (this.activeGame.gameType === 'CROSSWORD') {
-                  const cwRes = await fetch('/api/crossword/' + id);
-                  const cwJson = await cwRes.json();
-                  if (cwJson.success && cwJson.data) {
-                    this.gameData = cwJson.data;
-                  } else {
-                    alert('Data Crossword tidak ditemukan.');
                     return;
                   }
                 }
@@ -344,15 +262,14 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
             let text = q.fullText;
             const answers = q.answers || [];
             
-            // Sort answers by length descending to avoid partial replacement issues
             const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
             
             sortedAnswers.forEach((ans, i) => {
               const regex = new RegExp(ans.word, 'gi');
-              text = text.replace(regex, '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updateMemberFTB(' + i + ', this.value)">');
+              text = text.replace(regex, '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updatePublicFTB(' + i + ', this.value)">');
             });
             
-            window.updateMemberFTB = (idx, val) => {
+            window.updatePublicFTB = (idx, val) => {
               this.userFTBAnswers[idx] = val;
             };
             
@@ -361,7 +278,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
 
           async checkAnswerFTB() {
             const question = this.questions[this.currentIndex];
-            const res = await fetch(\`/api/projects/\${this.activeGame.id}/submit\`, {
+            const res = await fetch('/api/projects/' + this.activeGame.id + '/submit', {
               method: 'POST',
               headers: {'Content-Type': 'application/json'},
               body: JSON.stringify({
@@ -397,8 +314,23 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           }
         };
       };
+      
+      // Global hook for Alpine component so links can trigger the game
+      window.triggerPublicGame = function(id) {
+          const gameEl = document.querySelector('[x-data="publicGamePlayerData()"]');
+          if (gameEl && gameEl.__x) {
+              gameEl.__x.$data.playGame(id);
+          } else if (gameEl && Alpine) {
+              Alpine.$data(gameEl).playGame(id);
+          } else {
+              // Wait for Alpine to init
+              document.addEventListener('alpine:initialized', () => {
+                  const el = document.querySelector('[x-data="publicGamePlayerData()"]');
+                  Alpine.$data(el).playGame(id);
+              }, {once: true});
+          }
+      };
     </script>
     ${WordSearchGameScript()}
-    ${CrosswordGameScript()}
   `;
 };
