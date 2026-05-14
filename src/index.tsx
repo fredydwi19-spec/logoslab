@@ -5,12 +5,15 @@ import { userRoutes } from "./routes/users";
 import { authRoutes } from "./routes/auth";
 import { projectRoutes } from "./routes/projects";
 import { wordSearchRoutes } from "./routes/word_search";
+import { crosswordRoutes } from "./routes/crossword";
+import { aiRoutes } from "./routes/ai";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
 import { OnboardingModal } from "./views/components/OnboardingModal";
 import { PersonalizedGames } from "./views/components/PersonalizedGames";
 import { GamesSection } from "./views/components/GamesSection";
+import { PublicGamePlayer } from "./views/components/PublicGamePlayer";
 import { ProfilePage } from "./views/pages/EditProfile";
 import { db } from "./db/db";
 import { users, projects, notifications } from "./db/schema";
@@ -89,7 +92,9 @@ const app = new Elysia()
     );
 
     if (onboardingModalHtml) {
-      dynamicHtml = dynamicHtml.replace("</body>", `${onboardingModalHtml}</body>`);
+      dynamicHtml = dynamicHtml.replace("</body>", `${onboardingModalHtml}\n${PublicGamePlayer()}\n</body>`);
+    } else {
+      dynamicHtml = dynamicHtml.replace("</body>", `${PublicGamePlayer()}\n</body>`);
     }
 
     if (personalizedGamesHtml) {
@@ -136,6 +141,8 @@ const app = new Elysia()
   .use(authRoutes)
   .use(projectRoutes)
   .use(wordSearchRoutes)
+  .use(crosswordRoutes)
+  .use(aiRoutes)
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
@@ -174,6 +181,8 @@ const app = new Elysia()
         let pembuatGamesData: any[] = [];
         let pakarData: any[] = [];
         let myProjectsData: any[] = [];
+        let publishedProjectsData: any[] = [];
+        let allUsersData: any[] = [];
 
         const projectSelectFields = {
           id: projects.id,
@@ -197,17 +206,35 @@ const app = new Elysia()
           pembuatGamesData = await db.select().from(users).where(eq(users.role, "PEMBUAT_GAME"));
           pakarData = await db.select().from(users).where(eq(users.role, "PAKAR"));
         } else if (userRole === "PEMBUAT_GAME") {
-          myProjectsData = await db.select(projectSelectFields).from(projects).where(eq(projects.idPembuat, userId));
+          // Active/in-progress: semua proyek milik user kecuali yang sudah PUBLISHED
+          myProjectsData = await db.select(projectSelectFields).from(projects).where(
+            and(
+              eq(projects.idPembuat, userId),
+              inArray(projects.status, ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "UNPUBLISHED"])
+            )
+          );
+          // Semua Proyek Saya: hanya yang sudah PUBLISHED oleh Ketua Tim
+          publishedProjectsData = await db.select(projectSelectFields).from(projects).where(
+            and(eq(projects.idPembuat, userId), eq(projects.status, "PUBLISHED"))
+          );
+          allUsersData = await db.select({ id: users.id, name: users.name, role: users.role }).from(users);
         } else if (userRole === "PAKAR") {
+          // Active/in-progress: semua proyek yang ditugaskan ke pakar ini kecuali yang sudah PUBLISHED
           myProjectsData = await db.select(projectSelectFields).from(projects).where(
             and(
               eq(projects.idPakar, userId),
-              inArray(projects.status, ["REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR"])
+              inArray(projects.status, ["REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA"])
             )
           );
+          // Semua Proyek Saya: hanya yang sudah PUBLISHED oleh Ketua Tim dan pernah di-review pakar ini
+          publishedProjectsData = await db.select(projectSelectFields).from(projects).where(
+            and(eq(projects.idPakar, userId), eq(projects.status, "PUBLISHED"))
+          );
+          allUsersData = await db.select({ id: users.id, name: users.name, role: users.role }).from(users);
         } else if (userRole === "USER") {
           allProjectsData = await db.select(projectSelectFields).from(projects).where(eq(projects.status, "PUBLISHED"));
         }
+
 
         const renderContent = () => {
           switch (userRole) {
@@ -215,7 +242,8 @@ const app = new Elysia()
               return KetuaTimDashboard({ allProjects: allProjectsData, pembuatGames: pembuatGamesData, pakars: pakarData });
 
             case "PEMBUAT_GAME":
-              return PembuatGameDashboard({ myProjects: myProjectsData });
+              return PembuatGameDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
+
 
             case "PEMBUAT_MATERI":
               return `
@@ -245,7 +273,8 @@ const app = new Elysia()
               `;
 
             case "PAKAR":
-              return PakarDashboard({ myProjects: myProjectsData });
+              return PakarDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
+
 
             case "USER":
               return MemberDashboard({ publishedGames: allProjectsData, username });
@@ -257,6 +286,15 @@ const app = new Elysia()
 
         const dashboardContent = renderContent();
         
+        // Derive currentPage label for the AI widget from role
+        const pageContextMap: Record<string, string> = {
+          KETUA_TIM:    'Manajemen Proyek Game — Ketua Tim',
+          PEMBUAT_GAME: 'Proyek Saya — Pembuat Game',
+          PAKAR:        'Review Proyek — Pakar',
+          USER:         'Dashboard Member',
+        };
+        const aiCurrentPage = pageContextMap[userRole] || "Dashboard";
+        
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
 
         const htmlResponse = Layout({ 
@@ -264,7 +302,8 @@ const app = new Elysia()
           username, 
           role: userRole, 
           children: dashboardContent,
-          notifications: userNotifications
+          notifications: userNotifications,
+          currentPage: aiCurrentPage
         });
 
         return new Response(htmlResponse, {

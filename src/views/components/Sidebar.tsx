@@ -6,11 +6,11 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
   if (role === "KETUA_TIM") {
     menuItems.push({ label: "Semua Proyek", icon: "📊", link: "/dashboard/projects" });
   } else if (role === "PEMBUAT_GAME") {
-    menuItems.push({ label: "Proyek Saya", icon: "🎮", link: "/dashboard/game" });
+    menuItems.push({ label: "Proyek Dikerjakan", icon: "🎮", link: "/dashboard/game" });
   } else if (role === "PEMBUAT_MATERI") {
     menuItems.push({ label: "Proyek Saya", icon: "📚", link: "/dashboard/materi" });
   } else if (role === "PAKAR") {
-    menuItems.push({ label: "Proyek Review", icon: "⚖️", link: "/dashboard/pakar" });
+    menuItems.push({ label: "Proyek Dikerjakan", icon: "⚖️", link: "/dashboard/pakar" });
   } else if (role === "USER") {
     menuItems.push({ label: "Pencapaian Saya", icon: "🏆", link: "/dashboard/user" });
   }

@@ -12,16 +12,18 @@ export const PersonalizedGames = ({ games }: { games: any[] }) => {
         <div class="personalized-carousel-wrapper reveal">
           <div class="personalized-carousel-track" id="personalized-track">
             ${games.map(game => `
-              <div class="personalized-card">
-                <div class="personalized-card__badge">${game.category}</div>
-                <div class="personalized-card__img-container">
-                  <img src="/public/assets/games/game${Math.floor(Math.random() * 4) + 1}.png" alt="${game.title}">
+              <a href="javascript:void(0)" onclick="if(window.triggerPublicGame) window.triggerPublicGame(${game.id})" style="text-decoration:none; color:inherit; display:block;">
+                <div class="personalized-card">
+                  <div class="personalized-card__badge">${game.category}</div>
+                  <div class="personalized-card__img-container">
+                    <img src="/public/assets/games/game${Math.floor(Math.random() * 4) + 1}.png" alt="${game.title}">
+                  </div>
+                  <div class="personalized-card__content">
+                    <h3 class="personalized-card__title">${game.title}</h3>
+                    <span class="personalized-card__tag">Rekomendasi</span>
+                  </div>
                 </div>
-                <div class="personalized-card__content">
-                  <h3 class="personalized-card__title">${game.title}</h3>
-                  <span class="personalized-card__tag">Rekomendasi</span>
-                </div>
-              </div>
+              </a>
             `).join('')}
           </div>
           
