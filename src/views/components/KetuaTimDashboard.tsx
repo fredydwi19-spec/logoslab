@@ -273,7 +273,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
       <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
         <div class="flex items-center gap-4">
           <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
-          <h2 class="text-2xl font-extrabold text-white tracking-tight">Manajemen Proyek Game</h2>
+          <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Manajemen Proyek Game</h2>
         </div>
         <button @click="openCreateModal()" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-6 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
           + TAMBAH PROYEK BARU
@@ -285,7 +285,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div class="flex items-center gap-3">
             <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
-            <h2 class="text-xl font-bold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
+            <h2 class="text-lg md:text-xl font-semibold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
           </div>
           <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">SEMUA</button>
@@ -346,19 +346,19 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           <div class="overflow-x-auto bg-white">
           <table class="w-full text-left">
             <thead>
-              <tr class="border-b border-slate-100 text-slate-400 text-sm">
-                <th class="pb-4 pt-4 px-6 font-semibold">ID</th>
-                <th class="pb-4 pt-4 px-6 font-semibold">Judul Game</th>
-                <th class="pb-4 pt-4 px-6 font-semibold">Status</th>
-                <th class="pb-4 pt-4 px-6 font-semibold text-right">Aksi</th>
+              <tr class="border-b border-slate-100 text-slate-400 text-xs md:text-sm font-medium uppercase tracking-wider">
+                <th class="pb-4 pt-4 px-6">ID</th>
+                <th class="pb-4 pt-4 px-6">Judul Game</th>
+                <th class="pb-4 pt-4 px-6">Status</th>
+                <th class="pb-4 pt-4 px-6 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="text-slate-600">
               <template x-for="p in filteredByStatus()" :key="p.id">
                 <tr class="border-b border-slate-50 hover:bg-blue-50/30 transition-colors group">
-                  <td class="py-5 px-6 font-bold text-[#1A237E]" x-text="'#G' + p.id"></td>
+                  <td class="py-5 px-6 font-bold text-[#1A237E] text-sm md:text-base" x-text="'#G' + p.id"></td>
                   <td class="py-5 px-6">
-                    <div class="font-bold text-slate-800 text-lg" x-text="p.title"></div>
+                    <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight" x-text="p.title"></div>
                     <span class="text-[10px] bg-[#1A237E] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider" x-text="p.gameType"></span>
                   </td>
                   <td class="py-5 px-6">
@@ -492,20 +492,20 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
             <form id="createGameForm" class="space-y-5">
               <input type="hidden" name="id" :value="editProjectData?.id">
               <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Judul Permainan</label>
+                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Judul Permainan</label>
                 <input type="text" name="title" :value="editProjectData?.title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
               </div>
               <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deskripsi Game</label>
+                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Deskripsi Game</label>
                 <textarea name="description" :value="editProjectData?.description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
               </div>
               <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Instruksi</label>
+                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Instruksi</label>
                 <textarea name="instructions" :value="editProjectData?.instructions" class="w-full border-2 border-slate-100 rounded-xl p-4 h-28 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
                   <select name="gameType" :value="editProjectData?.gameType" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
                     <option value="QUIZ">Quiz</option>
                     <option value="FILL_THE_BLANK">Fill The Blank</option>
@@ -514,7 +514,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
                   </select>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Klasifikasi Minat</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Klasifikasi Minat</label>
                   <div class="flex flex-wrap gap-2 mb-2">
                     <template x-for="cat in selectedCategories" :key="cat">
                       <span class="bg-[#1A237E] text-white px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm border border-[#FFC107]/30">
@@ -534,14 +534,14 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pembuat Game</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Pembuat Game</label>
                   <select name="idPembuat" :value="editProjectData?.idPembuat" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
                     <option value="">Pilih Pembuat</option>
                     ${pembuatOptions}
                   </select>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">PIC Pakar</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">PIC Pakar</label>
                   <select name="idPakar" :value="editProjectData?.idPakar" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
                     <option value="">Pilih Pakar</option>
                     ${pakarOptions}
@@ -550,11 +550,11 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deadline</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Deadline</label>
                   <input type="date" name="deadline" :value="editProjectData?.deadline ? new Date(editProjectData.deadline).toISOString().split('T')[0] : ''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
                 </div>
                 <div>
-                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Thumbnail Game</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Thumbnail Game</label>
                   <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A237E] file:text-[#FFC107] hover:file:bg-indigo-900">
                 </div>
               </div>
