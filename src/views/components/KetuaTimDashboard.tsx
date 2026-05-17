@@ -3,19 +3,20 @@ import { WordSearchEditorScript } from "./WordSearchEditor";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 import { ProjectHeader } from "./ProjectHeader";
 
-export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { allProjects: any[], pembuatGames: any[], pakars?: any[] }) => {
-  const gameProjects = allProjects.filter(p => p.type === "GAME");
-  const gameProjectsJson = JSON.stringify(gameProjects).replace(/</g, '\\u003c');
+export const KetuaTimDashboard = ({ allProjects, pembuatGames, pembuatMateris = [], pakars = [] }: { allProjects: any[], pembuatGames: any[], pembuatMateris?: any[], pakars?: any[] }) => {
+  const allProjectsJson = JSON.stringify(allProjects).replace(/</g, '\\u003c');
   const pembuatOptions = pembuatGames.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+  const pembuatMateriOptions = pembuatMateris.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
   const pakarOptions = pakars.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
 
   return `
-    <script id="ketuaProjectsData" type="application/json">${gameProjectsJson}</script>
+    <script id="ketuaProjectsData" type="application/json">${allProjectsJson}</script>
     <script>
       document.addEventListener('alpine:init', () => {
         Alpine.data('ketuaDashboard', () => ({
           activeProject: null,
           questions: [],
+          materiContents: [],
           gameData: null,
           feedback: '',
           editMode: false,
@@ -27,6 +28,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           showExplanation: false,
           isCorrect: false,
           userFTBAnswers: [],
+          filterTypeMain: 'ALL',
           filterType: 'ALL',
           statusTab: 'ALL',
           allProjects: JSON.parse(document.getElementById('ketuaProjectsData').textContent || '[]'),
@@ -40,8 +42,18 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           ],
 
           filteredProjects() {
-            if (this.filterType === 'ALL') return this.allProjects;
-            return this.allProjects.filter(p => p.gameType === this.filterType);
+            let base = this.allProjects;
+            if (this.filterTypeMain !== 'ALL') {
+              base = base.filter(p => p.type === this.filterTypeMain);
+            }
+            if (this.filterType !== 'ALL') {
+              if (this.filterTypeMain === 'GAME') {
+                base = base.filter(p => p.gameType === this.filterType);
+              } else if (this.filterTypeMain === 'MATERI') {
+                base = base.filter(p => p.materiType === this.filterType);
+              }
+            }
+            return base;
           },
 
           filteredByStatus() {
@@ -64,6 +76,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
               if (json.success) {
                 this.activeProject = json.data;
                 this.questions = json.data.questions || [];
+                this.materiContents = json.data.materiContents || [];
                 this.gameData = null;
                 this.showAuditLog = false;
                 if (this.activeProject.gameType === 'WORD_SEARCH') {
@@ -86,14 +99,18 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
 
           closeProject() {
             this.activeProject = null;
+            this.materiContents = [];
             this.showAuditLog = false;
             this.showPreview = false;
             this.feedback = '';
           },
 
-          openCreateModal() {
+          modalType: 'GAME',
+
+          openCreateModal(type = 'GAME') {
             this.editMode = false;
             this.editProjectData = null;
+            this.modalType = type;
             this.selectedCategories = [];
             const form = document.getElementById('createGameForm');
             if (form) form.reset();
@@ -103,6 +120,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           editProject(p) {
             this.editMode = true;
             this.editProjectData = p;
+            this.modalType = p.type;
             this.selectedCategories = p.category ? p.category.split(',').map(s=>s.trim()).filter(s=>s) : [];
             document.getElementById('createGameModal').classList.remove('hidden');
           },
@@ -128,6 +146,15 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           },
 
           previewGame() {
+            if (this.activeProject?.type === 'MATERI') {
+              if (this.materiContents.length === 0) {
+                alert("Belum ada konten materi untuk di-preview.");
+                return;
+              }
+              this.showPreview = true;
+              return;
+            }
+
             if (this.activeProject?.gameType !== 'WORD_SEARCH' && this.questions.length === 0) {
               alert("Belum ada soal untuk di-preview.");
               return;
@@ -233,11 +260,14 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
             const projectId = data.id;
             delete data.id;
 
-            const submitData = async (finalData) => {
-              const url = projectId ? '/api/projects/' + projectId : '/api/projects';
-              const method = projectId ? 'PATCH' : 'POST';
-              finalData.type = "GAME";
-              const res = await fetch(url, {
+              const submitData = async (finalData) => {
+                const url = projectId ? '/api/projects/' + projectId : '/api/projects';
+                const method = projectId ? 'PATCH' : 'POST';
+                // Type is handled in form visually via modalType logic, but we need to ensure it's set
+                const currentModalType = Alpine.$data(document.querySelector('[x-data="ketuaDashboard()"]')).modalType;
+                finalData.type = currentModalType;
+                
+                const res = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(finalData)
@@ -275,9 +305,14 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
           <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
           <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Manajemen Proyek Game</h2>
         </div>
-        <button @click="openCreateModal()" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-6 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
-          + TAMBAH PROYEK BARU
-        </button>
+        <div class="flex flex-wrap items-center gap-4">
+          <button @click="openCreateModal('GAME')" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+            + TAMBAH PROYEK GAME
+          </button>
+          <button @click="openCreateModal('MATERI')" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+            + TUGASKAN MATERI
+          </button>
+        </div>
       </div>
 
       <!-- List View -->
@@ -287,12 +322,24 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
             <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
             <h2 class="text-lg md:text-xl font-semibold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
           </div>
-          <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">SEMUA</button>
-            <button @click="filterType = 'QUIZ'" :class="filterType === 'QUIZ' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">QUIZ</button>
-            <button @click="filterType = 'FILL_THE_BLANK'" :class="filterType === 'FILL_THE_BLANK' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">FTB</button>
-            <button @click="filterType = 'WORD_SEARCH'" :class="filterType === 'WORD_SEARCH' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">WORD SEARCH</button>
-            <button @click="filterType = 'CROSSWORD'" :class="filterType === 'CROSSWORD' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">CROSSWORD</button>
+          <div class="flex flex-col gap-2">
+            <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button @click="filterTypeMain = 'ALL'; filterType = 'ALL'" :class="filterTypeMain === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">SEMUA PROYEK</button>
+              <button @click="filterTypeMain = 'GAME'; filterType = 'ALL'" :class="filterTypeMain === 'GAME' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">GAME</button>
+              <button @click="filterTypeMain = 'MATERI'; filterType = 'ALL'" :class="filterTypeMain === 'MATERI' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">MATERI</button>
+            </div>
+            <div x-show="filterTypeMain === 'GAME'" class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
+              <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">SEMUA GAME</button>
+              <button @click="filterType = 'QUIZ'" :class="filterType === 'QUIZ' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">QUIZ</button>
+              <button @click="filterType = 'FILL_THE_BLANK'" :class="filterType === 'FILL_THE_BLANK' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">FTB</button>
+              <button @click="filterType = 'WORD_SEARCH'" :class="filterType === 'WORD_SEARCH' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">WORD SEARCH</button>
+              <button @click="filterType = 'CROSSWORD'" :class="filterType === 'CROSSWORD' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">CROSSWORD</button>
+            </div>
+            <div x-show="filterTypeMain === 'MATERI'" class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
+              <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">SEMUA MATERI</button>
+              <button @click="filterType = 'TEKS'" :class="filterType === 'TEKS' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">TEKS</button>
+              <button @click="filterType = 'VIDEO'" :class="filterType === 'VIDEO' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">VIDEO</button>
+            </div>
           </div>
         </div>
 
@@ -419,13 +466,37 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
 
       <!-- Preview Modal -->
       <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
           <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 z-10 text-3xl font-black">&times;</button>
           <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
-            SIMULASI GAME: <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+            <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
           </div>
           <div class="p-8 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center">
-            <div class="text-center w-full max-w-2xl space-y-6">
+            
+            <!-- MATERI PREVIEW -->
+            <template x-if="activeProject?.type === 'MATERI'">
+              <div class="w-full flex flex-col items-center gap-8">
+                <template x-for="content in materiContents">
+                  <div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                    <template x-if="content.contentType === 'IMAGE'">
+                      <img :src="content.fileUrl" class="w-full h-auto object-contain" />
+                    </template>
+                    <template x-if="content.contentType === 'PDF' || content.contentType === 'PPT'">
+                      <iframe :src="content.fileUrl" class="w-full h-[70vh] border-0"></iframe>
+                    </template>
+                    <template x-if="content.contentType === 'VIDEO'">
+                      <video :src="content.fileUrl" controls class="w-full h-auto max-h-[70vh] bg-black"></video>
+                    </template>
+                    <template x-if="content.contentType === 'EMBED_URL'">
+                      <iframe :src="content.fileUrl" class="w-full h-[500px] border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <!-- GAME PREVIEW -->
+            <div x-show="activeProject?.type === 'GAME'" class="text-center w-full max-w-2xl space-y-6">
               <template x-if="activeProject?.gameType === 'WORD_SEARCH' && gameData">
                 <div class="w-full">
                   ${WordSearchGame({ projectVar: 'activeProject', gameDataVar: 'gameData' })}
@@ -485,18 +556,18 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
       <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-[#1A237E] flex flex-col overflow-hidden">
           <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
-            <h3 class="font-black uppercase tracking-widest" x-text="editMode ? 'Edit Proyek' : 'Penugasan Proyek Baru'"></h3>
+            <h3 class="font-black uppercase tracking-widest" x-text="(editMode ? 'Edit Proyek' : 'Penugasan Proyek Baru') + (modalType === 'MATERI' ? ' (Materi)' : ' (Game)')"></h3>
             <button onclick="closeCreateGameModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
           </div>
           <div class="overflow-y-auto flex-1 p-8">
             <form id="createGameForm" class="space-y-5">
               <input type="hidden" name="id" :value="editProjectData?.id">
               <div>
-                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Judul Permainan</label>
+                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2" x-text="modalType === 'MATERI' ? 'Judul Materi' : 'Judul Permainan'"></label>
                 <input type="text" name="title" :value="editProjectData?.title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
               </div>
               <div>
-                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Deskripsi Game</label>
+                <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2" x-text="modalType === 'MATERI' ? 'Deskripsi Materi' : 'Deskripsi Game'"></label>
                 <textarea name="description" :value="editProjectData?.description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
               </div>
               <div>
@@ -504,13 +575,20 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
                 <textarea name="instructions" :value="editProjectData?.instructions" class="w-full border-2 border-slate-100 rounded-xl p-4 h-28 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
               </div>
               <div class="grid grid-cols-2 gap-4">
-                <div>
+                <div x-show="modalType === 'GAME'">
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
-                  <select name="gameType" :value="editProjectData?.gameType" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                  <select name="gameType" :value="editProjectData?.gameType" :required="modalType === 'GAME'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
                     <option value="QUIZ">Quiz</option>
                     <option value="FILL_THE_BLANK">Fill The Blank</option>
                     <option value="WORD_SEARCH">Word Search</option>
                     <option value="CROSSWORD">Crossword</option>
+                  </select>
+                </div>
+                <div x-show="modalType === 'MATERI'">
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Jenis Materi</label>
+                  <select name="materiType" :value="editProjectData?.materiType" :required="modalType === 'MATERI'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                    <option value="TEKS">Teks (PDF/PPT/Gambar)</option>
+                    <option value="VIDEO">Video</option>
                   </select>
                 </div>
                 <div>
@@ -534,10 +612,15 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Pembuat Game</label>
-                  <select name="idPembuat" :value="editProjectData?.idPembuat" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
-                    <option value="">Pilih Pembuat</option>
-                    ${pembuatOptions}
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2" x-text="modalType === 'MATERI' ? 'PIC Pembuat Konten' : 'Pembuat Game'"></label>
+                  <select name="idPembuat" :value="editProjectData?.idPembuat" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                    <option value="">Pilih PIC</option>
+                    <template x-if="modalType === 'GAME'">
+                      <optgroup label="Pembuat Game">${pembuatOptions}</optgroup>
+                    </template>
+                    <template x-if="modalType === 'MATERI'">
+                      <optgroup label="Pembuat Materi">${pembuatMateriOptions}</optgroup>
+                    </template>
                   </select>
                 </div>
                 <div>
@@ -554,7 +637,7 @@ export const KetuaTimDashboard = ({ allProjects, pembuatGames, pakars = [] }: { 
                   <input type="date" name="deadline" :value="editProjectData?.deadline ? new Date(editProjectData.deadline).toISOString().split('T')[0] : ''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
                 </div>
                 <div>
-                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Thumbnail Game</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Thumbnail (Opsional)</label>
                   <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A237E] file:text-[#FFC107] hover:file:bg-indigo-900">
                 </div>
               </div>

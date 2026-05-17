@@ -1,4 +1,4 @@
-import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean, text, longtext } from "drizzle-orm/mysql-core";
+import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean, text, longtext, unique } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: serial("id").primaryKey(),
@@ -30,6 +30,7 @@ export const projects = mysqlTable("projects", {
   instructions: text("instructions"),
   gameType: mysqlEnum("game_type", ["QUIZ", "FILL_THE_BLANK", "WORD_SEARCH", "CROSSWORD"]),
   type: mysqlEnum("type", ["GAME", "MATERI"]).notNull(),
+  materiType: mysqlEnum("materi_type", ["TEKS", "VIDEO"]),
   category: varchar("category", { length: 100 }), // Matching user interests
   status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
@@ -126,4 +127,37 @@ export const userScores = mysqlTable("user_scores", {
   projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
   score: int("score").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const materiContents = mysqlTable("materi_contents", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  contentType: mysqlEnum("content_type", ["PDF", "PPT", "IMAGE", "VIDEO", "EMBED_URL"]).notNull(),
+  fileUrl: longtext("file_url").notNull(),
+  fileName: varchar("file_name", { length: 255 }),
+  fileSize: int("file_size"),
+  sortOrder: int("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const achievements = mysqlTable("achievements", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  achievementType: mysqlEnum("achievement_type", ["MATERI_TEKS_SELESAI", "MATERI_VIDEO_SELESAI", "GAME_SELESAI"]).notNull(),
+  claimedAt: timestamp("claimed_at").defaultNow(),
+}, (table) => ({
+  unq: unique("user_project_achiev").on(table.userId, table.projectId, table.achievementType),
+}));
+
+export const materiReadProgress = mysqlTable("materi_read_progress", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  scrollPercentage: int("scroll_percentage").default(0),
+  timeSpentSeconds: int("time_spent_seconds").default(0),
+  videoWatchedPercentage: int("video_watched_percentage").default(0),
+  isCompleted: boolean("is_completed").default(false),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
