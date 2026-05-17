@@ -28,7 +28,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
       <div class="flex">
         ${Sidebar({ username, role })}
         
-        <div class="flex-1 ml-52 min-h-screen flex flex-col">
+        <div class="flex-1 ml-48 min-h-screen flex flex-col">
           <!-- Main Header -->
           <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">

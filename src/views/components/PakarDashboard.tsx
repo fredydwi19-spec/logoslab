@@ -20,6 +20,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
           viewMode: new URLSearchParams(window.location.search).get('view') === 'all' ? 'all' : 'active',
           activeProject: null,
           questions: [],
+          materiContents: [],
           gameData: null,
           feedback: '',
           showPreview: false,
@@ -66,6 +67,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
               if (json.success) {
                 this.activeProject = json.data;
                 this.questions = json.data.questions || [];
+                this.materiContents = json.data.materiContents || [];
                 this.feedback = '';
                 this.gameData = null;
                 this.showAuditLog = false;
@@ -89,12 +91,22 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
 
           closeProject() {
             this.activeProject = null;
+            this.materiContents = [];
             this.showAuditLog = false;
             this.showPreview = false;
             this.feedback = '';
           },
 
           previewGame() {
+            if (this.activeProject?.type === 'MATERI') {
+              if (this.materiContents.length === 0) {
+                alert("Belum ada konten materi untuk di-preview.");
+                return;
+              }
+              this.showPreview = true;
+              return;
+            }
+
             if (this.activeProject?.gameType !== 'WORD_SEARCH' && this.questions.length === 0) {
               alert("Belum ada soal untuk di-preview.");
               return;
@@ -249,10 +261,10 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
             <table class="w-full text-left">
               <thead class="bg-slate-50">
                 <tr class="text-slate-400 text-xs md:text-sm font-medium uppercase tracking-wider">
-                  <th class="px-6 py-4 font-black">Judul Game</th>
+                  <th class="px-6 py-4 font-black">Judul Proyek</th>
                   <th class="px-6 py-4 font-black">Jenis</th>
                   <th class="px-6 py-4 font-black">Deadline</th>
-                  <th class="px-6 py-4 font-black">PIC Pembuat Game</th>
+                  <th class="px-6 py-4 font-black">PIC Pembuat</th>
                   <th class="px-6 py-4 font-black">Status</th>
                   <th class="px-6 py-4 font-black text-right">Aksi</th>
                 </tr>
@@ -262,10 +274,11 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
                   <tr class="hover:bg-blue-50/40 transition-all group">
                     <td class="px-6 py-5">
                       <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
-                      <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
+                      <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="(p.type === 'MATERI' ? '#M' : '#G') + p.id"></div>
                     </td>
                     <td class="px-6 py-5">
-                      <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-lg font-black uppercase border border-slate-200" x-text="p.gameType || '-'"></span>
+                      <span x-show="p.type === 'GAME'" class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-lg font-black uppercase border border-slate-200" x-text="p.gameType || '-'"></span>
+                      <span x-show="p.type === 'MATERI'" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-black uppercase border border-emerald-200" x-text="p.materiType || '-'"></span>
                     </td>
                     <td class="px-6 py-5">
                       <span class="text-slate-700 font-bold" x-text="p.deadline ? new Date(p.deadline).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
@@ -399,13 +412,37 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
 
       <!-- Preview Modal -->
       <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
           <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 z-10 text-3xl font-black">&times;</button>
           <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
-            SIMULASI GAME: <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+            <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
           </div>
           <div class="p-8 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center">
-            <div class="text-center w-full max-w-2xl space-y-6">
+            
+            <!-- MATERI PREVIEW -->
+            <template x-if="activeProject?.type === 'MATERI'">
+              <div class="w-full flex flex-col items-center gap-8">
+                <template x-for="content in materiContents">
+                  <div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                    <template x-if="content.contentType === 'IMAGE'">
+                      <img :src="content.fileUrl" class="w-full h-auto object-contain" />
+                    </template>
+                    <template x-if="content.contentType === 'PDF' || content.contentType === 'PPT'">
+                      <iframe :src="content.fileUrl" class="w-full h-[70vh] border-0"></iframe>
+                    </template>
+                    <template x-if="content.contentType === 'VIDEO'">
+                      <video :src="content.fileUrl" controls class="w-full h-auto max-h-[70vh] bg-black"></video>
+                    </template>
+                    <template x-if="content.contentType === 'EMBED_URL'">
+                      <iframe :src="content.fileUrl" class="w-full h-[500px] border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <!-- GAME PREVIEW -->
+            <div x-show="activeProject?.type === 'GAME'" class="text-center w-full max-w-2xl space-y-6">
               <template x-if="activeProject?.gameType === 'WORD_SEARCH' && gameData">
                 <div class="w-full">
                   ${WordSearchGame({ projectVar: 'activeProject', gameDataVar: 'gameData' })}

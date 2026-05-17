@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents } from "../db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 
@@ -39,14 +39,15 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
     }
 
-    const { title, description, instructions, gameType, deadline, idPembuat, idPakar, category, thumbnailUrl } = body as any;
+    const { title, description, instructions, gameType, type, materiType, deadline, idPembuat, idPakar, category, thumbnailUrl } = body as any;
 
     const [result] = await db.insert(projects).values({
       title,
       description,
       instructions,
-      gameType,
-      type: "GAME",
+      gameType: gameType || null,
+      type: type || "GAME",
+      materiType: materiType || null,
       category: category || null,
       thumbnailUrl: thumbnailUrl || null,
       deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -76,7 +77,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
   // Get Projects by Role
   .get("/", async ({ user }) => {
     let projectList: any[] = [];
-    if (user.role === "PEMBUAT_GAME") {
+    if (user.role === "PEMBUAT_GAME" || user.role === "PEMBUAT_MATERI") {
       projectList = await db.select().from(projects).where(eq(projects.idPembuat, user.id));
     } else if (user.role === "PAKAR") {
       projectList = await db.select().from(projects).where(eq(projects.idPakar, user.id));
@@ -95,6 +96,8 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       description: projects.description,
       instructions: projects.instructions,
       gameType: projects.gameType,
+      type: projects.type,
+      materiType: projects.materiType,
       status: projects.status,
       deadline: projects.deadline,
       idPembuat: projects.idPembuat,
@@ -158,6 +161,11 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         }
       }
     }
+    
+    let materiContentsData: any[] = [];
+    if (project.type === "MATERI") {
+      materiContentsData = await db.select().from(materiContents).where(eq(materiContents.projectId, Number(id))).orderBy(materiContents.sortOrder);
+    }
 
     const history = await db.select({
       id: reviewsHistory.id,
@@ -172,7 +180,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     .where(eq(reviewsHistory.projectId, Number(id)))
     .orderBy(desc(reviewsHistory.createdAt));
 
-    return { success: true, data: { ...project, questions, history } };
+    return { success: true, data: { ...project, questions, materiContents: materiContentsData, history } };
   })
   // Update Status / Review
   .post("/:id/review", async ({ params: { id }, body, user }) => {
@@ -220,7 +228,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         targetUserId = project.idPembuat;
         notificationMsg = `Ketua Tim membutuhkan revisi pada proyek "${project.title}". Mohon cek feedback.`;
       }
-    } else if (user.role === "PEMBUAT_GAME") {
+    } else if (user.role === "PEMBUAT_GAME" || user.role === "PEMBUAT_MATERI") {
       if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
         return new Response(JSON.stringify({ error: "Hanya proyek Draft atau Revisi yang bisa dikirim" }), { status: 400 });
       }
@@ -231,7 +239,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         newStatus = "REVIEW_KETUA";
         const [ketuaTim] = await db.select().from(users).where(eq(users.role, "KETUA_TIM")).limit(1);
         targetUserId = ketuaTim?.id || 0;
-        notificationMsg = `Pembuat Game telah menyelesaikan revisi proyek "${project.title}". Silakan lakukan review akhir.`;
+        notificationMsg = `Pembuat Konten telah menyelesaikan revisi proyek "${project.title}". Silakan lakukan review akhir.`;
       } else {
         newStatus = "REVIEW_PAKAR";
         targetUserId = project.idPakar || 0;
@@ -256,7 +264,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     await db.insert(reviewsHistory).values({
       projectId,
       reviewerId: user.id,
-      feedback,
+      feedback: feedback || "",
       statusGiven: statusGiven || "SUBMITTED"
     });
 
@@ -469,6 +477,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
     await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
     await db.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId));
+    await db.delete(materiContents).where(eq(materiContents.projectId, projectId));
 
     await db.delete(projects).where(eq(projects.id, projectId));
     return { success: true, message: "Proyek berhasil dihapus" };
@@ -509,11 +518,15 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Hanya proyek DRAFT yang dapat diedit infonya" }), { status: 400 });
     }
 
+    const { type, materiType } = body as any;
+
     await db.update(projects).set({
       title,
       description,
       instructions,
       gameType,
+      type: type || project.type,
+      materiType: materiType || project.materiType,
       category: category || project.category,
       thumbnailUrl: thumbnailUrl || project.thumbnailUrl,
       deadline: deadline ? new Date(deadline) : project.deadline,
@@ -523,4 +536,45 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     return { success: true, message: "Proyek berhasil diperbarui" };
   })
+  .post("/:id/materi-content", async ({ params: { id }, body, user }) => {
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
 
+    if (!project) return new Response(JSON.stringify({ error: "Project not found" }), { status: 404 });
+    if (project.type !== "MATERI") return new Response(JSON.stringify({ error: "Project is not MATERI" }), { status: 400 });
+
+    // Validate RBAC & status
+    if (user.role === "PEMBUAT_MATERI" && project.idPembuat !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
+    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+       return new Response(JSON.stringify({ error: "Cannot edit content outside draft/revision phases" }), { status: 400 });
+    }
+
+    const contents = body as any[]; // Array of contents
+    
+    // Delete existing and reinsert
+    await db.delete(materiContents).where(eq(materiContents.projectId, projectId));
+    
+    if (contents && contents.length > 0) {
+      const dataToInsert = contents.map((c: any, index: number) => ({
+        projectId,
+        contentType: c.contentType,
+        fileUrl: c.fileUrl,
+        fileName: c.fileName || null,
+        fileSize: c.fileSize || null,
+        sortOrder: index
+      }));
+      await db.insert(materiContents).values(dataToInsert);
+    }
+    
+    return { success: true, message: "Konten materi berhasil disimpan" };
+  })
+  .get("/:id/materi-content", async ({ params: { id } }) => {
+    const projectId = Number(id);
+    const contents = await db.select().from(materiContents)
+      .where(eq(materiContents.projectId, projectId))
+      .orderBy(materiContents.sortOrder);
+      
+    return { success: true, data: contents };
+  });

@@ -16,21 +16,21 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
   }
 
   return `
-    <div class="sidebar w-52 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100]">
+    <div class="sidebar w-48 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100]">
       <!-- Brand Area -->
-      <div class="p-6 border-b border-white/10 flex flex-col items-center">
+      <div class="p-5 border-b border-white/10 flex flex-col items-center">
         <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-10 w-auto mb-3 bg-white p-2 rounded-lg shadow-lg"/>
         <div class="text-center">
           <span class="text-base font-bold text-white tracking-widest uppercase">LOGOS LAB</span>
-          <p class="text-[9px] text-[#FFC107] font-bold tracking-[0.2em] uppercase mt-1">Dashboard Portal</p>
+          <p class="text-[8px] text-[#FFC107] font-bold tracking-[0.2em] uppercase mt-1">Dashboard Portal</p>
         </div>
       </div>
       
       <!-- Menu Navigation -->
-      <div class="flex-1 mt-6 space-y-1">
-        <p class="px-6 text-[9px] font-medium text-blue-300 uppercase tracking-[0.2em] mb-3 opacity-50">Navigasi Utama</p>
+      <div class="flex-1 mt-5 space-y-1">
+        <p class="px-5 text-[8px] font-medium text-blue-300 uppercase tracking-[0.2em] mb-2 opacity-50">Navigasi Utama</p>
         ${menuItems.map(item => `
-          <a href="${item.link}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
+          <a href="${item.link}" class="flex items-center px-5 py-3 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
             <span class="mr-3 text-lg transition-transform group-hover:scale-110">${item.icon}</span>
             <span class="font-semibold uppercase tracking-wide text-xs">${item.label}</span>
           </a>

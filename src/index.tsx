@@ -6,6 +6,7 @@ import { authRoutes } from "./routes/auth";
 import { projectRoutes } from "./routes/projects";
 import { wordSearchRoutes } from "./routes/word_search";
 import { crosswordRoutes } from "./routes/crossword";
+import { materiRoutes } from "./routes/materi";
 import { aiRoutes } from "./routes/ai";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
@@ -16,11 +17,14 @@ import { GamesSection } from "./views/components/GamesSection";
 import { PublicGamePlayer } from "./views/components/PublicGamePlayer";
 import { ProfilePage } from "./views/pages/EditProfile";
 import { db } from "./db/db";
-import { users, projects, notifications } from "./db/schema";
+import { users, projects, notifications, materiContents } from "./db/schema";
 import { KetuaTimDashboard } from "./views/components/KetuaTimDashboard";
 import { PembuatGameDashboard } from "./views/components/PembuatGameDashboard";
+import { PembuatMateriDashboard } from "./views/components/PembuatMateriDashboard";
 import { PakarDashboard } from "./views/components/PakarDashboard";
 import { MemberDashboard } from "./views/components/MemberDashboard";
+import { MateriSection } from "./views/components/MateriSection";
+import { MateriViewer, MateriViewerScript } from "./views/components/MateriViewer";
 import { eq, inArray, and, desc } from "drizzle-orm";
 
 const app = new Elysia()
@@ -73,12 +77,20 @@ const app = new Elysia()
       )
     ).limit(25);
 
+    const allMateris = await db.select().from(projects).where(
+      and(
+        eq(projects.type, "MATERI"),
+        eq(projects.status, "PUBLISHED")
+      )
+    ).limit(25);
+
     const popularGames = [...allGames].sort(() => 0.5 - Math.random()).slice(0, 10);
     const gamesSectionHtml = GamesSection({ allGames, popularGames });
-    
+    const materiSectionHtml = MateriSection({ allMateris });
+
     const html = await Bun.file("public/index.html").text();
     const navbarHtml = Navbar({ user });
-    
+
     // Inject components
     let dynamicHtml = html.replace(
       /<nav class="header__nav">[\s\S]*?<\/nav>/,
@@ -88,7 +100,7 @@ const app = new Elysia()
     // Replace static games section with dynamic one
     dynamicHtml = dynamicHtml.replace(
       /<section class="section games" id="games">[\s\S]*?<\/section>/,
-      gamesSectionHtml
+      gamesSectionHtml + '\n' + materiSectionHtml
     );
 
     if (onboardingModalHtml) {
@@ -104,7 +116,7 @@ const app = new Elysia()
         `</section>${personalizedGamesHtml}<!-- ========== GAMES CAROUSEL ========== -->`
       );
     }
-    
+
     const responseHeaders: Record<string, string> = {
       "Content-Type": "text/html; charset=utf8"
     };
@@ -142,6 +154,7 @@ const app = new Elysia()
   .use(projectRoutes)
   .use(wordSearchRoutes)
   .use(crosswordRoutes)
+  .use(materiRoutes)
   .use(aiRoutes)
   .group("/dashboard", (app) =>
     app
@@ -154,7 +167,7 @@ const app = new Elysia()
         if (!payload) {
           return Response.redirect("/", 302);
         }
-        
+
         // Security: Prevent browser back to dashboard after logout
         set.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate";
         set.headers["Pragma"] = "no-cache";
@@ -167,7 +180,7 @@ const app = new Elysia()
       })
       .get("/:role", async ({ params, user }) => {
         if (!user || !(user as any).role) return "Unauthorized";
-        
+
         const userRole = (user as any).role as string;
         const username = (user as any).username as string;
         const userId = Number((user as any).id);
@@ -179,6 +192,7 @@ const app = new Elysia()
 
         let allProjectsData: any[] = [];
         let pembuatGamesData: any[] = [];
+        let pembuatMaterisData: any[] = [];
         let pakarData: any[] = [];
         let myProjectsData: any[] = [];
         let publishedProjectsData: any[] = [];
@@ -204,8 +218,9 @@ const app = new Elysia()
         if (userRole === "KETUA_TIM") {
           allProjectsData = await db.select(projectSelectFields).from(projects);
           pembuatGamesData = await db.select().from(users).where(eq(users.role, "PEMBUAT_GAME"));
+          pembuatMaterisData = await db.select().from(users).where(eq(users.role, "PEMBUAT_MATERI"));
           pakarData = await db.select().from(users).where(eq(users.role, "PAKAR"));
-        } else if (userRole === "PEMBUAT_GAME") {
+        } else if (userRole === "PEMBUAT_GAME" || userRole === "PEMBUAT_MATERI") {
           // Active/in-progress: semua proyek milik user kecuali yang sudah PUBLISHED
           myProjectsData = await db.select(projectSelectFields).from(projects).where(
             and(
@@ -239,38 +254,14 @@ const app = new Elysia()
         const renderContent = () => {
           switch (userRole) {
             case "KETUA_TIM":
-              return KetuaTimDashboard({ allProjects: allProjectsData, pembuatGames: pembuatGamesData, pakars: pakarData });
+              return KetuaTimDashboard({ allProjects: allProjectsData, pembuatGames: pembuatGamesData, pembuatMateris: pembuatMaterisData, pakars: pakarData });
 
             case "PEMBUAT_GAME":
               return PembuatGameDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
 
 
             case "PEMBUAT_MATERI":
-              return `
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <h2 class="text-lg font-bold text-slate-800 mb-6">Proyek Saya (Materi)</h2>
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                      <thead>
-                        <tr class="border-b border-slate-100 text-slate-400 text-sm">
-                          <th class="pb-4 font-semibold">ID</th>
-                          <th class="pb-4 font-semibold">Nama Materi</th>
-                          <th class="pb-4 font-semibold">Format</th>
-                          <th class="pb-4 font-semibold">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody class="text-slate-600">
-                        <tr class="border-b border-slate-50">
-                          <td class="py-4">#M205</td>
-                          <td class="py-4 font-medium text-slate-800">Kitab Mazmur v3</td>
-                          <td class="py-4 font-medium">Video</td>
-                          <td class="py-4"><span class="px-2 py-1 bg-orange-100 text-orange-600 rounded text-xs font-bold">Draft</span></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              `;
+              return PembuatMateriDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
 
             case "PAKAR":
               return PakarDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
@@ -285,49 +276,97 @@ const app = new Elysia()
         };
 
         const dashboardContent = renderContent();
-        
+
         // Derive currentPage label for the AI widget from role
         const pageContextMap: Record<string, string> = {
-          KETUA_TIM:    'Manajemen Proyek Game — Ketua Tim',
+          KETUA_TIM: 'Manajemen Proyek Game — Ketua Tim',
           PEMBUAT_GAME: 'Proyek Saya — Pembuat Game',
-          PAKAR:        'Review Proyek — Pakar',
-          USER:         'Dashboard Member',
+          PEMBUAT_MATERI: 'Workspace Konten — Pembuat Materi',
+          PAKAR: 'Review Proyek — Pakar',
+          USER: 'Dashboard Member',
         };
         const aiCurrentPage = pageContextMap[userRole] || "Dashboard";
-        
+
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
 
-        const htmlResponse = Layout({ 
-          title: "Dashboard", 
-          username, 
-          role: userRole, 
+        const htmlResponse = Layout({
+          title: "Dashboard",
+          username,
+          role: userRole,
           children: dashboardContent,
           notifications: userNotifications,
           currentPage: aiCurrentPage
         });
 
         return new Response(htmlResponse, {
-          headers: { 
+          headers: {
             "Content-Type": "text/html; charset=utf8",
             "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
           }
         });
       })
   )
-  .group("/profile", (app) => 
+  .get("/materi/:id", async ({ params, jwt, cookie, set }) => {
+    // Auth check
+    const auth = cookie.auth;
+    let user = null;
+    if (auth?.value) {
+      const payload = await jwt.verify(auth.value as string);
+      if (payload) user = payload;
+    }
+    
+    // Fetch project and contents
+    const projectId = Number(params.id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project || project.type !== "MATERI") {
+      set.status = 404;
+      return "Materi tidak ditemukan";
+    }
+    const contents = await db.select().from(materiContents).where(eq(materiContents.projectId, projectId)).orderBy(materiContents.sortOrder);
+    
+    const pageHtml = `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${project.title} - Logos Lab</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+      </head>
+      <body class="bg-slate-100 font-sans antialiased h-screen flex flex-col">
+        ${Navbar({ user })}
+        <main class="flex-1 overflow-hidden">
+          ${MateriViewer({ projectVar: 'activeMateri', contentVar: 'materiContents' })}
+        </main>
+        
+        <script>
+          window.activeMateri = ${JSON.stringify(project)};
+          window.materiContents = ${JSON.stringify(contents)};
+        </script>
+        ${MateriViewerScript()}
+      </body>
+      </html>
+    `;
+    
+    return new Response(pageHtml, {
+      headers: { "Content-Type": "text/html; charset=utf8" }
+    });
+  })
+  .group("/profile", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
         const auth = cookie.auth;
         if (!auth?.value) return Response.redirect("/", 302);
         const payload = await jwt.verify(auth.value as string);
         if (!payload) return Response.redirect("/", 302);
-        
+
         set.headers["Cache-Control"] = "no-store";
       })
       .get("/", async ({ jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
         const [user] = await db.select().from(users).where(eq(users.id, payload.id));
-        
+
         return new Response(ProfilePage({ user }), {
           headers: { "Content-Type": "text/html; charset=utf8" }
         });
@@ -335,25 +374,25 @@ const app = new Elysia()
       .post("/update", async ({ body, jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
         const { name, interests } = body as { name: string, interests?: string[] };
-        
+
         const updateData: any = { name };
         if (interests) {
           updateData.interests = interests.join(",");
         }
 
         await db.update(users).set(updateData).where(eq(users.id, payload.id));
-        
+
         return { success: true, message: "Profil berhasil diperbarui" };
       })
       .post("/onboarding", async ({ body, jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
         const { interests } = body as { interests: string[] };
-        
-        await db.update(users).set({ 
+
+        await db.update(users).set({
           interests: interests.join(","),
-          hasOnboarded: true 
+          hasOnboarded: true
         }).where(eq(users.id, payload.id));
-        
+
         return { success: true, message: "Onboarding berhasil" };
       })
   )
