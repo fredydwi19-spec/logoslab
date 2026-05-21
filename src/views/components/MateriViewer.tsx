@@ -12,7 +12,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
           </a>
           <div>
             <div class="text-[10px] font-black text-[#FFC107] uppercase tracking-widest mb-1">
-              <span x-text="${projectVar}?.materiType === 'VIDEO' ? '🎬 MATERI VIDEO' : '📄 MATERI TEKS'"></span>
+              <span x-text="${projectVar}?.materiType === 'VIDEO' ? '🎬 MATERI VIDEO' : (${projectVar}?.materiType === 'MANUAL' ? '📋 MATERI MANUAL' : '📄 MATERI TEKS')"></span>
             </div>
             <h2 class="text-xl md:text-2xl font-bold" x-text="${projectVar}?.title"></h2>
           </div>
@@ -20,10 +20,10 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
         
         <!-- Timer/Progress -->
         <div class="flex items-center gap-4">
-          <!-- Text to Speech Button -->
-          <div x-show="${projectVar}?.materiType === 'TEKS'" class="flex items-center gap-2">
+          <!-- Text to Speech Button (TEKS / MANUAL) -->
+          <div x-show="${projectVar}?.materiType === 'TEKS' || ${projectVar}?.materiType === 'MANUAL'" class="flex items-center gap-2">
             <button 
-              @click="toggleSpeech()"
+              @click="${projectVar}?.materiType === 'MANUAL' ? speakAllSections() : toggleSpeech()"
               class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-2 border border-white/20">
               <template x-if="isExtracting">
                  <span>⏳ Ekstrak Teks...</span>
@@ -66,8 +66,8 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
         </div>
       </div>
 
-      <!-- Progress Bar (Teks) -->
-      <div x-show="${projectVar}?.materiType === 'TEKS'" class="w-full h-1 bg-slate-200 z-20 shrink-0">
+      <!-- Progress Bar (Teks / Manual) -->
+      <div x-show="${projectVar}?.materiType === 'TEKS' || ${projectVar}?.materiType === 'MANUAL'" class="w-full h-1 bg-slate-200 z-20 shrink-0">
         <div class="h-full bg-[#FF5722] transition-all" :style="\`width: \${scrollPercentage}%\`"></div>
       </div>
 
@@ -76,40 +76,151 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
 
         <div class="max-w-5xl mx-auto py-10 px-4 md:px-8 space-y-10 flex flex-col items-center">
           
-          <template x-for="content in ${contentVar}" :key="content.id">
-            <div class="w-full bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
-              
-              <!-- IMAGE -->
-              <template x-if="content.contentType === 'IMAGE'">
-                <img :src="content.fileUrl" class="w-full h-auto object-contain" />
-              </template>
-              
-              <!-- PDF / PPT -->
-              <template x-if="content.contentType === 'PDF' || content.contentType === 'PPT'">
-                <iframe :src="content.fileUrl" class="w-full h-[80vh] border-0"></iframe>
-              </template>
-              
-              <!-- VIDEO UPLOAD -->
-              <template x-if="content.contentType === 'VIDEO'">
-                <video 
-                  :src="content.fileUrl" 
-                  controls 
-                  class="w-full h-auto max-h-[80vh] bg-black materi-video"
-                  @timeupdate="handleTimeUpdate"
-                  @ended="handleVideoEnded"
-                ></video>
-              </template>
-              
-              <!-- EMBED URL (e.g. YouTube) -->
-              <template x-if="content.contentType === 'EMBED_URL'">
-                <iframe :src="content.fileUrl" class="w-full h-[600px] border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-              </template>
+          <!-- OLD VIEWER: PDF, IMAGE, VIDEO, EMBED -->
+          <div x-show="${projectVar}?.materiType !== 'MANUAL'" class="w-full space-y-10">
+            <template x-for="content in ${contentVar}" :key="content.id">
+              <div class="w-full bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                
+                <!-- IMAGE -->
+                <template x-if="content.contentType === 'IMAGE'">
+                  <img :src="content.fileUrl" class="w-full h-auto object-contain" />
+                </template>
+                
+                <!-- PDF / PPT -->
+                <template x-if="content.contentType === 'PDF' || content.contentType === 'PPT'">
+                  <iframe :src="content.fileUrl" class="w-full h-[80vh] border-0"></iframe>
+                </template>
+                
+                <!-- VIDEO UPLOAD -->
+                <template x-if="content.contentType === 'VIDEO'">
+                  <video 
+                    :src="content.fileUrl" 
+                    controls 
+                    class="w-full h-auto max-h-[80vh] bg-black materi-video"
+                    @timeupdate="handleTimeUpdate"
+                    @ended="handleVideoEnded"
+                  ></video>
+                </template>
+                
+                <!-- EMBED URL (e.g. YouTube) -->
+                <template x-if="content.contentType === 'EMBED_URL'">
+                  <iframe :src="content.fileUrl" class="w-full h-[600px] border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </template>
 
+              </div>
+            </template>
+          </div>
+
+          <!-- NEW VIEWER: MANUAL TEXT BLOCKS + GLOSSARY -->
+          <style>
+            .flip-out { transform: rotateY(90deg); opacity: 0; }
+            .flip-in { transform: rotateY(0deg); opacity: 1; }
+            .flip-start { transform: rotateY(-90deg); opacity: 0; }
+          </style>
+          <div x-show="${projectVar}?.materiType === 'MANUAL'" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full" style="perspective: 1200px;">
+            <template x-for="(section, idx) in ${projectVar}?.materialSections || []" :key="idx">
+              <div x-data="{ flipped: false }" class="w-full relative min-h-[350px]">
+                
+                <!-- Front of Flashcard -->
+                <div x-show="!flipped" 
+                     x-transition:leave="transition-all duration-300 ease-in"
+                     x-transition:leave-start="flip-in"
+                     x-transition:leave-end="flip-out"
+                     @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
+                     class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
+                     :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
+                   <div class="absolute inset-0 bg-[url('/public/assets/pattern-bg.png')] opacity-10"></div>
+                   
+                   <!-- Locked Overlay -->
+                   <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#FFC107] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                      <span class="bg-[#1A237E] text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
+                   </div>
+
+                   <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
+                     <span class="inline-block bg-[#FF5722] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
+                     <h2 class="text-2xl md:text-4xl font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
+                     <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                       Buka Kartu
+                     </button>
+                   </div>
+                </div>
+                
+                <!-- Back of Flashcard -->
+                <div x-show="flipped" style="display: none;" 
+                     x-transition:enter="transition-all duration-300 ease-out delay-300"
+                     x-transition:enter-start="flip-start"
+                     x-transition:enter-end="flip-in"
+                     class="w-full h-full flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+                  <div class="bg-[#1A237E] text-white px-6 py-4 flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
+                    <div class="flex items-center gap-3 flex-1">
+                      <button @click="flipped = false" class="shrink-0 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Tutup Kartu">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                      </button>
+                      <h2 class="text-xl md:text-2xl font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
+                    </div>
+                    <!-- Speaker Button Per Section -->
+                    <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
+                      <template x-if="speakingIdx === idx && !isPaused">
+                         <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Jeda</div>
+                      </template>
+                      <template x-if="speakingIdx === idx && isPaused">
+                         <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg> Lanjut</div>
+                      </template>
+                      <template x-if="speakingIdx !== idx">
+                         <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 19h4.586a2 2 0 001.414-.586l4.828-4.828A2 2 0 0016 12.172V7.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 009.172 1H5a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> Dengar</div>
+                      </template>
+                    </button>
+                  </div>
+                  <div class="p-6 md:p-10 flex-1 text-slate-700 leading-relaxed text-sm md:text-base max-w-2xl mx-auto font-medium" style="white-space: pre-wrap;" x-html="applyTooltips(section.content)"></div>
+                </div>
+              </div>
+            </template>
+            
+            <!-- Quiz Slot at the end of Manual Material -->
+            <div x-show="(${projectVar}?.questions || []).length > 0" class="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+              <div class="bg-indigo-900 text-[#FFC107] px-6 py-4 flex justify-between items-center font-black uppercase tracking-widest text-sm text-center justify-center">
+                 🎯 Kuis Evaluasi Materi
+              </div>
+              <div class="p-6 md:p-10 text-center">
+                <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + ${projectVar}?.questions?.length"></div>
+                
+                <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.question"></h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <template x-for="opt in ['A','B','C','D']">
+                    <button @click="checkAnswerQuiz(opt)"
+                      :class="{
+                        'border-yellow-400 bg-yellow-50': selectedAnswer === opt && !showExplanation,
+                        'border-green-500 bg-green-50': showExplanation && opt === (${projectVar}?.questions || [])[currentQuestionIndex]?.correctAnswer,
+                        'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== (${projectVar}?.questions || [])[currentQuestionIndex]?.correctAnswer,
+                        'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
+                      }"
+                      class="border-4 p-5 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-3"
+                      :disabled="showExplanation">
+                      <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black bg-slate-100 shrink-0" x-text="opt"></span>
+                      <span x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.[ 'option' + opt ]"></span>
+                    </button>
+                  </template>
+                </div>
+
+                <div x-show="showExplanation" class="mt-6 p-5 rounded-2xl border-2 border-dashed text-left" :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                  <p class="font-black text-sm uppercase" :class="isCorrect ? 'text-green-700' : 'text-red-700'" x-text="isCorrect ? 'Benar!' : 'Belum Tepat!'"></p>
+                  <p class="text-sm text-slate-600 mt-1 italic" x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.explanation"></p>
+                </div>
+                
+                <div class="flex gap-4 mt-6 justify-center">
+                  <button @click="nextQuestion()" x-show="showExplanation && currentQuestionIndex < (${projectVar}?.questions || []).length - 1" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black">Berikutnya →</button>
+                  <div x-show="showExplanation && currentQuestionIndex === (${projectVar}?.questions || []).length - 1" class="text-green-600 font-black flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Kuis Selesai! Gulir ke bawah untuk Klaim Reward.
+                  </div>
+                </div>
+              </div>
             </div>
-          </template>
+          </div>
           
           <!-- Intersection Target for Text Content -->
-          <div x-show="${projectVar}?.materiType === 'TEKS'" id="materi-end-target" class="h-10 w-full flex items-center justify-center opacity-50">
+          <div x-show="${projectVar}?.materiType === 'TEKS' || ${projectVar}?.materiType === 'MANUAL'" id="materi-end-target" class="h-10 w-full flex items-center justify-center opacity-50">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Akhir Dokumen</span>
           </div>
 
@@ -133,6 +244,7 @@ export const MateriViewerScript = ({ contentVar = 'materiContents' }: { contentV
 
       window.materiViewerData = function() {
         return {
+          activeMateri: window.activeMateri || null,
           timeSpentSeconds: 0,
           scrollPercentage: 0,
           videoWatchedPercentage: 0,
@@ -147,6 +259,15 @@ export const MateriViewerScript = ({ contentVar = 'materiContents' }: { contentV
           utterance: null,
           extractedText: "",
           isExtracting: false,
+          
+          // MANUAL Type variables
+          primed: false,
+          speakingIdx: null,
+          unlockedIdx: 0,
+          currentQuestionIndex: 0,
+          selectedAnswer: null,
+          showExplanation: false,
+          isCorrect: false,
 
           initViewer() {
             // Start timer
@@ -379,6 +500,111 @@ export const MateriViewerScript = ({ contentVar = 'materiContents' }: { contentV
             }
             this.isReading = false;
             this.isPaused = false;
+            this.speakingIdx = null;
+          },
+
+          // MANUAL TTS Logic
+          speakSection(idx) {
+            const sections = this.activeMateri?.materialSections || [];
+            const section = sections[idx];
+            if (!section) return;
+
+            if (this.speakingIdx === idx) {
+              if (this.isPaused) {
+                window.speechSynthesis.resume();
+                this.isPaused = false;
+              } else {
+                window.speechSynthesis.pause();
+                this.isPaused = true;
+              }
+              return;
+            }
+
+            // Stop any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const plainText = section.content.replace(/<[^>]*>/g, '');
+            this.speakingIdx = idx;
+            this.isReading = true;
+            this.isPaused = false;
+
+            const utterance = new SpeechSynthesisUtterance(plainText);
+            utterance.lang = 'id-ID';
+            utterance.onend = () => {
+              this.speakingIdx = null;
+              this.isReading = false;
+              this.isPaused = false;
+            };
+            window.speechSynthesis.speak(utterance);
+          },
+
+          speakAllSections() {
+            const sections = this.activeMateri?.materialSections || [];
+            if (sections.length === 0) return;
+            
+            if (this.isReading) {
+               this.stopSpeech();
+               return;
+            }
+
+            let currentIndex = 0;
+            this.isReading = true;
+            this.isPaused = false;
+            window.speechSynthesis.cancel();
+
+            const speakNext = () => {
+              if (currentIndex >= sections.length || !this.isReading) {
+                this.stopSpeech();
+                return;
+              }
+              
+              this.speakingIdx = currentIndex;
+              const plainText = sections[currentIndex].content.replace(/<[^>]*>/g, '');
+              const utterance = new SpeechSynthesisUtterance(plainText);
+              utterance.lang = 'id-ID';
+              
+              utterance.onend = () => {
+                currentIndex++;
+                speakNext();
+              };
+              
+              window.speechSynthesis.speak(utterance);
+            };
+
+            speakNext();
+          },
+
+          applyTooltips(text) {
+             if (!text) return "";
+             let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+             const glossary = this.activeMateri?.materialGlossary || [];
+             
+             // Sort by length descending to prevent partial match issues
+             const sorted = [...glossary].sort((a, b) => b.word.length - a.word.length);
+             
+             sorted.forEach(g => {
+                // simple case-insensitive regex for whole word
+                const regex = new RegExp(\`\\\\b(\${g.word})\\\\b\`, 'gi');
+                html = html.replace(regex, (match) => {
+                  return \`<span class="relative group cursor-help font-bold text-[#FF5722] border-b-2 border-dotted border-[#FF5722] hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1A237E] text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
+                });
+             });
+             return html;
+          },
+          
+          checkAnswerQuiz(opt) {
+            if (this.showExplanation) return;
+            this.selectedAnswer = opt;
+            const q = (this.activeMateri?.questions || [])[this.currentQuestionIndex];
+            this.isCorrect = opt === q.correctAnswer;
+            this.showExplanation = true;
+          },
+
+          nextQuestion() {
+            this.currentQuestionIndex++;
+            this.selectedAnswer = null;
+            this.showExplanation = false;
+            this.isCorrect = false;
           },
           
           async loadProgress() {

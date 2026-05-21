@@ -30,7 +30,7 @@ export const projects = mysqlTable("projects", {
   instructions: text("instructions"),
   gameType: mysqlEnum("game_type", ["QUIZ", "FILL_THE_BLANK", "WORD_SEARCH", "CROSSWORD"]),
   type: mysqlEnum("type", ["GAME", "MATERI"]).notNull(),
-  materiType: mysqlEnum("materi_type", ["TEKS", "VIDEO"]),
+  materiType: mysqlEnum("materi_type", ["TEKS", "VIDEO", "MANUAL"]),
   category: varchar("category", { length: 100 }), // Matching user interests
   status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
@@ -159,5 +159,24 @@ export const materiReadProgress = mysqlTable("materi_read_progress", {
   timeSpentSeconds: int("time_spent_seconds").default(0),
   videoWatchedPercentage: int("video_watched_percentage").default(0),
   isCompleted: boolean("is_completed").default(false),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const materialSections = mysqlTable("material_sections", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  subTitle: varchar("sub_title", { length: 255 }),
+  content: longtext("content").notNull(),
+  sortOrder: int("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const materialGlossary = mysqlTable("material_glossary", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  word: varchar("word", { length: 255 }).notNull(),
+  definition: text("definition").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });

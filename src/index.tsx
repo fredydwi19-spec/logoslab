@@ -17,7 +17,7 @@ import { GamesSection } from "./views/components/GamesSection";
 import { PublicGamePlayer } from "./views/components/PublicGamePlayer";
 import { ProfilePage } from "./views/pages/EditProfile";
 import { db } from "./db/db";
-import { users, projects, notifications, materiContents } from "./db/schema";
+import { users, projects, notifications, materiContents, materialSections, materialGlossary } from "./db/schema";
 import { KetuaTimDashboard } from "./views/components/KetuaTimDashboard";
 import { PembuatGameDashboard } from "./views/components/PembuatGameDashboard";
 import { PembuatMateriDashboard } from "./views/components/PembuatMateriDashboard";
@@ -204,6 +204,7 @@ const app = new Elysia()
           description: projects.description,
           instructions: projects.instructions,
           gameType: projects.gameType,
+          materiType: projects.materiType,
           type: projects.type,
           category: projects.category,
           status: projects.status,
@@ -324,6 +325,17 @@ const app = new Elysia()
     }
     const contents = await db.select().from(materiContents).where(eq(materiContents.projectId, projectId)).orderBy(materiContents.sortOrder);
     
+    // Fetch sections and glossary for MANUAL materi
+    const sections = project.materiType === 'MANUAL'
+      ? await db.select().from(materialSections).where(eq(materialSections.projectId, projectId)).orderBy(materialSections.sortOrder)
+      : [];
+    const glossary = project.materiType === 'MANUAL'
+      ? await db.select().from(materialGlossary).where(eq(materialGlossary.projectId, projectId))
+      : [];
+    
+    // Attach sections and glossary to project object for Alpine
+    const projectWithSections = { ...project, materialSections: sections, materialGlossary: glossary };
+    
     const pageHtml = `
       <!DOCTYPE html>
       <html lang="id">
@@ -341,8 +353,8 @@ const app = new Elysia()
         </main>
         
         <script>
-          window.activeMateri = ${JSON.stringify(project)};
-          window.materiContents = ${JSON.stringify(contents)};
+          window.activeMateri = ${JSON.stringify({ ...project, materialSections: sections, materialGlossary: glossary }).replace(/</g, '\\u003c')};
+          window.materiContents = ${JSON.stringify(contents).replace(/</g, '\\u003c')};
         </script>
         ${MateriViewerScript()}
       </body>

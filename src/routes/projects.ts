@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 
@@ -163,8 +163,15 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     }
     
     let materiContentsData: any[] = [];
+    let materialSectionsData: any[] = [];
+    let materialGlossaryData: any[] = [];
     if (project.type === "MATERI") {
-      materiContentsData = await db.select().from(materiContents).where(eq(materiContents.projectId, Number(id))).orderBy(materiContents.sortOrder);
+      if (project.materiType === "MANUAL") {
+        materialSectionsData = await db.select().from(materialSections).where(eq(materialSections.projectId, Number(id))).orderBy(materialSections.sortOrder);
+        materialGlossaryData = await db.select().from(materialGlossary).where(eq(materialGlossary.projectId, Number(id)));
+      } else {
+        materiContentsData = await db.select().from(materiContents).where(eq(materiContents.projectId, Number(id))).orderBy(materiContents.sortOrder);
+      }
     }
 
     const history = await db.select({
@@ -180,7 +187,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     .where(eq(reviewsHistory.projectId, Number(id)))
     .orderBy(desc(reviewsHistory.createdAt));
 
-    return { success: true, data: { ...project, questions, materiContents: materiContentsData, history } };
+    return { success: true, data: { ...project, questions, materiContents: materiContentsData, materialSections: materialSectionsData, materialGlossary: materialGlossaryData, history } };
   })
   // Update Status / Review
   .post("/:id/review", async ({ params: { id }, body, user }) => {
@@ -478,6 +485,8 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
     await db.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId));
     await db.delete(materiContents).where(eq(materiContents.projectId, projectId));
+    await db.delete(materialSections).where(eq(materialSections.projectId, projectId));
+    await db.delete(materialGlossary).where(eq(materialGlossary.projectId, projectId));
 
     await db.delete(projects).where(eq(projects.id, projectId));
     return { success: true, message: "Proyek berhasil dihapus" };
@@ -577,4 +586,76 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       .orderBy(materiContents.sortOrder);
       
     return { success: true, data: contents };
+  })
+  .post("/:id/sections", async ({ params: { id }, body, user }) => {
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+
+    if (!project) return new Response(JSON.stringify({ error: "Project not found" }), { status: 404 });
+    if (project.type !== "MATERI") return new Response(JSON.stringify({ error: "Project is not MATERI" }), { status: 400 });
+
+    if (user.role === "PEMBUAT_MATERI" && project.idPembuat !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
+    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+       return new Response(JSON.stringify({ error: "Cannot edit content outside draft/revision phases" }), { status: 400 });
+    }
+
+    const sections = body as any[];
+    
+    await db.delete(materialSections).where(eq(materialSections.projectId, projectId));
+    
+    if (sections && sections.length > 0) {
+      const dataToInsert = sections.map((s: any, index: number) => ({
+        projectId,
+        subTitle: s.subTitle ? s.subTitle.replace(/[<>'"]/g, "") : "",
+        content: s.content ? s.content.replace(/[<>]/g, "") : "",
+        sortOrder: index
+      }));
+      await db.insert(materialSections).values(dataToInsert);
+    }
+    
+    return { success: true, message: "Sections berhasil disimpan" };
+  })
+  .get("/:id/sections", async ({ params: { id } }) => {
+    const projectId = Number(id);
+    const sections = await db.select().from(materialSections)
+      .where(eq(materialSections.projectId, projectId))
+      .orderBy(materialSections.sortOrder);
+    return { success: true, data: sections };
+  })
+  .post("/:id/glossary", async ({ params: { id }, body, user }) => {
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+
+    if (!project) return new Response(JSON.stringify({ error: "Project not found" }), { status: 404 });
+    if (project.type !== "MATERI") return new Response(JSON.stringify({ error: "Project is not MATERI" }), { status: 400 });
+
+    if (user.role === "PEMBUAT_MATERI" && project.idPembuat !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
+    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+       return new Response(JSON.stringify({ error: "Cannot edit content outside draft/revision phases" }), { status: 400 });
+    }
+
+    const glossary = body as any[];
+    
+    await db.delete(materialGlossary).where(eq(materialGlossary.projectId, projectId));
+    
+    if (glossary && glossary.length > 0) {
+      const dataToInsert = glossary.map((g: any) => ({
+        projectId,
+        word: g.word.substring(0, 255).replace(/[<>'"]/g, ""),
+        definition: g.definition.substring(0, 2000).replace(/[<>'"]/g, "")
+      }));
+      await db.insert(materialGlossary).values(dataToInsert);
+    }
+    
+    return { success: true, message: "Glossary berhasil disimpan" };
+  })
+  .get("/:id/glossary", async ({ params: { id } }) => {
+    const projectId = Number(id);
+    const glossary = await db.select().from(materialGlossary)
+      .where(eq(materialGlossary.projectId, projectId));
+    return { success: true, data: glossary };
   });

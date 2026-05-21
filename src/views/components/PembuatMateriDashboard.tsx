@@ -14,6 +14,10 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
         Alpine.data('pembuatMateriDashboard', () => ({
           activeProject: null,
           materiContents: [],
+          sections: [],
+          glossaryItems: [],
+          savingSections: false,
+          savingGlossary: false,
           showPreview: false,
           showAuditLog: false,
           myProjects: JSON.parse(document.getElementById('pembuatMateriProjectsData').textContent || '[]'),
@@ -58,6 +62,15 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
               if (json.success) {
                 this.activeProject = json.data;
                 this.materiContents = json.data.materiContents || [];
+                if (this.activeProject.materiType === 'MANUAL') {
+                  const secRes = await fetch('/api/projects/' + id + '/sections');
+                  const secJson = await secRes.json();
+                  if (secJson.success) this.sections = secJson.data;
+
+                  const glosRes = await fetch('/api/projects/' + id + '/glossary');
+                  const glosJson = await glosRes.json();
+                  if (glosJson.success) this.glossaryItems = glosJson.data;
+                }
                 this.showAuditLog = false;
                 this.showPreview = false;
               } else {
@@ -72,6 +85,8 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           closeProject() {
             this.activeProject = null;
             this.materiContents = [];
+            this.sections = [];
+            this.glossaryItems = [];
             this.showAuditLog = false;
             this.showPreview = false;
           },
@@ -145,10 +160,67 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             }
           },
 
+          addSection() {
+            if (this.isReadOnly()) return;
+            this.sections.push({ subTitle: '', content: '', sortOrder: this.sections.length });
+          },
+
+          removeSection(idx) {
+            if (this.isReadOnly()) return;
+            if (confirm('Hapus sub-bab ini?')) {
+              this.sections.splice(idx, 1);
+              this.saveSections();
+            }
+          },
+
+          async saveSections() {
+            if (this.isReadOnly()) return;
+            this.savingSections = true;
+            const res = await fetch('/api/projects/' + this.activeProject.id + '/sections', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.sections)
+            });
+            if (!res.ok) alert('Gagal menyimpan sub-bab');
+            setTimeout(() => { this.savingSections = false; }, 1000);
+          },
+
+          addGlossary() {
+            if (this.isReadOnly()) return;
+            this.glossaryItems.push({ word: '', definition: '' });
+          },
+
+          removeGlossary(idx) {
+            if (this.isReadOnly()) return;
+            if (confirm('Hapus istilah ini?')) {
+              this.glossaryItems.splice(idx, 1);
+              this.saveGlossary();
+            }
+          },
+
+          async saveGlossary() {
+            if (this.isReadOnly()) return;
+            this.savingGlossary = true;
+            const res = await fetch('/api/projects/' + this.activeProject.id + '/glossary', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.glossaryItems)
+            });
+            if (!res.ok) alert('Gagal menyimpan glosarium');
+            setTimeout(() => { this.savingGlossary = false; }, 1000);
+          },
+
           async submitForReview() {
-            if (this.materiContents.length === 0) {
-              alert("Proyek materi kosong! Harap unggah minimal 1 file/konten sebelum disubmit.");
-              return;
+            if (this.activeProject.materiType === 'MANUAL') {
+              if (this.sections.length === 0 || this.sections[0].content.trim() === '') {
+                alert("Proyek materi manual kosong! Harap isi minimal 1 sub-bab.");
+                return;
+              }
+            } else {
+              if (this.materiContents.length === 0) {
+                alert("Proyek materi kosong! Harap unggah minimal 1 file/konten sebelum disubmit.");
+                return;
+              }
             }
             if (!confirm('Kirim proyek ini untuk di-review? Anda tidak bisa mengedit lagi sampai ada feedback revisi.')) return;
 
@@ -241,7 +313,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           ← Kembali ke Dashboard
         </button>
 
-        ${ProjectHeader({ projectVar: 'activeProject', isPembuat: 'true', projectType: 'MATERI' })}
+        ${ProjectHeader({ projectVar: 'activeProject', projectType: 'MATERI' })}
 
         <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
           <div class="bg-[#1A237E] p-6 text-white border-b-4 border-[#FFC107] flex justify-between items-center">
@@ -258,8 +330,9 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             </div>
           </div>
 
-          <!-- Uploader Area -->
-          <div class="p-8 bg-slate-50" x-show="!isReadOnly()">
+          <!-- Uploader Area (For TEKS/VIDEO) -->
+          <div x-show="activeProject?.materiType !== 'MANUAL'">
+            <div class="p-8 bg-slate-50" x-show="!isReadOnly()">
             <div class="bg-white border-2 border-dashed border-indigo-200 rounded-2xl p-8 text-center transition-all hover:border-indigo-400 hover:bg-indigo-50/50 group relative">
               <input type="file" multiple @change="handleFileUpload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" :accept="activeProject?.materiType === 'TEKS' ? '.pdf,.ppt,.pptx,.png,.jpg,.jpeg' : '.mp4,.webm'">
               <div class="space-y-4">
@@ -302,6 +375,74 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                   Belum ada konten materi.
                 </div>
               </template>
+            </div>
+          </div>
+          </div>
+
+          <!-- MANUAL Editor Area -->
+          <div x-show="activeProject?.materiType === 'MANUAL'" class="p-4 md:p-8 space-y-8 bg-slate-50">
+            <!-- Sections Area -->
+            <div>
+              <div class="flex justify-between items-center mb-6">
+                <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-lg">📚 Sub-Bab Materi</h4>
+                <div class="flex items-center gap-4">
+                  <span x-show="savingSections" class="text-sm font-bold text-orange-500 animate-pulse">Menyimpan...</span>
+                  <span x-show="!savingSections" class="text-sm font-bold text-green-500">Tersimpan ✓</span>
+                </div>
+              </div>
+              
+              <div class="space-y-6">
+                <template x-for="(section, idx) in sections" :key="idx">
+                  <div class="bg-white rounded-2xl overflow-hidden border-2 border-[#FFC107] shadow-md">
+                    <div class="bg-[#1A237E] text-white px-4 py-3 flex justify-between items-center">
+                      <span class="font-black uppercase tracking-widest text-sm" x-text="'SUB-BAB ' + (idx + 1)"></span>
+                      <button x-show="!isReadOnly()" @click="removeSection(idx)" class="text-white/60 hover:text-red-400 font-bold transition-colors">✕ Hapus</button>
+                    </div>
+                    <div class="p-4 md:p-6 space-y-4">
+                      <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Judul Sub-Bab (Opsional)</label>
+                        <input type="text" x-model="section.subTitle" @input.debounce.2000ms="saveSections()" :disabled="isReadOnly()" class="w-full border-2 border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-[#1A237E] outline-none font-bold" placeholder="Contoh: Pendahuluan">
+                      </div>
+                      <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Isi Konten</label>
+                        <textarea x-model="section.content" @input.debounce.2000ms="saveSections()" :disabled="isReadOnly()" rows="8" class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm md:text-base leading-relaxed focus:border-[#1A237E] outline-none" placeholder="Ketik materi Anda di sini..."></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <button x-show="!isReadOnly()" @click="addSection()" class="w-full bg-[#FF5722] hover:bg-[#E64A19] text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all border-b-4 border-orange-800 active:border-b-0 active:translate-y-1">
+                  + TAMBAH SUB-BAB
+                </button>
+              </div>
+            </div>
+
+            <hr class="border-2 border-dashed border-slate-200">
+
+            <!-- Glossary Area -->
+            <div>
+              <div class="flex justify-between items-center mb-6">
+                <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-lg flex items-center gap-2">
+                  <span>📖</span> Glosarium (Istilah Sulit)
+                </h4>
+                <div class="flex items-center gap-4">
+                  <span x-show="savingGlossary" class="text-sm font-bold text-orange-500 animate-pulse">Menyimpan...</span>
+                  <span x-show="!savingGlossary" class="text-sm font-bold text-green-500">Tersimpan ✓</span>
+                </div>
+              </div>
+              <p class="text-sm font-bold text-slate-500 mb-6">Istilah di bawah ini akan digarisbawahi pada konten materi dan memunculkan penjelasan saat di-hover/klik oleh pembaca.</p>
+
+              <div class="space-y-3">
+                <template x-for="(item, idx) in glossaryItems" :key="idx">
+                  <div class="flex flex-col md:flex-row gap-3 items-start md:items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <input type="text" x-model="item.word" @input.debounce.2000ms="saveGlossary()" :disabled="isReadOnly()" placeholder="Kata/Istilah" class="w-full md:w-1/3 border-2 border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:border-[#FFC107] outline-none">
+                    <input type="text" x-model="item.definition" @input.debounce.2000ms="saveGlossary()" :disabled="isReadOnly()" placeholder="Definisi/Penjelasan Singkat" class="w-full border-2 border-slate-100 rounded-lg px-3 py-2 text-sm focus:border-[#FFC107] outline-none">
+                    <button x-show="!isReadOnly()" @click="removeGlossary(idx)" class="shrink-0 bg-red-100 text-red-600 hover:bg-red-200 w-10 h-10 rounded-lg font-black transition-colors">✕</button>
+                  </div>
+                </template>
+                <button x-show="!isReadOnly()" @click="addGlossary()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest shadow-md transition-all text-xs">
+                  + TAMBAH ISTILAH
+                </button>
+              </div>
             </div>
           </div>
         </div>
