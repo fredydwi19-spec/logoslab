@@ -16,7 +16,7 @@ export const materiRoutes = new Elysia({ prefix: "/api/materi" })
       set.status = 401;
       throw new Error("Unauthorized");
     }
-    const user = await jwt.verify(auth.value);
+    const user = await jwt.verify(auth.value as string);
     if (!user) {
       set.status = 401;
       throw new Error("Unauthorized");
@@ -93,7 +93,7 @@ export const materiRoutes = new Elysia({ prefix: "/api/materi" })
     let achievementType: "MATERI_TEKS_SELESAI" | "MATERI_VIDEO_SELESAI" | "GAME_SELESAI";
     let isEligible = false;
 
-    if (project.materiType === "TEKS") {
+    if (project.materiType === "TEKS" || project.materiType === "MANUAL") {
       achievementType = "MATERI_TEKS_SELESAI";
       if ((progress.scrollPercentage ?? 0) >= 95 && (progress.timeSpentSeconds ?? 0) >= 120) {
         isEligible = true;

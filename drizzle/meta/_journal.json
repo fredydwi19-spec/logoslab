@@ -64,6 +64,13 @@
       "when": 1779025967316,
       "tag": "0008_chubby_wraith",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1779365082299,
+      "tag": "0009_silly_vargas",
+      "breakpoints": true
     }
   ]
 }

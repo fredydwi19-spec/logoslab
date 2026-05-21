@@ -30,6 +30,10 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
           showExplanation: false,
           isCorrect: false,
           userFTBAnswers: [],
+          speakingIdx: null,
+          unlockedIdx: 0,
+          isReading: false,
+          isPaused: false,
           allProjects: JSON.parse(document.getElementById('pakarProjectsData').textContent || '[]'),
           publishedProjects: JSON.parse(document.getElementById('pakarPublishedData').textContent || '[]'),
           allUsers: JSON.parse(document.getElementById('pakarUsersData').textContent || '[]'),
@@ -95,11 +99,113 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
             this.showAuditLog = false;
             this.showPreview = false;
             this.feedback = '';
+            this.stopSpeech();
+          },
+
+          // MANUAL Audio & Tooltips Logic
+          speakingIdx: null,
+          isReading: false,
+          isPaused: false,
+          
+          stopSpeech() {
+            if (window.speechSynthesis) {
+              window.speechSynthesis.cancel();
+            }
+            this.isReading = false;
+            this.isPaused = false;
+            this.speakingIdx = null;
+          },
+
+          speakSection(idx) {
+            const sections = this.activeProject?.materialSections || [];
+            const section = sections[idx];
+            if (!section) return;
+
+            if (this.speakingIdx === idx) {
+              if (this.isPaused) {
+                window.speechSynthesis.resume();
+                this.isPaused = false;
+              } else {
+                window.speechSynthesis.pause();
+                this.isPaused = true;
+              }
+              return;
+            }
+
+            window.speechSynthesis.cancel();
+            const plainText = section.content.replace(/<[^>]*>/g, '');
+            this.speakingIdx = idx;
+            this.isReading = true;
+            this.isPaused = false;
+
+            const utterance = new SpeechSynthesisUtterance(plainText);
+            utterance.lang = 'id-ID';
+            utterance.onend = () => {
+              this.speakingIdx = null;
+              this.isReading = false;
+              this.isPaused = false;
+            };
+            window.speechSynthesis.speak(utterance);
+          },
+
+          speakAllSections() {
+            const sections = this.activeProject?.materialSections || [];
+            if (sections.length === 0) return;
+            
+            if (this.isReading) {
+               this.stopSpeech();
+               return;
+            }
+
+            let currentIndex = 0;
+            this.isReading = true;
+            this.isPaused = false;
+            window.speechSynthesis.cancel();
+
+            const speakNext = () => {
+              if (currentIndex >= sections.length || !this.isReading) {
+                this.stopSpeech();
+                return;
+              }
+              
+              this.speakingIdx = currentIndex;
+              const plainText = sections[currentIndex].content.replace(/<[^>]*>/g, '');
+              const utterance = new SpeechSynthesisUtterance(plainText);
+              utterance.lang = 'id-ID';
+              
+              utterance.onend = () => {
+                currentIndex++;
+                speakNext();
+              };
+              
+              window.speechSynthesis.speak(utterance);
+            };
+
+            speakNext();
+          },
+
+          applyTooltips(text) {
+             if (!text) return "";
+             let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+             const glossary = this.activeProject?.materialGlossary || [];
+             
+             const sorted = [...glossary].sort((a, b) => b.word.length - a.word.length);
+             
+             sorted.forEach(g => {
+                const regex = new RegExp(\`\\\\b(\${g.word})\\\\b\`, 'gi');
+                html = html.replace(regex, (match) => {
+                  return \`<span class="relative group cursor-help font-bold text-[#FF5722] border-b-2 border-dotted border-[#FF5722] hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1A237E] text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
+                });
+             });
+             return html;
           },
 
           previewGame() {
             if (this.activeProject?.type === 'MATERI') {
-              if (this.materiContents.length === 0) {
+              const hasManualContent = this.activeProject?.materiType === 'MANUAL' && this.activeProject?.materialSections?.length > 0;
+              const hasFileContent = this.activeProject?.materiType !== 'MANUAL' && this.materiContents.length > 0;
+              
+              if (!hasManualContent && !hasFileContent) {
                 alert("Belum ada konten materi untuk di-preview.");
                 return;
               }
@@ -422,19 +528,99 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
             <!-- MATERI PREVIEW -->
             <template x-if="activeProject?.type === 'MATERI'">
               <div class="w-full flex flex-col items-center gap-8">
-                <template x-for="content in materiContents">
-                  <div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
-                    <template x-if="content.contentType === 'IMAGE'">
-                      <img :src="content.fileUrl" class="w-full h-auto object-contain" />
+                <template x-if="activeProject?.materiType === 'MANUAL'">
+                  <div class="w-full max-w-4xl flex flex-col gap-6">
+                    <div class="flex justify-end w-full">
+                       <button @click="speakAllSections()" class="bg-[#1A237E] hover:bg-indigo-900 text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-md flex items-center gap-2">
+                         <template x-if="isReading"><span>Jeda / Berhenti Baca Semua</span></template>
+                         <template x-if="!isReading"><span>🔊 Bacakan Semua Kartu</span></template>
+                       </button>
+                    </div>
+                    <style>
+                      .flip-out { transform: rotateY(90deg); opacity: 0; }
+                      .flip-in { transform: rotateY(0deg); opacity: 1; }
+                      .flip-start { transform: rotateY(-90deg); opacity: 0; }
+                    </style>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full" style="perspective: 1200px;">
+                      <template x-for="(section, idx) in activeProject?.materialSections || []" :key="idx">
+                        <div x-data="{ flipped: false }" class="w-full relative min-h-[350px]">
+                        
+                        <!-- Front of Flashcard -->
+                        <div x-show="!flipped" 
+                             x-transition:leave="transition-all duration-300 ease-in"
+                             x-transition:leave-start="flip-in"
+                             x-transition:leave-end="flip-out"
+                             @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
+                             class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
+                             :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
+                           <div class="absolute inset-0 bg-[url('/public/assets/pattern-bg.png')] opacity-10"></div>
+                           
+                           <!-- Locked Overlay -->
+                           <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#FFC107] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                              <span class="bg-[#1A237E] text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
+                           </div>
+
+                           <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
+                             <span class="inline-block bg-[#FF5722] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
+                             <h2 class="text-2xl md:text-4xl font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
+                             <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                               Buka Kartu
+                             </button>
+                           </div>
+                        </div>
+                        
+                        <!-- Back of Flashcard -->
+                        <div x-show="flipped" style="display: none;" 
+                             x-transition:enter="transition-all duration-300 ease-out delay-300"
+                             x-transition:enter-start="flip-start"
+                             x-transition:enter-end="flip-in"
+                             class="w-full h-full flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+                          <div class="bg-[#1A237E] text-white px-6 py-4 flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
+                            <div class="flex items-center gap-3 flex-1">
+                              <button @click="flipped = false" class="shrink-0 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Tutup Kartu">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                              </button>
+                              <h2 class="text-xl md:text-2xl font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
+                            </div>
+                            <!-- Speaker Button -->
+                            <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
+                              <template x-if="speakingIdx === idx && !isPaused">
+                                 <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Jeda</div>
+                              </template>
+                              <template x-if="speakingIdx === idx && isPaused">
+                                 <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg> Lanjut</div>
+                              </template>
+                              <template x-if="speakingIdx !== idx">
+                                 <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 19h4.586a2 2 0 001.414-.586l4.828-4.828A2 2 0 0016 12.172V7.828a2 2 0 00-.586-1.414l-4.828-4.828A2 2 0 009.172 1H5a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> Dengar</div>
+                              </template>
+                            </button>
+                          </div>
+                          <div class="p-6 md:p-10 flex-1 text-slate-700 leading-relaxed text-sm md:text-base font-medium max-w-2xl mx-auto" style="white-space: pre-wrap;" x-html="applyTooltips(section.content)"></div>
+                        </div>
+                      </div>
                     </template>
-                    <template x-if="content.contentType === 'PDF' || content.contentType === 'PPT'">
-                      <iframe :src="content.fileUrl" class="w-full h-[70vh] border-0"></iframe>
-                    </template>
-                    <template x-if="content.contentType === 'VIDEO'">
-                      <video :src="content.fileUrl" controls class="w-full h-auto max-h-[70vh] bg-black"></video>
-                    </template>
-                    <template x-if="content.contentType === 'EMBED_URL'">
-                      <iframe :src="content.fileUrl" class="w-full h-[500px] border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="activeProject?.materiType !== 'MANUAL'">
+                  <div class="w-full flex flex-col items-center gap-8">
+                    <template x-for="content in materiContents">
+                      <div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+                        <template x-if="content.contentType === 'IMAGE'">
+                          <img :src="content.fileUrl" class="w-full h-auto object-contain" />
+                        </template>
+                        <template x-if="content.contentType === 'PDF' || content.contentType === 'PPT'">
+                          <iframe :src="content.fileUrl" class="w-full h-[70vh] border-0"></iframe>
+                        </template>
+                        <template x-if="content.contentType === 'VIDEO'">
+                          <video :src="content.fileUrl" controls class="w-full h-auto max-h-[70vh] bg-black"></video>
+                        </template>
+                        <template x-if="content.contentType === 'EMBED_URL'">
+                          <iframe :src="content.fileUrl" class="w-full h-[500px] border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </template>
+                      </div>
                     </template>
                   </div>
                 </template>
