@@ -8,6 +8,7 @@ import { wordSearchRoutes } from "./routes/word_search";
 import { crosswordRoutes } from "./routes/crossword";
 import { materiRoutes } from "./routes/materi";
 import { aiRoutes } from "./routes/ai";
+import { dashboardRoutes } from "./routes/dashboard";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
@@ -23,6 +24,7 @@ import { PembuatGameDashboard } from "./views/components/PembuatGameDashboard";
 import { PembuatMateriDashboard } from "./views/components/PembuatMateriDashboard";
 import { PakarDashboard } from "./views/components/PakarDashboard";
 import { MemberDashboard } from "./views/components/MemberDashboard";
+import { KetuaTimAllProjects } from "./views/components/KetuaTimAllProjects";
 import { MateriSection } from "./views/components/MateriSection";
 import { MateriViewer, MateriViewerScript } from "./views/components/MateriViewer";
 import { eq, inArray, and, desc } from "drizzle-orm";
@@ -156,6 +158,7 @@ const app = new Elysia()
   .use(crosswordRoutes)
   .use(materiRoutes)
   .use(aiRoutes)
+  .use(dashboardRoutes)
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
@@ -177,6 +180,55 @@ const app = new Elysia()
         const auth = cookie.auth;
         const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
         return { user: payload ? { ...payload } : null };
+      })
+      .get("/projects", async ({ user }) => {
+        if (!user || (user as any).role !== "KETUA_TIM") {
+          return Response.redirect("/", 302);
+        }
+        
+        const username = (user as any).username as string;
+        const projectSelectFields = {
+          id: projects.id,
+          title: projects.title,
+          description: projects.description,
+          instructions: projects.instructions,
+          gameType: projects.gameType,
+          materiType: projects.materiType,
+          type: projects.type,
+          category: projects.category,
+          status: projects.status,
+          revisionCount: projects.revisionCount,
+          deadline: projects.deadline,
+          idPembuat: projects.idPembuat,
+          idPakar: projects.idPakar,
+          createdAt: projects.createdAt,
+          updatedAt: projects.updatedAt
+        };
+
+        const allProjectsData = await db.select(projectSelectFields).from(projects);
+        const pembuatGamesData = await db.select().from(users).where(eq(users.role, "PEMBUAT_GAME"));
+        const pembuatMaterisData = await db.select().from(users).where(eq(users.role, "PEMBUAT_MATERI"));
+        const pakarData = await db.select().from(users).where(eq(users.role, "PAKAR"));
+        
+        const dashboardContent = KetuaTimAllProjects({ allProjects: allProjectsData, pembuatGames: pembuatGamesData, pembuatMateris: pembuatMaterisData, pakars: pakarData });
+        const userId = Number((user as any).id);
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+
+        const htmlResponse = Layout({
+          title: "Semua Proyek",
+          username,
+          role: "KETUA_TIM",
+          children: dashboardContent,
+          notifications: userNotifications,
+          currentPage: "Manajemen Proyek Game — Ketua Tim"
+        });
+
+        return new Response(htmlResponse, {
+          headers: {
+            "Content-Type": "text/html; charset=utf8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+          }
+        });
       })
       .get("/:role", async ({ params, user }) => {
         if (!user || !(user as any).role) return "Unauthorized";
@@ -255,7 +307,7 @@ const app = new Elysia()
         const renderContent = () => {
           switch (userRole) {
             case "KETUA_TIM":
-              return KetuaTimDashboard({ allProjects: allProjectsData, pembuatGames: pembuatGamesData, pembuatMateris: pembuatMaterisData, pakars: pakarData });
+              return KetuaTimDashboard();
 
             case "PEMBUAT_GAME":
               return PembuatGameDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
@@ -315,7 +367,7 @@ const app = new Elysia()
       const payload = await jwt.verify(auth.value as string);
       if (payload) user = payload;
     }
-    
+
     // Fetch project and contents
     const projectId = Number(params.id);
     const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
@@ -324,7 +376,7 @@ const app = new Elysia()
       return "Materi tidak ditemukan";
     }
     const contents = await db.select().from(materiContents).where(eq(materiContents.projectId, projectId)).orderBy(materiContents.sortOrder);
-    
+
     // Fetch sections and glossary for MANUAL materi
     const sections = project.materiType === 'MANUAL'
       ? await db.select().from(materialSections).where(eq(materialSections.projectId, projectId)).orderBy(materialSections.sortOrder)
@@ -332,10 +384,10 @@ const app = new Elysia()
     const glossary = project.materiType === 'MANUAL'
       ? await db.select().from(materialGlossary).where(eq(materialGlossary.projectId, projectId))
       : [];
-    
+
     // Attach sections and glossary to project object for Alpine
     const projectWithSections = { ...project, materialSections: sections, materialGlossary: glossary };
-    
+
     const pageHtml = `
       <!DOCTYPE html>
       <html lang="id">
@@ -360,7 +412,7 @@ const app = new Elysia()
       </body>
       </html>
     `;
-    
+
     return new Response(pageHtml, {
       headers: { "Content-Type": "text/html; charset=utf8" }
     });
