@@ -147,7 +147,7 @@ export const KetuaTimDashboard = () => {
       <!-- ERROR STATE -->
       <template x-if="!kpiLoading && kpiError">
         <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
-          <div class="text-4xl mb-3">⚠️</div>
+          <div class="text-4xl mb-3 text-red-500"><i class="bi bi-exclamation-triangle"></i></div>
           <h3 class="text-base font-black text-red-700 mb-2">Gagal Memuat Dashboard</h3>
           <p class="text-sm text-red-500 font-medium" x-text="kpiError"></p>
           <button @click="kpiLoading=true; kpiError=''; init()" class="mt-4 bg-[#1A237E] text-white text-xs font-black uppercase tracking-widest px-6 py-2 rounded-lg hover:bg-blue-900 transition-colors">Coba Lagi</button>

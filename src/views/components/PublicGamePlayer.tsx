@@ -128,7 +128,7 @@ export const PublicGamePlayer = () => {
                <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
-                        <div class="text-6xl md:text-8xl mb-4 animate-bounce">🏆</div>
+                        <div class="text-6xl md:text-8xl mb-4 animate-bounce"><i class="bi bi-trophy text-yellow-400"></i></div>
                         <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
                      </div>
                      

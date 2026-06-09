@@ -391,17 +391,17 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
             <button @click="statusTab = 'REVISI_PAKAR'"
               class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
               :class="statusTab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              ✏️ Revisi Pakar
+              <i class="bi bi-pencil-square"></i> Revisi Pakar
             </button>
             <button @click="statusTab = 'ACCEPTED_PAKAR'"
               class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
               :class="statusTab === 'ACCEPTED_PAKAR' ? 'bg-white text-green-600 border-green-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              ✅ Disetujui Pakar
+              <i class="bi bi-check-circle"></i> Disetujui Pakar
             </button>
             <button @click="statusTab = 'REVIEW_KETUA'"
               class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
               :class="statusTab === 'REVIEW_KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              👑 Review Ketua
+              <i class="bi bi-award"></i> Review Ketua
             </button>
             <button @click="statusTab = 'REVISI_KETUA'"
               class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"

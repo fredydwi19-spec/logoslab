@@ -180,3 +180,43 @@ export const materialGlossary = mysqlTable("material_glossary", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
+
+// ============================================================
+// PUSAT BANK SOAL — Tabel global tidak terikat project
+// ============================================================
+
+export const bankSoalQuiz = mysqlTable("bank_soal_quiz", {
+  id: serial("id").primaryKey(),
+  question: text("question").notNull(),
+  optionA: varchar("option_a", { length: 255 }).notNull(),
+  optionB: varchar("option_b", { length: 255 }).notNull(),
+  optionC: varchar("option_c", { length: 255 }).notNull(),
+  optionD: varchar("option_d", { length: 255 }).notNull(),
+  correctAnswer: mysqlEnum("correct_answer", ["A", "B", "C", "D"]).notNull(),
+  difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
+  explanation: text("explanation"),
+  createdBy: bigint("created_by", { mode: 'number', unsigned: true }).references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const bankSoalFtb = mysqlTable("bank_soal_ftb", {
+  id: serial("id").primaryKey(),
+  fullText: text("full_text").notNull(),
+  answers: text("answers").notNull(), // JSON: Array<{ word: string, explanation: string }>
+  difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
+  createdBy: bigint("created_by", { mode: 'number', unsigned: true }).references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const bankSoalTts = mysqlTable("bank_soal_tts", {
+  id: serial("id").primaryKey(),
+  clue: text("clue").notNull(),           // Pertanyaan/petunjuk TTS
+  answer: varchar("answer", { length: 255 }).notNull(), // Jawaban kata
+  difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
+  explanation: text("explanation"),
+  createdBy: bigint("created_by", { mode: 'number', unsigned: true }).references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});

@@ -26,7 +26,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
               @click="${projectVar}?.materiType === 'MANUAL' ? speakAllSections() : toggleSpeech()"
               class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-2 border border-white/20">
               <template x-if="isExtracting">
-                 <span>⏳ Ekstrak Teks...</span>
+                 <span><i class="bi bi-hourglass-split"></i> Ekstrak Teks...</span>
               </template>
               <template x-if="!isExtracting">
                 <div class="flex items-center gap-2">
