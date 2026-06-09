@@ -36,6 +36,45 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
             activeTab: 'DRAFT',
             searchActive: '',
             searchPublished: '',
+            openGenerateModal: false,
+            generateData: { totalSoal: 10, jumlahMudah: 5, jumlahSedang: 3, jumlahSulit: 2 },
+            isGenerating: false,
+
+            async submitGenerate() {
+               const { totalSoal, jumlahMudah, jumlahSedang, jumlahSulit } = this.generateData;
+               if (Number(totalSoal) !== Number(jumlahMudah) + Number(jumlahSedang) + Number(jumlahSulit)) {
+                  alert("Jumlah total soal harus sama dengan (Mudah + Sedang + Sulit)");
+                  return;
+               }
+               
+               this.isGenerating = true;
+               try {
+                  const res = await fetch('/api/bank-soal/auto-generate', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                        projectId: this.activeProject.id,
+                        gameType: this.activeProject.gameType,
+                        totalSoal: Number(totalSoal),
+                        jumlahMudah: Number(jumlahMudah),
+                        jumlahSedang: Number(jumlahSedang),
+                        jumlahSulit: Number(jumlahSulit)
+                     })
+                  });
+                  const json = await res.json();
+                  if (json.success) {
+                     alert(json.message);
+                     this.openGenerateModal = false;
+                     this.openProject(this.activeProject.id);
+                  } else {
+                     alert(json.error || "Gagal melakukan generate soal");
+                  }
+               } catch(err) {
+                  alert("Terjadi kesalahan sistem saat generate soal");
+               } finally {
+                  this.isGenerating = false;
+               }
+            },
 
             getUserName(id) {
               const u = this.allUsers.find(u => u.id === id);
@@ -360,12 +399,12 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
               <button @click="activeTab = 'REVISI_PAKAR'"
                 class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
                 :class="activeTab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                ✏️ Revisi Pakar
+                <i class="bi bi-pencil-square"></i> Revisi Pakar
               </button>
               <button @click="activeTab = 'REVIEW_KETUA'"
                 class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
                 :class="activeTab === 'REVIEW_KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                👑 Review Ketua
+                <i class="bi bi-award"></i> Review Ketua
               </button>
               <button @click="activeTab = 'REVISI_KETUA'"
                 class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
@@ -542,6 +581,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                    Import CSV
                    <input type="file" accept=".csv" @change="importCSV" class="hidden">
                  </label>
+                 <button x-show="activeProject?.gameType === 'QUIZ' || activeProject?.gameType === 'FILL_THE_BLANK'" @click="openGenerateModal = true" class="text-[10px] font-black uppercase bg-[#FF5722] text-white px-4 py-2 rounded-lg hover:bg-[#E64A19] transition-all flex items-center gap-2 shadow-md">
+                   Generate Soal
+                 </button>
                  <button @click="previewGame()" class="text-[10px] font-black uppercase bg-[#1A237E] text-white px-4 py-2 rounded-lg hover:bg-indigo-900 transition-all flex items-center gap-2 shadow-md">
                    Simulasi Game
                  </button>
@@ -578,6 +620,46 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                Proyek dalam status <span x-text="activeProject?.status"></span> dan bersifat Read-Only.
             </div>
           </template>
+
+          <!-- Generate Modal -->
+          <div x-show="openGenerateModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;" x-transition>
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-lg font-bold text-[#1A237E]">Auto-Generate Soal dari Bank</h3>
+                <button @click="openGenerateModal = false" class="text-slate-400 hover:text-red-500">&times;</button>
+              </div>
+              <div class="p-5 space-y-4">
+                <p class="text-xs text-slate-500 font-bold mb-4">Pastikan Total Soal = (Mudah + Sedang + Sulit). Auto-generate akan menarik soal secara acak dari Bank Soal global.</p>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1">Total Soal</label>
+                  <input type="number" min="1" x-model.number="generateData.totalSoal" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                  <div>
+                    <label class="block text-xs font-semibold text-green-700 mb-1">Mudah</label>
+                    <input type="number" min="0" x-model.number="generateData.jumlahMudah" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-yellow-700 mb-1">Sedang</label>
+                    <input type="number" min="0" x-model.number="generateData.jumlahSedang" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-red-700 mb-1">Sulit</label>
+                    <input type="number" min="0" x-model.number="generateData.jumlahSulit" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                  </div>
+                </div>
+                <div class="p-3 mt-4 bg-slate-50 rounded border border-slate-200 text-xs font-bold text-center">
+                  Total Terhitung: <span x-text="Number(generateData.jumlahMudah) + Number(generateData.jumlahSedang) + Number(generateData.jumlahSulit)" :class="{'text-red-600': Number(generateData.totalSoal) !== (Number(generateData.jumlahMudah) + Number(generateData.jumlahSedang) + Number(generateData.jumlahSulit)), 'text-green-600': Number(generateData.totalSoal) === (Number(generateData.jumlahMudah) + Number(generateData.jumlahSedang) + Number(generateData.jumlahSulit))}"></span>
+                </div>
+              </div>
+              <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
+                <button @click="openGenerateModal = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
+                <button @click="submitGenerate()" :disabled="isGenerating || Number(generateData.totalSoal) !== (Number(generateData.jumlahMudah) + Number(generateData.jumlahSedang) + Number(generateData.jumlahSulit))" class="px-4 py-2 text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 disabled:opacity-50 font-semibold text-sm">
+                  <span x-text="isGenerating ? 'Memproses...' : 'Generate'"></span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6">
             <template x-for="(q, idx) in questions" :key="idx">

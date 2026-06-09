@@ -9,6 +9,8 @@ import { crosswordRoutes } from "./routes/crossword";
 import { materiRoutes } from "./routes/materi";
 import { aiRoutes } from "./routes/ai";
 import { dashboardRoutes } from "./routes/dashboard";
+import { bankSoalRoutes } from "./routes/bank_soal";
+import { bankSoalUiRoutes } from "./routes/bank_soal_ui";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
@@ -120,7 +122,7 @@ const app = new Elysia()
     }
 
     const responseHeaders: Record<string, string> = {
-      "Content-Type": "text/html; charset=utf8"
+      "Content-Type": "text/html; charset=utf-8"
     };
 
     if (user) {
@@ -158,6 +160,8 @@ const app = new Elysia()
   .use(crosswordRoutes)
   .use(materiRoutes)
   .use(aiRoutes)
+  .use(bankSoalRoutes)
+  .use(bankSoalUiRoutes)
   .use(dashboardRoutes)
   .group("/dashboard", (app) =>
     app
@@ -225,7 +229,7 @@ const app = new Elysia()
 
         return new Response(htmlResponse, {
           headers: {
-            "Content-Type": "text/html; charset=utf8",
+            "Content-Type": "text/html; charset=utf-8",
             "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
           }
         });
@@ -353,7 +357,7 @@ const app = new Elysia()
 
         return new Response(htmlResponse, {
           headers: {
-            "Content-Type": "text/html; charset=utf8",
+            "Content-Type": "text/html; charset=utf-8",
             "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
           }
         });
@@ -414,7 +418,7 @@ const app = new Elysia()
     `;
 
     return new Response(pageHtml, {
-      headers: { "Content-Type": "text/html; charset=utf8" }
+      headers: { "Content-Type": "text/html; charset=utf-8" }
     });
   })
   .group("/profile", (app) =>
@@ -432,7 +436,7 @@ const app = new Elysia()
         const [user] = await db.select().from(users).where(eq(users.id, payload.id));
 
         return new Response(ProfilePage({ user }), {
-          headers: { "Content-Type": "text/html; charset=utf8" }
+          headers: { "Content-Type": "text/html; charset=utf-8" }
         });
       })
       .post("/update", async ({ body, jwt, cookie }) => {

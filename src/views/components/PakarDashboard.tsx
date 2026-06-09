@@ -348,17 +348,17 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
               <button @click="tab = 'REVISI_PAKAR'"
                 class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
                 :class="tab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                ✏️ Revisi Pakar
+                <i class="bi bi-pencil-square"></i> Revisi Pakar
               </button>
               <button @click="tab = 'ACCEPTED'"
                 class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
                 :class="tab === 'ACCEPTED' ? 'bg-white text-green-600 border-green-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                ✅ Disetujui Pakar
+                <i class="bi bi-check-circle"></i> Disetujui Pakar
               </button>
               <button @click="tab = 'KETUA'"
                 class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
                 :class="tab === 'KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                👑 Proses Ketua
+                <i class="bi bi-award"></i> Proses Ketua
               </button>
             </div>
 
