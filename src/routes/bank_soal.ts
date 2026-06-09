@@ -5,47 +5,67 @@ import {
   questionBank, gameFillTheBlank,
   projects
 } from "../db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
+import * as XLSX from "xlsx";
 
 // ── Native CSV parser (handles quoted fields, CRLF/LF, UTF-8 BOM, semicolon/comma delimiter) ──
 function parseCSV(text: string): Record<string, string>[] {
-  // Strip UTF-8 BOM jika ada
   const clean = text.startsWith('\uFEFF') ? text.slice(1) : text;
-  // Normalise line endings
-  const lines = clean.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  if (lines.length < 2) return [];
-
-  // Auto-detect delimiter: Excel Indonesia menggunakan ';', internasional ','
-  const headerLine = lines[0]!;
-  const commaCount = (headerLine.match(/,/g) || []).length;
-  const semicolonCount = (headerLine.match(/;/g) || []).length;
+  
+  let firstLineEnd = clean.indexOf('\n');
+  if (firstLineEnd === -1) firstLineEnd = clean.length;
+  const headerLineRaw = clean.slice(0, firstLineEnd);
+  
+  const commaCount = (headerLineRaw.match(/,/g) || []).length;
+  const semicolonCount = (headerLineRaw.match(/;/g) || []).length;
   const delim = semicolonCount > commaCount ? ';' : ',';
 
-  const parseRow = (line: string): string[] => {
-    const fields: string[] = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i] ?? '';
-      if (ch === '"') {
-        if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-        else inQ = !inQ;
-      } else if (ch === delim && !inQ) {
-        fields.push(cur.trim()); cur = '';
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let cur = '';
+  let inQ = false;
+  
+  for (let i = 0; i < clean.length; i++) {
+    const ch = clean[i];
+    if (ch === '"') {
+      if (inQ && clean[i + 1] === '"') { 
+        cur += '"'; 
+        i++; 
       } else {
-        cur += ch;
+        inQ = !inQ;
+      }
+    } else if (ch === delim && !inQ) {
+      currentRow.push(cur.trim());
+      cur = '';
+    } else if ((ch === '\n' || (ch === '\r' && clean[i+1] === '\n')) && !inQ) {
+      if (ch === '\r') i++;
+      currentRow.push(cur.trim());
+      rows.push(currentRow);
+      currentRow = [];
+      cur = '';
+    } else {
+      if (ch === '\r' && !inQ) {
+         // abaikan \r di luar quote
+      } else {
+         cur += ch;
       }
     }
-    fields.push(cur.trim());
-    return fields;
-  };
+  }
+  
+  if (cur !== '' || currentRow.length > 0) {
+    currentRow.push(cur.trim());
+    rows.push(currentRow);
+  }
 
-  const headers = parseRow(headerLine);
+  if (rows.length < 2) return [];
+
+  const headers = rows[0]!;
   const results: Record<string, string>[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const line = (lines[i] ?? '').trim();
-    if (!line) continue;
-    const values = parseRow(line);
+  for (let i = 1; i < rows.length; i++) {
+    const values = rows[i]!;
+    if (values.length === 1 && !values[0]) continue;
+    
     const row: Record<string, string> = {};
     headers.forEach((h, idx) => { row[h.trim()] = values[idx] ?? ''; });
     results.push(row);
@@ -53,6 +73,16 @@ function parseCSV(text: string): Record<string, string>[] {
   return results;
 }
 
+
+
+// Helper: normalisasi nilai difficulty dari berbagai format ke MUDAH/SEDANG/SULIT
+function normalizeDifficulty(val: string): string | null {
+  const v = String(val || '').trim().toUpperCase();
+  if (['MUDAH', 'EASY', 'GAMPANG', 'RENDAH', 'LOW', '1', 'MUDAH'].includes(v)) return 'MUDAH';
+  if (['SEDANG', 'MEDIUM', 'NORMAL', 'MENENGAH', 'MID', 'MIDDLE', '2'].includes(v)) return 'SEDANG';
+  if (['SULIT', 'SUSAH', 'HARD', 'DIFFICULT', 'TINGGI', 'HIGH', '3'].includes(v)) return 'SULIT';
+  return null;
+}
 
 // Helper: hanya KETUA_TIM dan PEMBUAT_GAME yang boleh akses Bank Soal
 function guardBankSoal(user: any) {
@@ -112,6 +142,16 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     return { success: true };
   })
 
+  .post("/quiz/bulk-delete", async ({ body, user }) => {
+    const guard = guardBankSoal(user);
+    if (guard) return guard;
+    const { ids } = body as { ids: number[] };
+    if (ids && ids.length > 0) {
+      await db.delete(bankSoalQuiz).where(inArray(bankSoalQuiz.id, ids));
+    }
+    return { success: true };
+  })
+
   .delete("/quiz/:id", async ({ params, user }) => {
     const guard = guardBankSoal(user);
     if (guard) return guard;
@@ -154,6 +194,16 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     return { success: true };
   })
 
+  .post("/ftb/bulk-delete", async ({ body, user }) => {
+    const guard = guardBankSoal(user);
+    if (guard) return guard;
+    const { ids } = body as { ids: number[] };
+    if (ids && ids.length > 0) {
+      await db.delete(bankSoalFtb).where(inArray(bankSoalFtb.id, ids));
+    }
+    return { success: true };
+  })
+
   .delete("/ftb/:id", async ({ params, user }) => {
     const guard = guardBankSoal(user);
     if (guard) return guard;
@@ -193,6 +243,16 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     return { success: true };
   })
 
+  .post("/tts/bulk-delete", async ({ body, user }) => {
+    const guard = guardBankSoal(user);
+    if (guard) return guard;
+    const { ids } = body as { ids: number[] };
+    if (ids && ids.length > 0) {
+      await db.delete(bankSoalTts).where(inArray(bankSoalTts.id, ids));
+    }
+    return { success: true };
+  })
+
   .delete("/tts/:id", async ({ params, user }) => {
     const guard = guardBankSoal(user);
     if (guard) return guard;
@@ -201,7 +261,49 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
   })
 
   // ============================================================
-  // IMPORT CSV — Quiz / FTB / TTS
+  // TEMPLATE EXCEL
+  // ============================================================
+  .get("/template/:type", async ({ params }) => {
+    const type = params.type as "quiz" | "ftb" | "tts";
+    const workbook = XLSX.utils.book_new();
+    let worksheet;
+    let filename = "Template_Bank_Soal.xlsx";
+
+    if (type === "quiz") {
+      filename = "Template_Bank_Soal_Quiz.xlsx";
+      worksheet = XLSX.utils.json_to_sheet([
+        { question: "Apa ibukota Indonesia?", optionA: "Jakarta", optionB: "Bandung", optionC: "Surabaya", optionD: "Medan", correctAnswer: "A", difficulty: "MUDAH", explanation: "Jakarta adalah ibukota negara RI." },
+        { question: "Pusat tata surya adalah...", optionA: "Bumi", optionB: "Bulan", optionC: "Matahari", optionD: "Mars", correctAnswer: "C", difficulty: "SEDANG", explanation: "Matahari adalah pusat tata surya." }
+      ]);
+    } else if (type === "ftb") {
+      filename = "Template_Bank_Soal_FTB.xlsx";
+      worksheet = XLSX.utils.json_to_sheet([
+        { fullText: "Ibukota Indonesia adalah [Jakarta] yang terletak di Pulau [Jawa].", difficulty: "MUDAH", word1: "Jakarta", explanation1: "Kota metropolitan terbesar", word2: "Jawa", explanation2: "Pulau terpadat di Indonesia", word3: "", explanation3: "" },
+        { fullText: "Proses fotosintesis menghasilkan [oksigen] dan [glukosa].", difficulty: "SEDANG", word1: "oksigen", explanation1: "Gas pernafasan", word2: "glukosa", explanation2: "Sumber energi", word3: "", explanation3: "" }
+      ]);
+    } else if (type === "tts") {
+      filename = "Template_Bank_Soal_TTS.xlsx";
+      worksheet = XLSX.utils.json_to_sheet([
+        { clue: "Ibukota Indonesia", answer: "JAKARTA", difficulty: "MUDAH", explanation: "Terletak di pulau Jawa" },
+        { clue: "Pusat tata surya", answer: "MATAHARI", difficulty: "SEDANG", explanation: "Bintang terdekat dengan bumi" }
+      ]);
+    } else {
+      return new Response("Not Found", { status: 404 });
+    }
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    
+    return new Response(buffer, {
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": `attachment; filename="${filename}"`
+      }
+    });
+  })
+
+  // ============================================================
+  // IMPORT EXCEL — Quiz / FTB / TTS
   // ============================================================
   .post("/import/:type", async ({ params, body, user }) => {
     const guard = guardBankSoal(user);
@@ -212,28 +314,42 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     const file = formData?.file;
 
     if (!file) {
-      return new Response(JSON.stringify({ error: "File CSV tidak ditemukan. Pastikan Anda memilih file .csv yang valid." }), { status: 400 });
+      return new Response(JSON.stringify({ error: "File Excel tidak ditemukan. Pastikan Anda memilih file .xlsx yang valid." }), { status: 400 });
     }
 
     // Validasi ekstensi file
     const fileName: string = (file as any).name || "";
-    if (!fileName.toLowerCase().endsWith(".csv")) {
-      return new Response(JSON.stringify({ error: `File harus berformat .csv. File yang diterima: ${fileName}` }), { status: 400 });
+    if (!fileName.toLowerCase().endsWith(".xlsx") && !fileName.toLowerCase().endsWith(".xls") && !fileName.toLowerCase().endsWith(".csv")) {
+      return new Response(JSON.stringify({ error: `File harus berformat Excel (.xlsx/.xls) atau .csv. File yang diterima: ${fileName}` }), { status: 400 });
     }
 
     try {
-      // Baca file sebagai teks (efisien untuk ribuan baris)
-      let csvText: string;
+      let rows: Record<string, any>[] = [];
       if (typeof file === "object" && file instanceof Blob) {
-        csvText = await file.text();
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
+        
+        // Baca semua sheet dan gabungkan
+        for (const sheetName of workbook.SheetNames) {
+          const worksheet = workbook.Sheets[sheetName];
+          // defval:'': sel kosong tetap terbaca sebagai string kosong (bukan undefined)
+          // raw:false: angka/tanggal dikonversi ke string
+          // blankrows:false: skip baris yang benar-benar kosong
+          const sheetRows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, {
+            defval: '',
+            raw: false,
+            blankrows: false
+          });
+          console.log(`[Import] Sheet "${sheetName}": ${sheetRows.length} baris. Header:`, sheetRows[0] ? Object.keys(sheetRows[0]).join(', ') : 'kosong');
+          rows = rows.concat(sheetRows);
+        }
+        console.log(`[Import] Total baris dari semua sheet: ${rows.length}`);
       } else {
         return new Response(JSON.stringify({ error: "Format file tidak valid" }), { status: 400 });
       }
 
-      const rows = parseCSV(csvText);
-
       if (!rows.length) {
-        return new Response(JSON.stringify({ error: "File CSV kosong atau header tidak sesuai template. Pastikan baris pertama adalah header kolom." }), { status: 400 });
+        return new Response(JSON.stringify({ error: "File Excel kosong atau header tidak sesuai template. Pastikan baris pertama adalah header kolom." }), { status: 400 });
       }
 
       let imported = 0;
@@ -241,29 +357,46 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
       const BATCH_SIZE = 500; // Batch insert untuk performa ribuan baris
 
       if (type === "quiz") {
+        const existingData = await db.select({ question: bankSoalQuiz.question }).from(bankSoalQuiz);
+        const existingSet = new Set(existingData.map(d => (d.question || "").trim().toLowerCase()));
         const batch: any[] = [];
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i];
           if (!r) continue;
-          if (!r.question || !r.optionA || !r.optionB || !r.optionC || !r.optionD || !r.correctAnswer || !r.difficulty) {
-            errors.push(`Baris ${i + 2}: Field wajib kosong (question/optionA-D/correctAnswer/difficulty), dilewati`);
+          const q = r.question || r.pertanyaan || r.soal || r.Question || r.Pertanyaan || '';
+          const diffRaw = r.difficulty || r.tingkat_kesulitan || r.kesulitan || r.Difficulty || '';
+          const optA = r.optionA || r.pilihanA || r.pilihan_a || r.OptionA || '';
+          const optB = r.optionB || r.pilihanB || r.pilihan_b || r.OptionB || '';
+          const optC = r.optionC || r.pilihanC || r.pilihan_c || r.OptionC || '';
+          const optD = r.optionD || r.pilihanD || r.pilihan_d || r.OptionD || '';
+          const caRaw = r.correctAnswer || r.jawaban_benar || r.kunci_jawaban || r.kunci || r.jawaban || '';
+          const expl = r.explanation || r.penjelasan || r.pembahasan || '';
+
+          if (!q || !optA || !optB || !optC || !optD || !caRaw || !diffRaw) {
+            errors.push(`Baris ${i + 2}: Field wajib kosong, dilewati`);
             continue;
           }
-          const diff = String(r.difficulty).trim().toUpperCase();
-          if (!["MUDAH", "SEDANG", "SULIT"].includes(diff)) {
-            errors.push(`Baris ${i + 2}: difficulty '${r.difficulty}' tidak valid. Gunakan: MUDAH, SEDANG, atau SULIT`);
+          const qText = q.trim().toLowerCase();
+          if (existingSet.has(qText)) {
+            errors.push(`Baris ${i + 2}: Pertanyaan ganda, dilewati`);
             continue;
           }
-          const ca = String(r.correctAnswer).trim().toUpperCase();
+          existingSet.add(qText);
+          const diff = normalizeDifficulty(diffRaw);
+          if (!diff) {
+            errors.push(`Baris ${i + 2}: difficulty '${diffRaw}' tidak valid`);
+            continue;
+          }
+          const ca = String(caRaw).trim().toUpperCase();
           if (!["A", "B", "C", "D"].includes(ca)) {
-            errors.push(`Baris ${i + 2}: correctAnswer '${r.correctAnswer}' tidak valid. Gunakan: A, B, C, atau D`);
+            errors.push(`Baris ${i + 2}: jawaban benar '${caRaw}' tidak valid`);
             continue;
           }
           batch.push({
-            question: r.question, optionA: r.optionA, optionB: r.optionB,
-            optionC: r.optionC, optionD: r.optionD,
+            question: q, optionA: optA, optionB: optB,
+            optionC: optC, optionD: optD,
             correctAnswer: ca as any, difficulty: diff as any,
-            explanation: r.explanation || "", createdBy: user.id
+            explanation: expl, createdBy: user.id
           });
           // Flush batch setiap BATCH_SIZE baris
           if (batch.length >= BATCH_SIZE) {
@@ -279,31 +412,50 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
         }
 
       } else if (type === "ftb") {
+        const existingData = await db.select({ fullText: bankSoalFtb.fullText }).from(bankSoalFtb);
+        const existingSet = new Set(existingData.map(d => (d.fullText || "").trim().toLowerCase()));
         const batch: any[] = [];
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i];
           if (!r) continue;
-          if (!r.fullText || !r.difficulty) {
-            errors.push(`Baris ${i + 2}: fullText atau difficulty kosong, dilewati`);
+          const fullText = String(r.fullText || r.fulltext || r.teksutuh || r['full text'] || r['teks utuh'] || r.FullText || r.pertanyaan || r.soal || r.Question || r.Pertanyaan || '').trim();
+          let diffRaw = String(r.difficulty || r.tingkat_kesulitan || r.kesulitan || r.Difficulty || r.Tingkat_Kesulitan || '').trim();
+          
+          if (!fullText) {
+            errors.push(`Baris ${i + 2}: Kolom fullText kosong. Kolom tersedia: ${Object.keys(r).join(', ')}`);
             continue;
           }
-          const diff = String(r.difficulty).trim().toUpperCase();
-          if (!["MUDAH", "SEDANG", "SULIT"].includes(diff)) {
-            errors.push(`Baris ${i + 2}: difficulty '${r.difficulty}' tidak valid, dilewati`);
+          const qText = fullText.toLowerCase();
+          if (existingSet.has(qText)) {
+            errors.push(`Baris ${i + 2}: Pertanyaan ganda, dilewati`);
             continue;
           }
-          // Baca hingga 5 pasang word/explanation
-          const answers: { word: string; explanation: string }[] = [];
+          existingSet.add(qText);
+          
+          // Auto-heal difficulty
+          if (!diffRaw) diffRaw = 'MUDAH';
+          const diff = normalizeDifficulty(diffRaw) || 'MUDAH';
+
+          // Baca hingga 5 pasang word/explanation — coba juga nama kolom alternatif
+          let answers: { word: string; explanation: string }[] = [];
           for (let k = 1; k <= 5; k++) {
-            const w = r[`word${k}`];
-            if (w && w.trim()) answers.push({ word: w.trim(), explanation: (r[`explanation${k}`] || "").trim() });
+            const w = String(r[`word${k}`] || r[`kata${k}`] || r[`answer${k}`] || r[`jawaban${k}`] || r[`Word${k}`] || r[`kata rumpang ${k}`] || r[`word ${k}`] || r[`Kata${k}`] || '').trim();
+            const expl = String(r[`explanation${k}`] || r[`penjelasan${k}`] || r[`keterangan${k}`] || r[`Explanation${k}`] || r[`penjelasan ${k}`] || r[`explanation ${k}`] || '').trim();
+            if (w) answers.push({ word: w, explanation: expl });
           }
+          
+          // Auto-heal: jika tidak ada word di kolom, coba ekstrak dari kurung siku [...] di teks utuh
           if (!answers.length) {
-            errors.push(`Baris ${i + 2}: Tidak ada kata rumpang (kolom word1 hingga word5 kosong), dilewati`);
+            const matches = [...fullText.matchAll(/\[(.*?)\]/g)];
+            answers = matches.map(m => ({ word: m[1].trim(), explanation: '' })).filter(a => a.word !== '');
+          }
+
+          if (!answers.length) {
+            errors.push(`Baris ${i + 2}: Tidak ada kata rumpang. Isi kolom word1 atau tandai kata dengan [...] di teks.`);
             continue;
           }
           batch.push({
-            fullText: r.fullText, answers: JSON.stringify(answers),
+            fullText: fullText, answers: JSON.stringify(answers),
             difficulty: diff as any, createdBy: user.id
           });
           if (batch.length >= BATCH_SIZE) {
@@ -318,22 +470,35 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
         }
 
       } else if (type === "tts") {
+        const existingData = await db.select({ clue: bankSoalTts.clue }).from(bankSoalTts);
+        const existingSet = new Set(existingData.map(d => (d.clue || "").trim().toLowerCase()));
         const batch: any[] = [];
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i];
           if (!r) continue;
-          if (!r.clue || !r.answer || !r.difficulty) {
+          const clueRaw = r.clue || r.petunjuk || r.pertanyaan || r.Clue || '';
+          const ansRaw = r.answer || r.jawaban || r.Answer || '';
+          const diffRaw = r.difficulty || r.tingkat_kesulitan || r.kesulitan || r.Difficulty || '';
+          const expl = r.explanation || r.penjelasan || r.pembahasan || '';
+
+          if (!clueRaw || !ansRaw || !diffRaw) {
             errors.push(`Baris ${i + 2}: clue/answer/difficulty kosong, dilewati`);
             continue;
           }
-          const diff = String(r.difficulty).trim().toUpperCase();
-          if (!["MUDAH", "SEDANG", "SULIT"].includes(diff)) {
-            errors.push(`Baris ${i + 2}: difficulty '${r.difficulty}' tidak valid, dilewati`);
+          const qText = clueRaw.trim().toLowerCase();
+          if (existingSet.has(qText)) {
+            errors.push(`Baris ${i + 2}: Clue ganda, dilewati`);
+            continue;
+          }
+          existingSet.add(qText);
+          const diff = normalizeDifficulty(diffRaw);
+          if (!diff) {
+            errors.push(`Baris ${i + 2}: difficulty '${diffRaw}' tidak valid, dilewati`);
             continue;
           }
           batch.push({
-            clue: r.clue, answer: r.answer.replace(/\s+/g, "").toUpperCase(),
-            difficulty: diff as any, explanation: r.explanation || "",
+            clue: clueRaw, answer: ansRaw.replace(/\\s+/g, "").toUpperCase(),
+            difficulty: diff as any, explanation: expl,
             createdBy: user.id
           });
           if (batch.length >= BATCH_SIZE) {
@@ -358,8 +523,29 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
 
     } catch (err: any) {
       console.error("[bank-soal/import] Error:", err.message);
-      return new Response(JSON.stringify({ error: "Gagal memproses file CSV: " + err.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: "Gagal memproses file Excel: " + err.message }), { status: 500 });
     }
+  })
+
+  // Debug endpoint: inspect CSV headers & first 3 rows (remove after debugging)
+  .post("/debug-csv", async ({ body }) => {
+    const formData = body as any;
+    const file = formData?.file;
+    if (!file || !(file instanceof Blob)) return { error: "no file" };
+    const text = await file.text();
+    const clean = text.startsWith('\uFEFF') ? text.slice(1) : text;
+    const firstLine = clean.split('\n')[0] || '';
+    const commaCount = (firstLine.match(/,/g) || []).length;
+    const semicolonCount = (firstLine.match(/;/g) || []).length;
+    const delim = semicolonCount > commaCount ? ';' : ',';
+    const lines = clean.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(l => l.trim());
+    return {
+      delimiter: delim,
+      totalLines: lines.length,
+      header: lines[0],
+      row1: lines[1] || '',
+      row2: lines[2] || ''
+    };
   })
 
   // ============================================================

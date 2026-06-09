@@ -7,13 +7,22 @@ export const BankSoalQuizUI = () => {
           <h1 class="text-xl md:text-2xl font-bold text-[#1A237E] font-poppins">Bank Soal Quiz</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal Quiz secara global.</p>
         </div>
-        <div class="flex gap-2">
-          <button @click="openImportModal = true" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2">
-            <i class="bi bi-download"></i> Import CSV
-          </button>
-          <button @click="openFormModal()" class="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md">
-            <i class="bi bi-plus-lg"></i> Tambah Soal
-          </button>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div class="relative w-full sm:w-64">
+            <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" x-model="searchQuery" placeholder="Cari pertanyaan..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#1A237E] outline-none">
+          </div>
+          <div class="flex gap-2">
+            <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
+              <i class="bi bi-trash"></i> <span x-text="'Hapus (' + selectedIds.length + ')'"></span>
+            </button>
+            <button @click="openImportModal = true" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2 flex-1 justify-center sm:flex-none">
+              <i class="bi bi-file-earmark-excel"></i> Import Excel
+            </button>
+            <button @click="openFormModal()" class="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md flex-1 justify-center sm:flex-none">
+              <i class="bi bi-plus-lg"></i> Tambah Soal
+            </button>
+          </div>
         </div>
       </div>
 
@@ -23,6 +32,11 @@ export const BankSoalQuizUI = () => {
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wider">
+                <th class="p-4 w-12 text-center">
+                  <input type="checkbox" class="rounded text-[#1A237E] focus:ring-[#1A237E] cursor-pointer" 
+                         :checked="filteredSoalList().length > 0 && selectedIds.length === filteredSoalList().length"
+                         @change="$event.target.checked ? selectedIds = filteredSoalList().map(s => s.id) : selectedIds = []">
+                </th>
                 <th class="p-4 font-semibold">Pertanyaan</th>
                 <th class="p-4 font-semibold">Opsi & Jawaban</th>
                 <th class="p-4 font-semibold text-center">Tingkat Kesulitan</th>
@@ -31,14 +45,17 @@ export const BankSoalQuizUI = () => {
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template x-if="loading">
-                <tr><td colspan="4" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+                <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
               </template>
               <template x-if="!loading && soalList.length === 0">
-                <tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal Quiz.</td></tr>
+                <tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal Quiz.</td></tr>
               </template>
-              <template x-for="soal in soalList" :key="soal.id">
-                <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="p-4 text-sm text-slate-700 align-top max-w-xs truncate" x-text="soal.question"></td>
+              <template x-for="soal in filteredSoalList()" :key="soal.id">
+                <tr class="hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50': selectedIds.includes(soal.id)}">
+                  <td class="p-4 text-center align-top">
+                    <input type="checkbox" class="rounded text-[#1A237E] focus:ring-[#1A237E] cursor-pointer" :value="soal.id" x-model="selectedIds">
+                  </td>
+                  <td class="p-4 text-sm text-slate-700 align-top break-words" x-text="soal.question"></td>
                   <td class="p-4 text-xs text-slate-600 align-top">
                     <div>A: <span x-text="soal.optionA" :class="{'font-bold text-green-600': soal.correctAnswer === 'A'}"></span></div>
                     <div>B: <span x-text="soal.optionB" :class="{'font-bold text-green-600': soal.correctAnswer === 'B'}"></span></div>
@@ -133,16 +150,16 @@ export const BankSoalQuizUI = () => {
             <button @click="openImportModal = false" class="text-slate-400 hover:text-red-500">&times;</button>
           </div>
           <div class="p-5 space-y-4">
-            <p class="text-sm text-slate-600">Gunakan file template CSV untuk mengimpor soal secara massal. Format kolom wajib sesuai template.</p>
-            <button @click="downloadTemplate()" class="w-full py-2 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-semibold">
-              <i class="bi bi-download"></i> Unduh Template CSV
+            <p class="text-sm text-slate-600">Gunakan file template Excel (.xlsx) untuk mengimpor soal secara massal. Format kolom wajib sesuai template.</p>
+            <button @click="downloadTemplate()" class="w-full py-2 border border-green-200 text-green-700 rounded-lg hover:bg-green-50 text-sm font-semibold flex items-center justify-center gap-2">
+              <i class="bi bi-file-earmark-excel"></i> Unduh Template Excel (.xlsx)
             </button>
             <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition-colors">
-              <input type="file" id="fileImport" accept=".csv" class="hidden" @change="handleFileChange">
+              <input type="file" id="fileImport" accept=".xlsx,.xls" class="hidden" @change="handleFileChange">
               <label for="fileImport" class="cursor-pointer flex flex-col items-center">
-                <i class="bi bi-file-earmark-text text-3xl mb-2 text-slate-400"></i>
-                <span class="text-sm font-semibold text-slate-700" x-text="selectedFileName || 'Klik untuk memilih file .csv'"></span>
-                <span class="text-xs text-slate-400 mt-1">Hanya file .csv yang diterima</span>
+                <i class="bi bi-file-earmark-excel text-3xl mb-2 text-green-500"></i>
+                <span class="text-sm font-semibold text-slate-700" x-text="selectedFileName || 'Klik untuk memilih file Excel (.xlsx)'"></span>
+                <span class="text-xs text-slate-400 mt-1">Hanya file .xlsx / .xls yang diterima</span>
               </label>
             </div>
           </div>
@@ -160,6 +177,8 @@ export const BankSoalQuizUI = () => {
       function bankSoalQuizData() {
         return {
           soalList: [],
+          selectedIds: [],
+          searchQuery: '',
           loading: true,
           showForm: false,
           isEdit: false,
@@ -180,6 +199,11 @@ export const BankSoalQuizUI = () => {
           },
           init() {
             this.fetchData();
+          },
+          filteredSoalList() {
+            if (this.searchQuery.trim() === '') return this.soalList;
+            const q = this.searchQuery.toLowerCase();
+            return this.soalList.filter(s => (s.question || '').toLowerCase().includes(q));
           },
           async fetchData() {
             this.loading = true;
@@ -207,7 +231,7 @@ export const BankSoalQuizUI = () => {
           async submitForm() {
             try {
               const method = this.isEdit ? 'PUT' : 'POST';
-              const url = this.isEdit ? \`/api/bank-soal/quiz/\${this.formData.id}\` : '/api/bank-soal/quiz';
+              const url = this.isEdit ? '/api/bank-soal/quiz/' + this.formData.id : '/api/bank-soal/quiz';
               const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
@@ -224,10 +248,27 @@ export const BankSoalQuizUI = () => {
               alert("Terjadi kesalahan sistem");
             }
           },
+          async deleteSelected() {
+            if (this.selectedIds.length === 0) return;
+            if (!confirm("Hapus " + this.selectedIds.length + " soal terpilih?")) return;
+            try {
+              const res = await fetch('/api/bank-soal/quiz/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: this.selectedIds })
+              });
+              if (res.ok) {
+                this.selectedIds = [];
+                this.fetchData();
+              }
+            } catch (err) {
+              alert("Gagal menghapus soal terpilih");
+            }
+          },
           async deleteSoal(id) {
             if (!confirm("Hapus soal ini?")) return;
             try {
-              const res = await fetch(\`/api/bank-soal/quiz/\${id}\`, { method: 'DELETE' });
+              const res = await fetch('/api/bank-soal/quiz/' + id, { method: 'DELETE' });
               if (res.ok) this.fetchData();
             } catch (err) {
               alert("Gagal menghapus soal");
@@ -252,33 +293,34 @@ export const BankSoalQuizUI = () => {
               });
               const json = await res.json();
               if (json.success) {
-                alert(\`Berhasil mengimpor \${json.imported} soal.\`);
+                let msg = 'Berhasil mengimpor ' + json.imported + ' soal.';
+                if (json.warnings && json.warnings.length > 0) {
+                  const dup = json.warnings.filter(function(w) { return w.indexOf('ganda') !== -1; }).length;
+                  const skip = json.warnings.length - dup;
+                  if (dup > 0) msg += ' | ' + dup + ' duplikat dilewati.';
+                  if (skip > 0) msg += ' | ' + skip + ' baris lain dilewati.';
+                  console.warn('[Quiz Import]', json.warnings.slice(0, 20));
+                }
+                alert(msg);
                 this.openImportModal = false;
                 this.selectedFile = null;
-                this.selectedFileName = "";
-                document.getElementById('fileImport').value = '';
+                this.selectedFileName = '';
+                const fi = document.getElementById('fileImport');
+                if (fi) fi.value = '';
                 this.fetchData();
               } else {
-                alert(json.error || "Gagal import");
+                alert(json.error || 'Gagal import');
               }
             } catch (err) {
-              alert("Terjadi kesalahan saat import");
+              alert('Terjadi kesalahan saat import');
             } finally {
               this.isImporting = false;
             }
           },
           downloadTemplate() {
-            const rows = [
-              'question,optionA,optionB,optionC,optionD,correctAnswer,difficulty,explanation',
-              \`Siapa proklamator kemerdekaan Indonesia?,Soekarno dan Hatta,Suharto dan Habibie,Megawati dan Gus Dur,Jokowi dan Ma'ruf,A,MUDAH,Soekarno-Hatta memproklamasikan kemerdekaan pada 17 Agustus 1945\`,
-              \`Berapakah hasil dari 7 x 8?,54,56,58,60,B,SEDANG,7 dikali 8 sama dengan 56\`,
-              \`Apa nama hukum fisika yang menyatakan setiap aksi ada reaksi yang sama besar dan berlawanan arah?,Hukum Newton I,Hukum Newton II,Hukum Newton III,Hukum Archimedes,C,SULIT,Ini adalah Hukum Newton III tentang aksi-reaksi\`
-            ];
-            const csvContent = rows.join('\\n');
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'Template_Bank_Soal_Quiz.csv';
+            link.href = '/api/bank-soal/template/quiz';
+            link.download = 'Template_Bank_Soal_Quiz.xlsx';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

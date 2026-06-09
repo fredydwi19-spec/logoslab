@@ -25,9 +25,11 @@
     "@elysiajs/static": "^1.4.10",
     "@types/nodemailer": "^8.0.0",
     "bcryptjs": "^3.0.3",
+    "bootstrap-icons": "^1.13.1",
     "drizzle-orm": "^0.45.2",
     "elysia": "^1.4.28",
     "mysql2": "^3.22.3",
-    "nodemailer": "^8.0.7"
+    "nodemailer": "^8.0.7",
+    "xlsx": "^0.18.5"
   }
 }
