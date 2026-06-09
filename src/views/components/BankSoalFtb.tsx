@@ -1,5 +1,5 @@
 export const BankSoalFtbUI = () => {
-  return `
+  const html = `
     <div class="p-6 md:p-10 space-y-8" x-data="bankSoalFtbData()">
       <!-- Header -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -7,13 +7,22 @@ export const BankSoalFtbUI = () => {
           <h1 class="text-xl md:text-2xl font-bold text-[#1A237E] font-poppins">Bank Soal Fill The Blank</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal rumpang secara global.</p>
         </div>
-        <div class="flex gap-2">
-          <button @click="openImportModal = true" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2">
-            <i class="bi bi-download"></i> Import CSV
-          </button>
-          <button @click="openFormModal()" class="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md">
-            <i class="bi bi-plus-lg"></i> Tambah Soal
-          </button>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div class="relative w-full sm:w-64">
+            <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" x-model="searchQuery" placeholder="Cari teks rumpang..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#1A237E] outline-none">
+          </div>
+          <div class="flex gap-2">
+            <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
+              <i class="bi bi-trash"></i> <span x-text="'Hapus (' + selectedIds.length + ')'"></span>
+            </button>
+            <button @click="openImportModal = true" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2 flex-1 justify-center sm:flex-none">
+              <i class="bi bi-file-earmark-excel"></i> Import Excel
+            </button>
+            <button @click="openFormModal()" class="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md flex-1 justify-center sm:flex-none">
+              <i class="bi bi-plus-lg"></i> Tambah Soal
+            </button>
+          </div>
         </div>
       </div>
 
@@ -23,6 +32,11 @@ export const BankSoalFtbUI = () => {
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wider">
+                <th class="p-4 w-12 text-center">
+                  <input type="checkbox" class="rounded text-[#1A237E] focus:ring-[#1A237E] cursor-pointer"
+                         :checked="filteredSoalList().length > 0 && selectedIds.length === filteredSoalList().length"
+                         @change="$event.target.checked ? selectedIds = filteredSoalList().map(s => s.id) : selectedIds = []">
+                </th>
                 <th class="p-4 font-semibold w-2/5">Teks Utuh</th>
                 <th class="p-4 font-semibold">Kata Rumpang</th>
                 <th class="p-4 font-semibold text-center">Tingkat Kesulitan</th>
@@ -31,14 +45,17 @@ export const BankSoalFtbUI = () => {
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template x-if="loading">
-                <tr><td colspan="4" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+                <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
               </template>
               <template x-if="!loading && soalList.length === 0">
-                <tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal FTB.</td></tr>
+                <tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal FTB.</td></tr>
               </template>
-              <template x-for="soal in soalList" :key="soal.id">
-                <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="p-4 text-sm text-slate-700 align-top max-w-sm truncate" x-text="soal.fullText"></td>
+              <template x-for="soal in filteredSoalList()" :key="soal.id">
+                <tr class="hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50': selectedIds.includes(soal.id)}">
+                  <td class="p-4 text-center align-top">
+                    <input type="checkbox" class="rounded text-[#1A237E] focus:ring-[#1A237E] cursor-pointer" :value="soal.id" x-model="selectedIds">
+                  </td>
+                  <td class="p-4 text-sm text-slate-700 align-top break-words" x-text="soal.fullText"></td>
                   <td class="p-4 text-xs text-slate-600 align-top">
                     <ul class="list-disc pl-4">
                       <template x-for="ans in soal.answers" :key="ans.word">
@@ -75,7 +92,7 @@ export const BankSoalFtbUI = () => {
           <div class="p-5 overflow-y-auto space-y-4">
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Utuh</label>
-              <textarea x-model="formData.fullText" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none" rows="4" placeholder="Masukkan teks. Gunakan tanda kurung buka dan tutup untuk menandai kata rumpang. Contoh: Ibukota Indonesia adalah [Jakarta]."></textarea>
+              <textarea x-model="formData.fullText" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none" rows="4" placeholder="Masukkan teks. Gunakan tanda kurung siku untuk menandai kata rumpang. Contoh: Ibukota Indonesia adalah [Jakarta]."></textarea>
             </div>
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1">Tingkat Kesulitan</label>
@@ -85,14 +102,12 @@ export const BankSoalFtbUI = () => {
                 <option value="SULIT">Sulit</option>
               </select>
             </div>
-            
             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
               <h4 class="text-sm font-bold text-slate-700 mb-2">Kata Rumpang</h4>
               <p class="text-xs text-slate-500 mb-3">Klik tombol untuk mengekstrak kata dalam kurung siku [...] dari teks utuh.</p>
               <button @click="extractAnswers()" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-semibold mb-3">
                 Ekstrak Kata
               </button>
-              
               <div class="space-y-2">
                 <template x-for="(ans, idx) in formData.answers" :key="idx">
                   <div class="flex gap-2 items-center">
@@ -101,7 +116,7 @@ export const BankSoalFtbUI = () => {
                   </div>
                 </template>
                 <template x-if="formData.answers.length === 0">
-                  <p class="text-xs text-slate-400 italic">Belum ada kata rumpang yang diekstrak.</p>
+                  <p class="text-xs text-slate-400 italic">Belum ada kata rumpang. Pastikan teks mengandung [...] lalu klik Ekstrak Kata.</p>
                 </template>
               </div>
             </div>
@@ -121,33 +136,37 @@ export const BankSoalFtbUI = () => {
             <button @click="openImportModal = false" class="text-slate-400 hover:text-red-500">&times;</button>
           </div>
           <div class="p-5 space-y-4">
-            <p class="text-sm text-slate-600">Gunakan file template CSV untuk mengimpor soal FTB secara massal. Format kolom wajib sesuai template.</p>
-            <button @click="downloadTemplate()" class="w-full py-2 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-semibold">
-              <i class="bi bi-download"></i> Unduh Template CSV
+            <p class="text-sm text-slate-600">Gunakan file template Excel (.xlsx) untuk mengimpor soal FTB secara massal. Format kolom wajib sesuai template.</p>
+            <button @click="downloadTemplate()" class="w-full py-2 border border-green-200 text-green-700 rounded-lg hover:bg-green-50 text-sm font-semibold flex items-center justify-center gap-2">
+              <i class="bi bi-file-earmark-excel"></i> Unduh Template Excel (.xlsx)
             </button>
             <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition-colors">
-              <input type="file" id="fileImportFTB" accept=".csv" class="hidden" @change="handleFileChange">
+              <input type="file" id="fileImportFTB" accept=".xlsx,.xls" class="hidden" @change="handleFileChange">
               <label for="fileImportFTB" class="cursor-pointer flex flex-col items-center">
-                <i class="bi bi-file-earmark-text text-3xl mb-2 text-slate-400"></i>
-                <span class="text-sm font-semibold text-slate-700" x-text="selectedFileName || 'Klik untuk memilih file .csv'"></span>
-                <span class="text-xs text-slate-400 mt-1">Hanya file .csv yang diterima</span>
+                <i class="bi bi-file-earmark-excel text-3xl mb-2 text-green-500"></i>
+                <span class="text-sm font-semibold text-slate-700" x-text="selectedFileName || 'Klik untuk memilih file Excel (.xlsx)'"></span>
+                <span class="text-xs text-slate-400 mt-1">Hanya file .xlsx / .xls yang diterima</span>
               </label>
             </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button @click="openImportModal = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
             <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="px-4 py-2 text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
-              <span x-text="isImporting ? 'Mengimpor...' : 'Import'"></span>
+              <span x-text="isImporting ? 'Mengimpor...' : 'Mengimpor'"></span>
             </button>
           </div>
         </div>
       </div>
     </div>
+  `;
 
+  const script = `
     <script>
       function bankSoalFtbData() {
         return {
           soalList: [],
+          selectedIds: [],
+          searchQuery: '',
           loading: true,
           showForm: false,
           isEdit: false,
@@ -164,6 +183,11 @@ export const BankSoalFtbUI = () => {
           init() {
             this.fetchData();
           },
+          filteredSoalList() {
+            if (this.searchQuery.trim() === '') return this.soalList;
+            const q = this.searchQuery.toLowerCase();
+            return this.soalList.filter(function(s) { return (s.fullText || '').toLowerCase().indexOf(q) !== -1; });
+          },
           async fetchData() {
             this.loading = true;
             try {
@@ -179,21 +203,17 @@ export const BankSoalFtbUI = () => {
           },
           extractAnswers() {
             const matches = [...this.formData.fullText.matchAll(/\\[(.*?)\\]/g)];
-            // Pertahankan penjelasan yang sudah diisi jika kata sama
-            const newAnswers = matches.map(m => m[1]).filter(w => w.trim() !== "");
-            
+            const newAnswers = matches.map(function(m) { return m[1]; }).filter(function(w) { return w.trim() !== ""; });
             const currentAnsMap = {};
-            this.formData.answers.forEach(a => { currentAnsMap[a.word] = a.explanation; });
-
-            this.formData.answers = newAnswers.map(word => ({
-              word: word,
-              explanation: currentAnsMap[word] || ""
-            }));
+            this.formData.answers.forEach(function(a) { currentAnsMap[a.word] = a.explanation; });
+            this.formData.answers = newAnswers.map(function(word) {
+              return { word: word, explanation: currentAnsMap[word] || '' };
+            });
           },
-          openFormModal(soal = null) {
+          openFormModal(soal) {
             if (soal) {
               this.isEdit = true;
-              this.formData = { ...soal, answers: JSON.parse(JSON.stringify(soal.answers)) };
+              this.formData = { id: soal.id, fullText: soal.fullText, difficulty: soal.difficulty, answers: JSON.parse(JSON.stringify(soal.answers)) };
             } else {
               this.isEdit = false;
               this.formData = { id: null, fullText: '', answers: [], difficulty: 'MUDAH' };
@@ -207,9 +227,9 @@ export const BankSoalFtbUI = () => {
             }
             try {
               const method = this.isEdit ? 'PUT' : 'POST';
-              const url = this.isEdit ? \`/api/bank-soal/ftb/\${this.formData.id}\` : '/api/bank-soal/ftb';
+              const url = this.isEdit ? '/api/bank-soal/ftb/' + this.formData.id : '/api/bank-soal/ftb';
               const res = await fetch(url, {
-                method,
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.formData)
               });
@@ -224,10 +244,27 @@ export const BankSoalFtbUI = () => {
               alert("Kesalahan sistem");
             }
           },
+          async deleteSelected() {
+            if (this.selectedIds.length === 0) return;
+            if (!confirm("Hapus " + this.selectedIds.length + " soal terpilih?")) return;
+            try {
+              const res = await fetch('/api/bank-soal/ftb/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: this.selectedIds })
+              });
+              if (res.ok) {
+                this.selectedIds = [];
+                this.fetchData();
+              }
+            } catch (err) {
+              alert("Gagal menghapus soal terpilih");
+            }
+          },
           async deleteSoal(id) {
             if (!confirm("Hapus soal ini?")) return;
             try {
-              const res = await fetch(\`/api/bank-soal/ftb/\${id}\`, { method: 'DELETE' });
+              const res = await fetch('/api/bank-soal/ftb/' + id, { method: 'DELETE' });
               if (res.ok) this.fetchData();
             } catch (err) {
               alert("Gagal hapus");
@@ -252,11 +289,27 @@ export const BankSoalFtbUI = () => {
               });
               const json = await res.json();
               if (json.success) {
-                alert(\`Berhasil mengimpor \${json.imported} soal.\`);
+                let msg = "Berhasil mengimpor " + json.imported + " soal.";
+                if (json.warnings && json.warnings.length > 0) {
+                  const skipReasons = {};
+                  json.warnings.forEach(function(w) {
+                    if (w.indexOf('ganda') !== -1) skipReasons['duplikat'] = (skipReasons['duplikat'] || 0) + 1;
+                    else if (w.indexOf('word') !== -1 || w.indexOf('kata rumpang') !== -1) skipReasons['word kosong'] = (skipReasons['word kosong'] || 0) + 1;
+                    else if (w.indexOf('difficulty') !== -1) skipReasons['difficulty invalid'] = (skipReasons['difficulty invalid'] || 0) + 1;
+                    else if (w.indexOf('fullText') !== -1) skipReasons['fullText kosong'] = (skipReasons['fullText kosong'] || 0) + 1;
+                    else skipReasons['lainnya'] = (skipReasons['lainnya'] || 0) + 1;
+                  });
+                  let detail = ' | ' + json.warnings.length + ' dilewati: ';
+                  Object.keys(skipReasons).forEach(function(r) { detail += r + '=' + skipReasons[r] + ' '; });
+                  msg += detail;
+                  console.warn('[FTB Import Warnings]', json.warnings.slice(0, 30));
+                }
+                alert(msg);
                 this.openImportModal = false;
                 this.selectedFile = null;
                 this.selectedFileName = "";
-                document.getElementById('fileImportFTB').value = '';
+                const fi = document.getElementById('fileImportFTB');
+                if (fi) fi.value = '';
                 this.fetchData();
               } else {
                 alert(json.error || "Gagal import");
@@ -268,23 +321,17 @@ export const BankSoalFtbUI = () => {
             }
           },
           downloadTemplate() {
-            const rows = [
-              'fullText,difficulty,word1,explanation1,word2,explanation2,word3,explanation3',
-              'Ibukota Indonesia adalah [Jakarta] yang terletak di Pulau [Jawa].,MUDAH,Jakarta,Kota metropolitan terbesar di Indonesia,Jawa,Pulau terpadat di Indonesia,,',
-              'Proses fotosintesis menghasilkan [oksigen] dan [glukosa] dengan bantuan cahaya matahari.,SEDANG,oksigen,Gas yang dibutuhkan makhluk hidup untuk bernafas,glukosa,Sumber energi bagi tumbuhan,,',
-              'Teori relativitas dikemukakan oleh [Einstein] pada tahun [1905].,SULIT,Einstein,Fisikawan brilian asal Jerman,1905,Tahun diterbitkannya teori relativitas khusus,,'
-            ];
-            const csvContent = rows.join('\\n');
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'Template_Bank_Soal_FTB.csv';
+            link.href = '/api/bank-soal/template/ftb';
+            link.download = 'Template_Bank_Soal_FTB.xlsx';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
           }
         };
       }
-    </script>
+    <\/script>
   `;
+
+  return html + script;
 };
