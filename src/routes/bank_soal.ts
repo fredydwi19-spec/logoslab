@@ -332,6 +332,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
         // Baca semua sheet dan gabungkan
         for (const sheetName of workbook.SheetNames) {
           const worksheet = workbook.Sheets[sheetName];
+          if (!worksheet) continue;
           // defval:'': sel kosong tetap terbaca sebagai string kosong (bukan undefined)
           // raw:false: angka/tanggal dikonversi ke string
           // blankrows:false: skip baris yang benar-benar kosong
@@ -447,7 +448,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
           // Auto-heal: jika tidak ada word di kolom, coba ekstrak dari kurung siku [...] di teks utuh
           if (!answers.length) {
             const matches = [...fullText.matchAll(/\[(.*?)\]/g)];
-            answers = matches.map(m => ({ word: m[1].trim(), explanation: '' })).filter(a => a.word !== '');
+            answers = matches.map(m => ({ word: (m[1] || '').trim(), explanation: '' })).filter(a => a.word !== '');
           }
 
           if (!answers.length) {
@@ -606,15 +607,12 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
         const allSelected = [...qMudah, ...qSedang, ...qSulit];
         // Map difficulty MUDAH/SEDANG/SULIT → score untuk questionBank
         const diffToScore: Record<string, number> = { MUDAH: 10, SEDANG: 20, SULIT: 50 };
-        // Map difficulty MUDAH/SEDANG/SULIT → enum lama RENDAH/SEDANG/SULIT
-        const diffToOld: Record<string, string> = { MUDAH: "RENDAH", SEDANG: "SEDANG", SULIT: "SULIT" };
-
         const valuesToInsert = allSelected.map(q => ({
           projectId: Number(projectId),
           question: q.question,
           optionA: q.optionA, optionB: q.optionB, optionC: q.optionC, optionD: q.optionD,
           correctAnswer: q.correctAnswer,
-          difficulty: diffToOld[q.difficulty] as any,
+          difficulty: q.difficulty as any,
           score: diffToScore[q.difficulty] || 10,
           explanation: q.explanation || ""
         }));
@@ -644,14 +642,13 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
         }
 
         const diffToScore: Record<string, number> = { MUDAH: 10, SEDANG: 20, SULIT: 50 };
-        const diffToOld: Record<string, string> = { MUDAH: "RENDAH", SEDANG: "SEDANG", SULIT: "SULIT" };
         const allSelected = [...fMudah, ...fSedang, ...fSulit];
 
         const valuesToInsert = allSelected.map(f => ({
           projectId: Number(projectId),
           fullText: f.fullText,
           answers: f.answers,
-          difficulty: diffToOld[f.difficulty] as any,
+          difficulty: f.difficulty as any,
           score: diffToScore[f.difficulty] || 10,
         }));
 

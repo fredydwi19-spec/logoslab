@@ -517,7 +517,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
       </div><!-- /p-8 -->
 
       <!-- Preview Modal -->
-      <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
+      <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] backdrop-blur-sm">
         <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
           <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 z-10 text-3xl font-black">&times;</button>
           <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
@@ -644,7 +644,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
                   <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
                   <template x-if="activeProject?.gameType === 'QUIZ'">
                     <div>
-                      <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                      <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-6 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <template x-for="opt in ['A','B','C','D']">
                           <button @click="checkAnswerQuiz(opt)"
@@ -654,9 +654,9 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
                               'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
                               'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
                             }"
-                            class="border-4 p-5 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-3"
+                            class="border-4 p-4 rounded-xl text-[#1A237E] font-bold transition-all text-left flex items-center gap-3 text-sm"
                             :disabled="showExplanation">
-                            <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black bg-slate-100 shrink-0" x-text="opt"></span>
+                            <span class="h-8 w-8 rounded-lg flex items-center justify-center font-bold bg-slate-100 shrink-0" x-text="opt"></span>
                             <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
                           </button>
                         </template>
