@@ -303,7 +303,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
           optionD: q.optionD,
           correctAnswer: q.correctAnswer,
           difficulty: q.difficulty,
-          score: q.difficulty === "RENDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
+          score: q.difficulty === "MUDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
           explanation: q.explanation || ""
         }));
         await db.insert(questionBank).values(qValues as any);
@@ -317,7 +317,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
           fullText: q.fullText,
           answers: JSON.stringify(q.answers), // Array of { word, explanation }
           difficulty: q.difficulty,
-          score: q.difficulty === "RENDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
+          score: q.difficulty === "MUDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
         }));
         await db.insert(gameFillTheBlank).values(qValues as any);
 

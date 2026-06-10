@@ -1,5 +1,5 @@
 import { db } from "../db/db";
-import { projects, users, reviewsHistory, achievements, materiReadProgress, userScores } from "../db/schema";
+import { projects, users, reviewsHistory, achievements, materiReadProgress, userScores, gameInterests } from "../db/schema";
 import { eq, and, sql, gte } from "drizzle-orm";
 
 /**
@@ -209,5 +209,60 @@ export async function getDashboardKpiSummary() {
     },
     funnelChart: funnelData,
     heatmap: heatmapData,
+  };
+}
+
+export async function getUserDashboardSummary(userId: number) {
+  // 1. KPI
+  const scoresResult = await db.select({ score: userScores.score, projectId: userScores.projectId }).from(userScores).where(eq(userScores.userId, userId));
+  const totalXP = scoresResult.reduce((sum, s) => sum + s.score, 0);
+
+  const badgesResult = await db.select({ count: sql<number>`count(*)` }).from(achievements).where(eq(achievements.userId, userId));
+  const badges = Number(badgesResult[0]?.count ?? 0);
+
+  const completedMateri = await db.select({ count: sql<number>`count(*)` }).from(materiReadProgress).where(and(eq(materiReadProgress.userId, userId), eq(materiReadProgress.isCompleted, true)));
+  const uniqueGamesPlayed = new Set(scoresResult.map(s => s.projectId)).size;
+  const totalCompleted = Number(completedMateri[0]?.count ?? 0) + uniqueGamesPlayed;
+  
+  const totalPublishedResult = await db.select({ count: sql<number>`count(*)` }).from(projects).where(eq(projects.status, "PUBLISHED"));
+  const totalPublished = Number(totalPublishedResult[0]?.count ?? 1);
+  const completionRate = totalPublished === 0 ? 0 : Math.min(100, Math.round((totalCompleted / totalPublished) * 100));
+
+  const streak = 5; // Placeholder logic for streak
+
+  // 2. Spider Chart
+  const categories = ["Biblical Knowledge", "Eksegesis & Hermeneutik", "Biblical Theory", "Homiletika", "Apologetika"];
+  const spiderData = categories.map(() => 0);
+
+  // Fetch all game interests to map category to projectIds
+  const allGameInterests = await db.select().from(gameInterests);
+  
+  for (let i = 0; i < categories.length; i++) {
+    const cat = categories[i];
+    const catProjectIds = allGameInterests.filter(gi => gi.category === cat).map(gi => gi.projectId);
+    if (catProjectIds.length > 0) {
+      const catScores = scoresResult.filter(s => catProjectIds.includes(s.projectId));
+      if (catScores.length > 0) {
+        const sumScore = catScores.reduce((sum, s) => sum + s.score, 0);
+        // Assuming max score per game is 100
+        const maxScore = catProjectIds.length * 100;
+        spiderData[i] = maxScore > 0 ? Math.min(100, Math.round((sumScore / maxScore) * 100)) : 0;
+      }
+    }
+  }
+
+  // 3. Line Chart
+  const lineChart = {
+    labels: ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"],
+    data: [50, 65, 80, 85]
+  };
+
+  return {
+    kpi: { streak, totalXP, completionRate, badges },
+    spiderChart: {
+      labels: categories,
+      datasets: [{ label: "Tingkat Penguasaan (%)", data: spiderData }]
+    },
+    lineChart
   };
 }

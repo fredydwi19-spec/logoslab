@@ -4,9 +4,9 @@ export const PublicGamePlayer = () => {
   return `
     <div x-data="publicGamePlayerData()">
       <!-- Game Modal Player -->
-      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[200] backdrop-blur-xl p-4 md:p-10">
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-10">
          <!-- Game Container -->
-         <div class="bg-white w-full max-w-5xl h-full md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
+         <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
             <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
                <div class="flex flex-col h-full">
@@ -43,7 +43,7 @@ export const PublicGamePlayer = () => {
                         <!-- Quiz Content -->
                         <template x-if="activeGame?.gameType === 'QUIZ'">
                           <div>
-                            <h2 class="text-lg md:text-2xl font-bold text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                            <h2 class="text-base md:text-lg font-bold text-[#1A237E] mb-4 md:mb-8 leading-relaxed" x-text="questions[currentIndex]?.question"></h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                <template x-for="opt in ['A', 'B', 'C', 'D']">
                                   <button @click="selectAnswer(opt)" 
@@ -53,13 +53,13 @@ export const PublicGamePlayer = () => {
                                         'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
                                         'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
                                      }"
-                                     class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
+                                     class="border-4 p-3 md:p-5 rounded-xl md:rounded-2xl text-left flex items-center gap-3 transition-all group disabled:cursor-default"
                                      :disabled="showFeedback">
-                                     <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-sm md:text-lg transition-colors" 
+                                     <span class="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm transition-colors" 
                                            :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
                                         <span x-text="opt"></span>
                                      </span>
-                                     <span class="text-[#1A237E] font-semibold text-sm md:text-base" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                                     <span class="text-[#1A237E] font-semibold text-xs md:text-sm" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
                                   </button>
                                </template>
                             </div>
@@ -238,7 +238,7 @@ export const PublicGamePlayer = () => {
           },
 
           getPoints(diff) {
-             const points = { 'RENDAH': 10, 'SEDANG': 20, 'SULIT': 50, 'BONUS': 30 };
+             const points = { 'MUDAH': 10, 'SEDANG': 20, 'SULIT': 50, 'BONUS': 30 };
              return points[diff] || 10;
           },
 

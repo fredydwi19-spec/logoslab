@@ -3,35 +3,140 @@ import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 
 export const MemberDashboard = ({ publishedGames, username }: { publishedGames: any[], username: string }) => {
   return `
-    <div class="space-y-10" x-data="memberDashboardData()">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="space-y-10" x-data="memberDashboardData()" x-init="init()">
          
-      <!-- Stats Row -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-gradient-to-br from-[#1A237E] to-blue-700 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden group">
-          <div class="absolute -right-4 -bottom-4 text-9xl opacity-10 group-hover:scale-110 transition-transform">⭐</div>
-          <div class="relative z-10">
-            <h3 class="text-sm font-black uppercase tracking-[0.2em] opacity-80 mb-2">Peringkat Saya</h3>
-            <div class="text-4xl font-black mb-2">Level 12</div>
-            <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">Pelajar Alkitab Setia</p>
-          </div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl relative overflow-hidden group">
-           <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 text-slate-200">🎮</div>
-           <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Game Selesai</h3>
-           <div class="text-4xl font-black text-[#1A237E]">15</div>
-           <div class="mt-4 flex items-center gap-2">
-             <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-[#FFC107] w-[65%]"></div>
-             </div>
-             <span class="text-[10px] font-black text-slate-400">65%</span>
+      <!-- Top Row (KPI Cards) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+           <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
+                 <i class="bi bi-fire text-orange-500 text-2xl"></i>
+              </div>
+              <div>
+                 <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Learning Streak</p>
+                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="(summary?.kpi?.streak || 0) + ' Hari'">...</h4>
+              </div>
            </div>
         </div>
-        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl relative overflow-hidden group">
-           <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 text-slate-200">💎</div>
-           <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Total Skor</h3>
-           <div class="text-4xl font-black text-[#FF5722]">2,450</div>
-           <p class="text-[10px] text-slate-400 font-bold mt-2 uppercase">Kumpulkan poin untuk hadiah!</p>
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+           <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center">
+                 <i class="bi bi-lightning-charge-fill text-[#FFC107] text-2xl"></i>
+              </div>
+              <div>
+                 <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Total XP</p>
+                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="summary?.kpi?.totalXP || 0">...</h4>
+              </div>
+           </div>
         </div>
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+           <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
+                 <i class="bi bi-check-circle-fill text-green-500 text-2xl"></i>
+              </div>
+              <div>
+                 <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Completion</p>
+                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="(summary?.kpi?.completionRate || 0) + '%'">...</h4>
+              </div>
+           </div>
+        </div>
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+           <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
+                 <i class="bi bi-award-fill text-indigo-500 text-2xl"></i>
+              </div>
+              <div>
+                 <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Badges</p>
+                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="summary?.kpi?.badges || 0">...</h4>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      <!-- Middle Row (Dual Chart Layout) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="col-span-1 lg:col-span-5 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
+           <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-4">Analisis Minat (Spider Chart)</h3>
+           <div class="flex-1 relative min-h-[300px]">
+             <canvas id="spiderChart"></canvas>
+           </div>
+        </div>
+        <div class="col-span-1 lg:col-span-7 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
+           <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-4">Tren Nilai (Mingguan)</h3>
+           <div class="flex-1 relative min-h-[300px]">
+             <canvas id="lineChart"></canvas>
+           </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row (Actionable Widgets) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         <!-- Next Task -->
+         <div class="bg-[#1A237E] text-white p-6 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 group-hover:scale-110 transition-transform">🎯</div>
+            <div class="relative z-10">
+               <div class="flex justify-between items-start mb-4">
+                 <div>
+                    <p class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Tugas Berikutnya</p>
+                    <h3 class="text-xl md:text-2xl font-black text-[#FFC107]">Lanjutkan Belajar</h3>
+                 </div>
+                 <div class="bg-indigo-900/50 p-3 rounded-2xl">
+                    <i class="bi bi-play-circle-fill text-2xl text-white"></i>
+                 </div>
+               </div>
+               <p class="text-sm text-indigo-200 mb-6">Materi ini akan membantu Anda memahami dasar-dasar teologi secara lebih dalam.</p>
+               
+               <div class="space-y-2">
+                 <div class="flex justify-between text-xs font-bold text-indigo-300">
+                    <span>Progress</span>
+                    <span>35%</span>
+                 </div>
+                 <div class="h-2 w-full bg-indigo-900/50 rounded-full overflow-hidden">
+                    <div class="h-full bg-[#FFC107] w-[35%]"></div>
+                 </div>
+               </div>
+               
+               <button class="mt-6 w-full bg-white text-[#1A237E] font-black uppercase tracking-widest py-3 rounded-xl hover:bg-slate-100 transition-colors shadow-lg">Lanjutkan Belajar</button>
+            </div>
+         </div>
+         
+         <!-- Mini Leaderboard -->
+         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+               <h3 class="text-base md:text-lg font-bold text-[#1A237E] flex items-center gap-2">
+                 <i class="bi bi-trophy-fill text-yellow-500 text-xl"></i> Papan Peringkat
+               </h3>
+               <a href="#" class="text-xs font-bold text-indigo-500 uppercase hover:underline">Lihat Semua</a>
+            </div>
+            <div class="flex-1 flex flex-col gap-3">
+               <!-- Rank 1 -->
+               <div class="flex items-center gap-4 p-3 rounded-xl bg-orange-50 border border-orange-100">
+                  <div class="w-8 h-8 rounded-full bg-orange-500 text-white font-black flex items-center justify-center shadow-sm">1</div>
+                  <div class="flex-1">
+                     <h4 class="font-bold text-sm text-[#1A237E]">David F.</h4>
+                     <p class="text-xs text-slate-500">2,500 XP</p>
+                  </div>
+                  <i class="bi bi-fire text-orange-500 text-xl"></i>
+               </div>
+               <!-- Rank 2 -->
+               <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <div class="w-8 h-8 rounded-full bg-slate-400 text-white font-black flex items-center justify-center shadow-sm">2</div>
+                  <div class="flex-1">
+                     <h4 class="font-bold text-sm text-[#1A237E]">Sarah M.</h4>
+                     <p class="text-xs text-slate-500">2,100 XP</p>
+                  </div>
+               </div>
+               <!-- Rank 3 -->
+               <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                  <div class="w-8 h-8 rounded-full bg-[#8D6E63] text-white font-black flex items-center justify-center shadow-sm">3</div>
+                  <div class="flex-1">
+                     <h4 class="font-bold text-sm text-[#1A237E]">Anda</h4>
+                     <p class="text-xs text-slate-500" x-text="(summary?.kpi?.totalXP || 0) + ' XP'">1,950 XP</p>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
 
       <!-- Published Games Grid -->
@@ -77,9 +182,9 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
       </div>
 
       <!-- Game Modal Player -->
-      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[200] backdrop-blur-xl p-4 md:p-10">
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-10">
          <!-- Game Container -->
-         <div class="bg-white w-full max-w-5xl h-full md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
+         <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
             <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
                <div class="flex flex-col h-full">
@@ -248,6 +353,84 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
     <script>
       window.memberDashboardData = function() {
         return {
+          summary: null,
+          async init() {
+            try {
+              const res = await fetch('/api/dashboard/user-summary');
+              const json = await res.json();
+              if (json.success) {
+                this.summary = json.data;
+                this.renderCharts();
+              }
+            } catch (e) {
+              console.error('Failed to fetch summary', e);
+            }
+          },
+          renderCharts() {
+            if (!this.summary || typeof Chart === 'undefined') return;
+            
+            // Render Spider Chart
+            const ctxSpider = document.getElementById('spiderChart');
+            if (ctxSpider) {
+              new Chart(ctxSpider, {
+                type: 'radar',
+                data: {
+                  labels: this.summary.spiderChart.labels,
+                  datasets: [{
+                    label: 'Tingkat Penguasaan (%)',
+                    data: this.summary.spiderChart.datasets[0].data,
+                    backgroundColor: 'rgba(26, 35, 126, 0.2)',
+                    borderColor: '#1A237E',
+                    pointBackgroundColor: '#FFC107',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#1A237E'
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    r: {
+                      angleLines: { color: 'rgba(0,0,0,0.1)' },
+                      grid: { color: 'rgba(0,0,0,0.1)' },
+                      pointLabels: { font: { size: 10, family: 'Inter' } },
+                      ticks: { beginAtZero: true, max: 100, stepSize: 20 }
+                    }
+                  }
+                }
+              });
+            }
+
+            // Render Line Chart
+            const ctxLine = document.getElementById('lineChart');
+            if (ctxLine) {
+              new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                  labels: this.summary.lineChart.labels,
+                  datasets: [{
+                    label: 'Tren Nilai',
+                    data: this.summary.lineChart.data,
+                    fill: true,
+                    backgroundColor: 'rgba(255, 87, 34, 0.1)',
+                    borderColor: '#FF5722',
+                    tension: 0.4
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      max: 100
+                    }
+                  }
+                }
+              });
+            }
+          },
           activeGame: null,
           questions: [],
           isPlaying: false,
@@ -320,7 +503,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           },
 
           getPoints(diff) {
-             const points = { 'RENDAH': 10, 'SEDANG': 20, 'SULIT': 50, 'BONUS': 30 };
+             const points = { 'MUDAH': 10, 'SEDANG': 20, 'SULIT': 50, 'BONUS': 30 };
              return points[diff] || 10;
           },
 

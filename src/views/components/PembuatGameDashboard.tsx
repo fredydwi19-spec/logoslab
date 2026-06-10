@@ -154,9 +154,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
 
             addQuestion() {
               if (this.activeProject?.gameType === 'QUIZ') {
-                this.questions.push({ question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'RENDAH', explanation: '' });
+                this.questions.push({ question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'MUDAH', explanation: '' });
               } else if (this.activeProject?.gameType === 'FILL_THE_BLANK') {
-                this.questions.push({ fullText: '', answers: [], difficulty: 'RENDAH' });
+                this.questions.push({ fullText: '', answers: [], difficulty: 'MUDAH' });
               }
               this.debouncedSave();
             },
@@ -217,7 +217,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
               let header = '', dummy = '';
               if (this.activeProject.gameType === 'QUIZ') {
                 header = "question,optionA,optionB,optionC,optionD,correctAnswer,difficulty,explanation\\n";
-                dummy = "Siapa Presiden pertama RI?,Soekarno,Hatta,Soedirman,Habibie,A,RENDAH,Soekarno adalah proklamator\\n";
+                dummy = "Siapa Presiden pertama RI?,Soekarno,Hatta,Soedirman,Habibie,A,MUDAH,Soekarno adalah proklamator\\n";
               } else {
                 header = "fullText,word1,explanation1,word2,explanation2\\n";
                 dummy = "Kalimat dengan [kata] kunci.,kata,Penjelasan kata tersebut,,\\n";
@@ -243,12 +243,12 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                   const cols = row.split(',');
                   if (this.activeProject.gameType === 'QUIZ') {
                     if (cols.length < 6) continue;
-                    imported.push({ question: cols[0], optionA: cols[1], optionB: cols[2], optionC: cols[3], optionD: cols[4], correctAnswer: (cols[5] || 'A').trim().toUpperCase(), difficulty: (cols[6] || 'RENDAH').trim().toUpperCase(), explanation: cols[7] || '' });
+                    imported.push({ question: cols[0], optionA: cols[1], optionB: cols[2], optionC: cols[3], optionD: cols[4], correctAnswer: (cols[5] || 'A').trim().toUpperCase(), difficulty: (cols[6] || 'MUDAH').trim().toUpperCase(), explanation: cols[7] || '' });
                   } else {
                     const answers = [];
                     if (cols[1] && cols[2]) answers.push({ word: cols[1], explanation: cols[2] });
                     if (cols[3] && cols[4]) answers.push({ word: cols[3], explanation: cols[4] });
-                    imported.push({ fullText: cols[0], answers, difficulty: 'RENDAH' });
+                    imported.push({ fullText: cols[0], answers, difficulty: 'MUDAH' });
                   }
                 }
                 this.stagingQuestions = imported;
@@ -607,7 +607,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                         <p class="font-bold text-blue-900 mb-2" x-text="sq.question || sq.fullText"></p>
                         <div class="flex gap-4 opacity-60 font-black uppercase text-[8px]">
                            <span x-text="'TYPE: ' + (sq.question ? 'QUIZ' : 'FTB')"></span>
-                           <span x-text="'DIFFICULTY: ' + (sq.difficulty || 'RENDAH')"></span>
+                           <span x-text="'DIFFICULTY: ' + (sq.difficulty || 'MUDAH')"></span>
                         </div>
                      </div>
                   </template>
@@ -693,7 +693,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Kesulitan</label>
                         <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
-                          <option value="RENDAH">RENDAH (10 Poin)</option>
+                          <option value="MUDAH">MUDAH (10 Poin)</option>
                           <option value="SEDANG">SEDANG (20 Poin)</option>
                           <option value="SULIT">SULIT (50 Poin)</option>
                         </select>
@@ -766,7 +766,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
       <div x-show="showPreview" 
            @open-preview.window="gameData = $event.detail; showPreview = true;"
            style="display:none;" 
-           class="fixed inset-0 bg-black/90 flex items-center justify-center z-[200] backdrop-blur-md">
+           class="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] backdrop-blur-md">
          <div class="bg-white rounded-[3rem] w-full shadow-2xl overflow-hidden flex flex-col relative border-4 border-white/20 transition-all duration-500"
               :class="activeProject?.gameType === 'WORD_SEARCH' || activeProject?.gameType === 'CROSSWORD' ? 'max-w-[95vw] h-[95vh]' : 'max-w-4xl h-[85vh]'">
             <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-[#FF5722] z-10 text-3xl transition-colors font-black">&times;</button>
@@ -799,7 +799,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                   <!-- Quiz Content -->
                   <template x-if="activeProject?.gameType === 'QUIZ'">
                     <div>
-                      <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                      <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-6 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <template x-for="opt in ['A', 'B', 'C', 'D']">
                            <button @click="checkAnswerQuiz(opt)" 
@@ -809,9 +809,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                                 'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
                                 'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
                               }"
-                              class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
+                              class="border-4 p-4 rounded-xl text-[#1A237E] font-bold transition-all text-left flex items-center gap-3 group disabled:cursor-default text-sm"
                               :disabled="showExplanation">
-                              <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
+                              <span class="h-8 w-8 rounded-lg flex-shrink-0 flex items-center justify-center font-bold" 
                                     :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
                                 <span x-text="opt"></span>
                               </span>

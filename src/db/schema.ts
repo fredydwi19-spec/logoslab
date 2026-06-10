@@ -1,4 +1,4 @@
-import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean, text, longtext, unique } from "drizzle-orm/mysql-core";
+import { mysqlTable, serial, varchar, timestamp, mysqlEnum, int, bigint, boolean, text, longtext, unique, index } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: serial("id").primaryKey(),
@@ -42,6 +42,25 @@ export const projects = mysqlTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
 
+export const interestCategoryEnum = mysqlEnum("interest_category", [
+  "Biblical Knowledge",
+  "Eksegesis & Hermeneutik",
+  "Biblical Theory",
+  "Homiletika",
+  "Apologetika",
+  "Lainnya"
+]);
+
+export const gameInterests = mysqlTable("game_interests", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  category: interestCategoryEnum.notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  unq: unique("project_category_unq").on(table.projectId, table.category),
+  categoryIdx: index("category_idx").on(table.category)
+}));
+
 export const questionBank = mysqlTable("question_bank", {
   id: serial("id").primaryKey(),
   projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
@@ -51,7 +70,7 @@ export const questionBank = mysqlTable("question_bank", {
   optionC: varchar("option_c", { length: 255 }).notNull(),
   optionD: varchar("option_d", { length: 255 }).notNull(),
   correctAnswer: mysqlEnum("correct_answer", ["A", "B", "C", "D"]).notNull(),
-  difficulty: mysqlEnum("difficulty", ["RENDAH", "SEDANG", "SULIT", "BONUS"]).notNull(),
+  difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT", "BONUS"]).notNull(),
   score: int("score").notNull(),
   explanation: text("explanation"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -62,7 +81,7 @@ export const gameQuestionsBank = mysqlTable("game_questions_bank", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
   category: varchar("category", { length: 100 }),
-  difficulty: mysqlEnum("difficulty", ["RENDAH", "SEDANG", "SULIT"]).notNull(),
+  difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
@@ -73,7 +92,7 @@ export const gameFillTheBlank = mysqlTable("game_fill_the_blank", {
   questionBankId: bigint("question_bank_id", { mode: 'number', unsigned: true }).references(() => gameQuestionsBank.id),
   fullText: text("full_text").notNull(),
   answers: text("answers").notNull(), // JSON string: Array<{ word: string, explanation: string }>
-  difficulty: mysqlEnum("difficulty", ["RENDAH", "SEDANG", "SULIT"]).notNull(),
+  difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
   score: int("score").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
