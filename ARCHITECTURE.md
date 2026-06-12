@@ -56,13 +56,14 @@ Tabel Utama dan Kolom Kunci:
 - **`projects`**: Entitas inti untuk Game dan Materi.
   - PK: `id`.
   - FK: `id_pembuat` (ke `users.id`), `id_pakar` (ke `users.id`).
-  - Kolom penting: `type` (GAME/MATERI), `game_type` (QUIZ, FILL_THE_BLANK, dll), `status` (enum siklus draft-publish).
+  - Kolom penting: `type` (GAME/MATERI), `game_type` (QUIZ, FILL_THE_BLANK, dll), `status` (enum: 'DRAFT', 'REVIEW_PAKAR', 'REVISI_PAKAR', 'ACCEPTED_PAKAR', 'REVIEW_KETUA', 'REVISI_KETUA', 'PUBLISHED', 'UNPUBLISHED').
 - **Entitas Game / Soal Spesifik Proyek**:
   - `question_bank` (Kuis biasa), `game_fill_the_blank`, `game_word_search`, `game_crossword`.
   - FK: `project_id` (ke `projects.id`). Menyimpan data soal, opsi, dan kunci jawaban dalam bentuk teks atau JSON string.
 - **Entitas Materi Proyek**:
-  - `materi_contents`: File lampiran (PDF, Video). FK `project_id`.
-  - `material_sections`, `material_glossary`: Sub-konten materi berjenis 'MANUAL'. FK `project_id`.
+  - `materi_contents`: Menampung lampiran file. Kolom kunci: `id` (PK), `project_id` (FK), `content_type` (enum PDF, PPT, IMAGE, VIDEO, EMBED_URL), `file_url`, `file_name`, `file_size`, dan `sort_order` untuk pengurutan urutan.
+  - `material_sections`: Sub-konten materi berjenis 'MANUAL'. Kolom kunci: `id` (PK), `project_id` (FK), `sub_title`, `content` (isi teks artikel), dan `sort_order`.
+  - `material_glossary`: Menyimpan daftar istilah/glosarium. Kolom: `id`, `project_id` (FK), `word`, dan `definition`.
 - **Bank Soal Global** (Tugas independen dari proyek):
   - `bank_soal_quiz`, `bank_soal_ftb`, `bank_soal_tts`: Mengandung soal global (ditambahkan manual/Excel).
   - FK: `created_by` (ke `users.id`).
@@ -72,7 +73,7 @@ Tabel Utama dan Kolom Kunci:
   - `user_scores`, `user_badges`, `achievements`: Melacak pencapaian dan poin total. FK: `user_id`.
 - **Notifikasi dan Histori**:
   - `notifications`: FK `user_id`, `project_id`.
-  - `reviews_history`: FK `project_id`, `reviewer_id`.
+  - `reviews_history`: Mencatat jejak umpan balik dari Pakar atau Ketua Tim. Kolom kunci: `id` (PK), `project_id` (FK), `reviewer_id` (FK), `feedback` (isi komentar/catatan revisi), `status_given` (keputusan review), `created_at`.
 
 ## 4. Daftar Fitur & Alur Logika Saat Ini
 
@@ -113,5 +114,6 @@ Tabel Utama dan Kolom Kunci:
   Terdapat perlindungan pada banyak *endpoint* (cth: `if (user.role !== "KETUA_TIM")`) sebelum melakukan tindakan manipulasi data (CRUD).
 - **Format API Response yang Standar**:
   Sebagian besar API merespons dengan format *object* standar jika berhasil: `{ success: true, data: ... }` atau `{ success: true, message: "..." }`. Jika gagal: `{ error: "pesan galat" }` dengan properti `status` HTTP.
-- **Pola Penanganan Kesalahan (Error Handling)**:
   Mengandalkan `.onError()` tingkat atas dari ElysiaJS untuk mencegat *throw Error*, yang mengembalikan status 500 dan properti *stack* untuk *logging*. Blok `try-catch` spesifik hanya membungkus hal yang rumit seperti manipulasi Excel atau panggilan API pihak ketiga (Gemini).
+- **Mekanisme State Transition Proyek**:
+  Siklus dokumen dari draf hingga dipublikasi dikelola dengan mengubah nilai pada kolom `status` di tabel `projects` secara berurutan. Setiap perubahan status divalidasi berdasarkan *Role* user di rute `POST /api/projects/:id/review`, dan secara otomatis memicu penyisipan (*insert log*) baru di tabel `reviews_history` (menyimpan jejak komentar dan keputusan `status_given`), serta merekam *alert* ke tabel `notifications` agar tim terkait mendapat pemberitahuan seketika terkait aktivitas proyek tersebut.
