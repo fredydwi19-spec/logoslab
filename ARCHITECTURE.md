@@ -67,6 +67,8 @@ Tabel Utama dan Kolom Kunci:
 - **Bank Soal Global** (Tugas independen dari proyek):
   - `bank_soal_quiz`, `bank_soal_ftb`, `bank_soal_tts`: Mengandung soal global (ditambahkan manual/Excel).
   - FK: `created_by` (ke `users.id`).
+- **Aturan Pelabelan Soal (Tagging)**: 
+  Setiap baris data di `question_bank` atau `bank_soal_quiz` wajib dihubungkan dengan entitas `tags` melalui tabel jembatan relasional, sehingga setiap butir soal mewakili satu sub-topik kompetensi yang spesifik sebagai acuan deteksi kelemahan siswa.
 - **Gamifikasi dan Progress**:
   - `user_game_history`: Menyimpan skor historis permainan. FK: `user_id`, `game_id` (ke `projects`).
   - `user_material_history`, `materi_read_progress`: Laporan analitik durasi dan *scroll*. FK: `user_id`, `project_id`.
@@ -110,6 +112,8 @@ Tabel Utama dan Kolom Kunci:
   UI utama tidak dibangun dengan reaktivitas klien terpisah (seperti React *client-side* tunggal/SPA), tetapi mengembalikan string HTML yang dikomposisi menggunakan fungsi (komponen JSX tanpa properti state kompleks) yang kemudian di-*hydrate* oleh Tailwind dan terkadang Alpine.js (klien yang disuntik).
 - **Penyimpanan Terstruktur via JSON string**:
   Karena menggunakan MySQL konvensional, struktur tak teratur (seperti sel permainan TTS, jawaban teka-teki silang, *fill in the blank*) disimpan sebagai deretan string JSON secara sengaja pada kolom *TEXT/LONGTEXT*. Terdapat pola konsisten mem-*parsing* `JSON.parse` saat pengembalian respons API.
+- **Pengecualian Analitik Siswa**: 
+  Khusus untuk tabel pelacakan performa, durasi, kemajuan belajar, dan log salah-benar jawaban siswa (seperti `user_game_history` atau tabel log analitik baru), data WAJIB disimpan dalam bentuk kolom relasional standar (flat fields) dan BUKAN JSON string, untuk mendukung efisiensi kalkulasi SQL agresif pada service dasbor.
 - **Proteksi Otoritas Berbasis Peran (RBAC)**:
   Terdapat perlindungan pada banyak *endpoint* (cth: `if (user.role !== "KETUA_TIM")`) sebelum melakukan tindakan manipulasi data (CRUD).
 - **Format API Response yang Standar**:
