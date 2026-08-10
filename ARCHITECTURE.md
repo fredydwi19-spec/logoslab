@@ -184,9 +184,10 @@ logos-lab/                          # Root project
 │   │   └── ButtonCTA.tsx           #    Tombol CTA utama
 │   │
 │   ├── pages/                      # ⚛️ React.js Pages (Baru)
-│   │   └── Dashboard.tsx           #    Dashboard utama versi React
+│   │   ├── Dashboard.tsx           #    Dashboard utama versi React
+│   │   └── LoginPage.tsx           #    Halaman autentikasi (Login/Register) React SPA
 │   │
-│   ├── main.tsx                    # ⚛️ Entry point untuk React SPA (dibundle ke public/dist)
+│   ├── main.tsx                    # ⚛️ Entry point untuk React SPA (dibundle ke public/dist) dengan client-side routing sederhana
 │
 ├── drizzle/                        # 📜 Migration files (auto-generated oleh drizzle-kit)
 │   ├── 0000_*.sql → 0009_*.sql     #    Riwayat perubahan skema database secara incremental
