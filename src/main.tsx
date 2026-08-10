@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Dashboard } from './pages/Dashboard';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 
 const App = () => {
@@ -8,11 +8,11 @@ const App = () => {
   if (path === '/login' || path === '/app/login') {
     return <LoginPage />;
   }
-  if (path === '/app' || path === '/dashboard' || path === '/') {
-    return <Dashboard />;
+  if (path === '/app' || path.startsWith('/dashboard') || path === '/app/dashboard' || path === '/') {
+    return <DashboardPage />;
   }
   // Default fallback
-  return <Dashboard />;
+  return <DashboardPage />;
 };
 
 const rootElement = document.getElementById('root');
