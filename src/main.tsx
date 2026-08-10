@@ -6,6 +6,7 @@ import { KetuaTimAllProjects } from './pages/dashboard/KetuaTimAllProjects';
 import { BankSoalQuiz } from './pages/dashboard/BankSoalQuiz';
 import { BankSoalFtb } from './pages/dashboard/BankSoalFtb';
 import { BankSoalTts } from './pages/dashboard/BankSoalTts';
+import { DashboardGamesPage } from './pages/dashboard/DashboardGamesPage';
 
 const App = () => {
   const [path, setPath] = React.useState(window.location.pathname);
@@ -30,6 +31,9 @@ const App = () => {
   }
   if (path === '/dashboard/bank-soal/tts') {
     return <BankSoalTts />;
+  }
+  if (path === '/dashboard/games' || path === '/games') {
+    return <DashboardGamesPage />;
   }
   if (path === '/app' || path.startsWith('/dashboard') || path === '/app/dashboard' || path === '/') {
     return <DashboardPage />;
