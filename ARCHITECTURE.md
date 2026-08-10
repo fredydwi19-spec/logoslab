@@ -166,7 +166,7 @@ logos-lab/                          # Root project
 │       │   ├── CrosswordGame.tsx            # Game player TTS untuk siswa
 │       │   ├── WordSearchEditor.tsx         # Editor game Word Search
 │       │   ├── WordSearchGame.tsx           # Game player Word Search
-│       │   ├── MateriViewer.tsx             # Reader materi (PDF, Video, Manual)
+│       │   ├── MateriViewer.tsx             # (Deprecated) Reader materi (PDF, Video, Manual)
 │       │   ├── MateriSection.tsx            # Section materi di landing page
 │       │   ├── GamesSection.tsx             # Carousel game di landing page
 │       │   ├── PersonalizedGames.tsx        # Rekomendasi game berdasarkan kompetensi user
@@ -190,7 +190,12 @@ logos-lab/                          # Root project
 │   │   │   ├── MemberAchievements.tsx
 │   │   │   ├── PembuatGameDashboard.tsx
 │   │   │   ├── PembuatMateriDashboard.tsx
-│   │   │   └── PakarDashboard.tsx
+│   │   │   ├── PakarDashboard.tsx
+│   │   │   ├── DashboardGamesPage.tsx      #    Halaman list & filter game untuk user
+│   │   │   ├── DashboardMateriPage.tsx     #    Katalog & Viewer Materi SPA
+│   │   │   ├── MateriViewerModal.tsx       #    Modal pembaca materi & kuis
+│   │   │   ├── WordSearchGame.tsx          #    Komponen SPA Word Search
+│   │   │   └── CrosswordGame.tsx           #    Komponen SPA Crossword
 │   │   ├── Dashboard.tsx           #    Dashboard utama versi React (Deprecated/Legacy)
 │   │   └── LoginPage.tsx           #    Halaman autentikasi (Login/Register) React SPA
 │   │

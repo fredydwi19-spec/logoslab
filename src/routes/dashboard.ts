@@ -2,7 +2,9 @@ import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { getDashboardKpiSummary, getUserDashboardSummary } from "../services/dashboardService";
 import { getUserAchievements } from "../services/achievementService";
-
+import { db } from "../db/db";
+import { projects } from "../db/schema";
+import { eq, and } from "drizzle-orm";
 export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
   .use(
     jwt({
@@ -80,6 +82,33 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
       console.error("[dashboard/achievements] Error:", err.message);
       return new Response(
         JSON.stringify({ error: "Gagal mengambil data pencapaian", detail: err.message }),
+        { status: 500 }
+      );
+    }
+  })
+  /**
+   * GET /api/dashboard/published-materi
+   * Mengembalikan semua proyek materi berstatus PUBLISHED
+   */
+  .get("/published-materi", async () => {
+    try {
+      const publishedMateri = await db.select({
+        id: projects.id,
+        title: projects.title,
+        description: projects.description,
+        materiType: projects.materiType,
+        thumbnailUrl: projects.thumbnailUrl,
+        category: projects.category,
+        status: projects.status,
+      }).from(projects).where(
+        and(eq(projects.type, "MATERI"), eq(projects.status, "PUBLISHED"))
+      );
+      
+      return { success: true, data: publishedMateri };
+    } catch (err: any) {
+      console.error("[dashboard/published-materi] Error:", err.message);
+      return new Response(
+        JSON.stringify({ error: "Gagal mengambil data materi", detail: err.message }),
         { status: 500 }
       );
     }

@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
+import { DashboardMateriPage } from './pages/dashboard/DashboardMateriPage';
 
 const App = () => {
   const [path, setPath] = React.useState(window.location.pathname);
@@ -16,6 +17,9 @@ const App = () => {
     return <LoginPage />;
   }
   if (path === '/app' || path.startsWith('/dashboard') || path === '/app/dashboard' || path === '/') {
+    if (path === '/dashboard/materi-list' || path === '/materi-list') {
+      return <DashboardMateriPage />;
+    }
     return <DashboardPage />;
   }
   // Default fallback
