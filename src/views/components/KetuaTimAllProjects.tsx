@@ -267,6 +267,20 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               const err = await res.json();
               alert("Gagal submit review: " + (err.error || 'Terjadi kesalahan'));
             }
+          },
+
+          async publishProject(id) {
+            if (!confirm('Apakah Anda yakin ingin mempublish proyek ini?')) return;
+            const res = await fetch('/api/projects/' + id + '/review', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ statusGiven: 'ACCEPT', feedback: 'Disetujui dan dipublish oleh Ketua Tim' })
+            });
+            if (res.ok) window.location.reload();
+            else {
+              const err = await res.json();
+              alert("Gagal publish: " + (err.error || 'Terjadi kesalahan'));
+            }
           }
         }));
       });
@@ -453,6 +467,9 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                       <template x-if="p.status === 'DRAFT' || p.status === 'REVISI_KETUA' || p.status === 'REVISI_PAKAR'">
                         <button @click="editProject(p)" class="bg-blue-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-blue-600 transition-all shadow-md font-bold">Edit</button>
                       </template>
+                      <template x-if="['REVIEW_KETUA', 'ACCEPTED_PAKAR'].includes(p.status)">
+                        <button @click="publishProject(p.id)" class="bg-green-500 text-white px-3 py-2 rounded-lg text-xs font-black hover:bg-green-600 shadow-md transition-all uppercase tracking-widest">PUBLISH</button>
+                      </template>
                       <button @click="deleteProject(p.id)" class="bg-red-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-red-600 transition-all shadow-md font-bold">Hapus</button>
                       <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 shadow-md transition-all uppercase tracking-widest">DETAIL</button>
                     </div>
@@ -477,17 +494,25 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
 
         ${ProjectHeader()}
 
-        <div class="bg-white p-8 border-2 border-slate-100 rounded-2xl shadow-xl">
-          <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
-            <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
-            Persetujuan Produksi
-          </h4>
-          <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-[#1A237E] outline-none font-medium transition-all mb-6" placeholder="Tuliskan catatan atau instruksi pengerjaan..."></textarea>
-          <div class="flex gap-4">
-            <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-[#FF5722] text-[#FF5722] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
-            <button @click="submitReview('ACCEPT')" class="flex-1 bg-[#1A237E] text-[#FFC107] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg">SETUJUI &amp; PUBLISH</button>
+        <template x-if="['REVIEW_KETUA', 'ACCEPTED_PAKAR'].includes(activeProject?.status)">
+          <div class="bg-white p-8 border-2 border-slate-100 rounded-2xl shadow-xl">
+            <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
+              <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
+              Persetujuan Produksi
+            </h4>
+            <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-[#1A237E] outline-none font-medium transition-all mb-6" placeholder="Tuliskan catatan atau instruksi pengerjaan..."></textarea>
+            <div class="flex gap-4">
+              <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-[#FF5722] text-[#FF5722] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
+              <button @click="submitReview('ACCEPT')" class="flex-1 bg-[#1A237E] text-[#FFC107] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg">SETUJUI &amp; PUBLISH</button>
+            </div>
           </div>
-        </div>
+        </template>
+        
+        <template x-if="!['REVIEW_KETUA', 'ACCEPTED_PAKAR'].includes(activeProject?.status)">
+          <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center">
+            <p class="text-slate-500 font-bold text-sm">Proyek ini berstatus <span class="font-black text-[#1A237E] uppercase" x-text="activeProject?.status.replace(/_/g,' ')"></span> dan tidak memerlukan tindakan.</p>
+          </div>
+        </template>
       </div>
 
       <!-- Preview Modal -->
@@ -699,7 +724,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Klasifikasi Minat</label>
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Kategori Kompetensi</label>
                   <div class="flex flex-wrap gap-2 mb-2">
                     <template x-for="cat in selectedCategories" :key="cat">
                       <span class="bg-[#1A237E] text-white px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm border border-[#FFC107]/30">
@@ -709,7 +734,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                     </template>
                   </div>
                   <select @change="addCategory($event.target.value); $event.target.value=''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white text-slate-700">
-                    <option value="">+ Tambah Minat...</option>
+                    <option value="">+ Tambah Kompetensi...</option>
                     <template x-for="avail in availableCategories" :key="avail">
                       <option :value="avail" x-text="avail" x-show="!selectedCategories.includes(avail)"></option>
                     </template>

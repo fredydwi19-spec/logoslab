@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, userGameHistory, materialTags, userScores, achievements, materiReadProgress, gameCompetencies, userMaterialHistory } from "../db/schema";
+import { recalculateGlobalRanks } from "../services/achievementService";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 
@@ -389,6 +390,24 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     return new Response(JSON.stringify({ error: "Unsupported Game Type" }), { status: 400 });
   })
+  // Finish Game (Record Score and Gamification)
+  .post("/:id/finish", async ({ params: { id }, body, user }) => {
+    const projectId = Number(id);
+    const { score, isPassed } = body as any;
+
+    // Record history
+    await db.insert(userGameHistory).values({
+      userId: user.id,
+      gameId: projectId,
+      score: Number(score),
+      isPassed: Boolean(isPassed),
+    });
+
+    // Update dynamic badges via event-driven engine
+    await recalculateGlobalRanks();
+
+    return { success: true, message: "Game finished and history recorded" };
+  })
   // AI Thumbnail Generation via Hugging Face FLUX
   .post("/generate-thumbnail", async ({ body }) => {
     const data = (body as any) || {};
@@ -478,15 +497,32 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
 
     // Delete dependent records first to avoid foreign key constraints
-    await db.delete(notifications).where(eq(notifications.projectId, projectId));
-    await db.delete(reviewsHistory).where(eq(reviewsHistory.projectId, projectId));
-    await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
-    await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
-    await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
-    await db.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId));
-    await db.delete(materiContents).where(eq(materiContents.projectId, projectId));
-    await db.delete(materialSections).where(eq(materialSections.projectId, projectId));
-    await db.delete(materialGlossary).where(eq(materialGlossary.projectId, projectId));
+    const deleteTasks = [
+      () => db.delete(notifications).where(eq(notifications.projectId, projectId)),
+      () => db.delete(reviewsHistory).where(eq(reviewsHistory.projectId, projectId)),
+      () => db.delete(questionBank).where(eq(questionBank.projectId, projectId)),
+      () => db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId)),
+      () => db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId)),
+      () => db.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId)),
+      () => db.delete(materiContents).where(eq(materiContents.projectId, projectId)),
+      () => db.delete(materialSections).where(eq(materialSections.projectId, projectId)),
+      () => db.delete(materialGlossary).where(eq(materialGlossary.projectId, projectId)),
+      () => db.delete(userScores).where(eq(userScores.projectId, projectId)),
+      () => db.delete(achievements).where(eq(achievements.projectId, projectId)),
+      () => db.delete(materiReadProgress).where(eq(materiReadProgress.projectId, projectId)),
+      () => db.delete(gameCompetencies).where(eq(gameCompetencies.projectId, projectId)),
+      () => db.delete(userGameHistory).where(eq(userGameHistory.gameId, projectId)),
+      () => db.delete(userMaterialHistory).where(eq(userMaterialHistory.materialId, projectId)),
+      () => db.delete(materialTags).where(eq(materialTags.materialId, projectId))
+    ];
+
+    for (const task of deleteTasks) {
+      try {
+        await task();
+      } catch (e) {
+        // Abaikan jika tabel belum ada (belum di-migrate)
+      }
+    }
 
     await db.delete(projects).where(eq(projects.id, projectId));
     return { success: true, message: "Proyek berhasil dihapus" };
@@ -651,11 +687,29 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       await db.insert(materialGlossary).values(dataToInsert);
     }
     
-    return { success: true, message: "Glossary berhasil disimpan" };
+    return { success: true, message: "Glosarium tersimpan" };
   })
   .get("/:id/glossary", async ({ params: { id } }) => {
     const projectId = Number(id);
     const glossary = await db.select().from(materialGlossary)
       .where(eq(materialGlossary.projectId, projectId));
     return { success: true, data: glossary };
+  })
+  .get("/:id/tags", async ({ params }) => {
+    const projectId = Number(params.id);
+    const data = await db.select().from(materialTags).where(eq(materialTags.materialId, projectId));
+    return { success: true, data };
+  })
+  .post("/:id/tags", async ({ params, body }) => {
+    const projectId = Number(params.id);
+    const tagIds = body as number[];
+    
+    await db.delete(materialTags).where(eq(materialTags.materialId, projectId));
+    if (tagIds && tagIds.length > 0) {
+      const values = tagIds.map(tid => ({ materialId: projectId, tagId: tid }));
+      await db.insert(materialTags).values(values);
+    }
+    return { success: true, message: "Tags tersimpan" };
+  }, {
+    body: t.Array(t.Number())
   });

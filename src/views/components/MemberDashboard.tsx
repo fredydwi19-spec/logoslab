@@ -1,5 +1,6 @@
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
+import { MemberAchievements } from "./MemberAchievements";
 
 export const MemberDashboard = ({ publishedGames, username }: { publishedGames: any[], username: string }) => {
   return `
@@ -7,7 +8,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
     <div class="space-y-10" x-data="memberDashboardData()" x-init="init()">
          
       <!-- Top Row (KPI Cards) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
            <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
@@ -30,110 +31,98 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
               </div>
            </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
-           <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
-                 <i class="bi bi-check-circle-fill text-green-500 text-2xl"></i>
-              </div>
-              <div>
-                 <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Completion</p>
-                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="(summary?.kpi?.completionRate || 0) + '%'">...</h4>
-              </div>
-           </div>
-        </div>
-        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
-           <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
-                 <i class="bi bi-award-fill text-indigo-500 text-2xl"></i>
-              </div>
-              <div>
-                 <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Badges</p>
-                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="summary?.kpi?.badges || 0">...</h4>
-              </div>
-           </div>
-        </div>
       </div>
 
-      <!-- Middle Row (Dual Chart Layout) -->
+      <!-- Middle Row (Spider Chart & Deadline) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="col-span-1 lg:col-span-5 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
-           <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-4">Analisis Minat (Spider Chart)</h3>
+        <div class="col-span-1 lg:col-span-6 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
+           <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-4 flex items-center gap-2">
+             <i class="bi bi-radar text-[#FFC107]"></i> Makro Kompetensi
+           </h3>
            <div class="flex-1 relative min-h-[300px]">
              <canvas id="spiderChart"></canvas>
            </div>
         </div>
-        <div class="col-span-1 lg:col-span-7 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
-           <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-4">Tren Nilai (Mingguan)</h3>
-           <div class="flex-1 relative min-h-[300px]">
-             <canvas id="lineChart"></canvas>
+        
+        <!-- Kalender / Deadline Terdekat -->
+        <div class="col-span-1 lg:col-span-6 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
+           <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-4 flex items-center gap-2">
+             <i class="bi bi-calendar-event text-emerald-500"></i> Kalender Deadline
+           </h3>
+           <div class="flex-1 flex flex-col gap-4 overflow-y-auto">
+              <!-- Item 1 -->
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-red-50 border border-red-100">
+                 <div class="bg-red-500 text-white p-3 rounded-xl text-center shadow-sm">
+                    <p class="text-[10px] font-bold uppercase leading-none">Jun</p>
+                    <p class="text-xl font-black leading-none mt-1">12</p>
+                 </div>
+                 <div class="flex-1">
+                    <h4 class="font-bold text-sm text-[#1A237E]">Kuis Apologetika Lanjut</h4>
+                    <p class="text-xs text-red-500 font-bold mt-1"><i class="bi bi-clock-history"></i> Tersisa 2 hari</p>
+                 </div>
+                 <button class="bg-white text-red-500 hover:bg-red-500 hover:text-white border border-red-200 px-3 py-1 rounded-lg text-xs font-bold transition-colors">Kerjakan</button>
+              </div>
+              <!-- Item 2 -->
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-orange-50 border border-orange-100">
+                 <div class="bg-orange-500 text-white p-3 rounded-xl text-center shadow-sm">
+                    <p class="text-[10px] font-bold uppercase leading-none">Jun</p>
+                    <p class="text-xl font-black leading-none mt-1">15</p>
+                 </div>
+                 <div class="flex-1">
+                    <h4 class="font-bold text-sm text-[#1A237E]">Materi Eksegesis Dasar</h4>
+                    <p class="text-xs text-orange-500 font-bold mt-1"><i class="bi bi-clock-history"></i> Tersisa 5 hari</p>
+                 </div>
+                 <button class="bg-white text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-200 px-3 py-1 rounded-lg text-xs font-bold transition-colors">Baca</button>
+              </div>
+              <!-- Item 3 -->
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                 <div class="bg-slate-400 text-white p-3 rounded-xl text-center shadow-sm">
+                    <p class="text-[10px] font-bold uppercase leading-none">Jun</p>
+                    <p class="text-xl font-black leading-none mt-1">20</p>
+                 </div>
+                 <div class="flex-1">
+                    <h4 class="font-bold text-sm text-[#1A237E]">TTS Tokoh Alkitab</h4>
+                    <p class="text-xs text-slate-500 mt-1"><i class="bi bi-clock-history"></i> Tersisa 10 hari</p>
+                 </div>
+                 <button class="bg-white text-slate-500 hover:bg-slate-500 hover:text-white border border-slate-200 px-3 py-1 rounded-lg text-xs font-bold transition-colors">Mainkan</button>
+              </div>
            </div>
         </div>
       </div>
 
       <!-- Bottom Row (Actionable Widgets) -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1">
          <!-- Next Task -->
-         <div class="bg-[#1A237E] text-white p-6 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
-            <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 group-hover:scale-110 transition-transform">🎯</div>
-            <div class="relative z-10">
-               <div class="flex justify-between items-start mb-4">
-                 <div>
-                    <p class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Tugas Berikutnya</p>
-                    <h3 class="text-xl md:text-2xl font-black text-[#FFC107]">Lanjutkan Belajar</h3>
+         <div class="bg-[#1A237E] text-white p-6 md:p-8 rounded-[2rem] shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 text-[150px] opacity-5 group-hover:scale-110 transition-transform">🎯</div>
+            <div class="relative z-10 flex flex-col md:flex-row gap-6 md:items-center">
+               <div class="flex-1">
+                 <div class="flex justify-between items-start mb-4">
+                   <div>
+                      <p class="text-xs md:text-sm text-indigo-300 font-bold uppercase tracking-widest mb-1">Tugas Berikutnya</p>
+                      <h3 class="text-2xl md:text-3xl font-black text-[#FFC107]">Lanjutkan Belajar: Pengantar Apologetika</h3>
+                   </div>
                  </div>
-                 <div class="bg-indigo-900/50 p-3 rounded-2xl">
-                    <i class="bi bi-play-circle-fill text-2xl text-white"></i>
+                 <p class="text-sm md:text-base text-indigo-200 mb-6 max-w-2xl">Materi ini akan membantu Anda memahami dasar-dasar teologi secara lebih dalam untuk mempertahankan iman.</p>
+                 
+                 <div class="space-y-2 max-w-xl">
+                   <div class="flex justify-between text-xs font-bold text-indigo-300">
+                      <span>Progress Saat Ini</span>
+                      <span>35%</span>
+                   </div>
+                   <div class="h-3 w-full bg-indigo-900/50 rounded-full overflow-hidden">
+                      <div class="h-full bg-[#FFC107] w-[35%] relative">
+                         <div class="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
+                      </div>
+                   </div>
                  </div>
                </div>
-               <p class="text-sm text-indigo-200 mb-6">Materi ini akan membantu Anda memahami dasar-dasar teologi secara lebih dalam.</p>
                
-               <div class="space-y-2">
-                 <div class="flex justify-between text-xs font-bold text-indigo-300">
-                    <span>Progress</span>
-                    <span>35%</span>
-                 </div>
-                 <div class="h-2 w-full bg-indigo-900/50 rounded-full overflow-hidden">
-                    <div class="h-full bg-[#FFC107] w-[35%]"></div>
-                 </div>
-               </div>
-               
-               <button class="mt-6 w-full bg-white text-[#1A237E] font-black uppercase tracking-widest py-3 rounded-xl hover:bg-slate-100 transition-colors shadow-lg">Lanjutkan Belajar</button>
-            </div>
-         </div>
-         
-         <!-- Mini Leaderboard -->
-         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
-            <div class="flex items-center justify-between mb-6">
-               <h3 class="text-base md:text-lg font-bold text-[#1A237E] flex items-center gap-2">
-                 <i class="bi bi-trophy-fill text-yellow-500 text-xl"></i> Papan Peringkat
-               </h3>
-               <a href="#" class="text-xs font-bold text-indigo-500 uppercase hover:underline">Lihat Semua</a>
-            </div>
-            <div class="flex-1 flex flex-col gap-3">
-               <!-- Rank 1 -->
-               <div class="flex items-center gap-4 p-3 rounded-xl bg-orange-50 border border-orange-100">
-                  <div class="w-8 h-8 rounded-full bg-orange-500 text-white font-black flex items-center justify-center shadow-sm">1</div>
-                  <div class="flex-1">
-                     <h4 class="font-bold text-sm text-[#1A237E]">David F.</h4>
-                     <p class="text-xs text-slate-500">2,500 XP</p>
-                  </div>
-                  <i class="bi bi-fire text-orange-500 text-xl"></i>
-               </div>
-               <!-- Rank 2 -->
-               <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <div class="w-8 h-8 rounded-full bg-slate-400 text-white font-black flex items-center justify-center shadow-sm">2</div>
-                  <div class="flex-1">
-                     <h4 class="font-bold text-sm text-[#1A237E]">Sarah M.</h4>
-                     <p class="text-xs text-slate-500">2,100 XP</p>
-                  </div>
-               </div>
-               <!-- Rank 3 -->
-               <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <div class="w-8 h-8 rounded-full bg-[#8D6E63] text-white font-black flex items-center justify-center shadow-sm">3</div>
-                  <div class="flex-1">
-                     <h4 class="font-bold text-sm text-[#1A237E]">Anda</h4>
-                     <p class="text-xs text-slate-500" x-text="(summary?.kpi?.totalXP || 0) + ' XP'">1,950 XP</p>
-                  </div>
+               <div class="md:w-64">
+                 <button class="w-full bg-white text-[#1A237E] font-black uppercase tracking-widest py-4 rounded-xl hover:bg-slate-100 transition-colors shadow-xl flex items-center justify-center gap-3 group/btn">
+                    <i class="bi bi-play-circle-fill text-2xl text-[#FF5722] group-hover/btn:scale-110 transition-transform"></i>
+                    GAS LANJUT!
+                 </button>
                </div>
             </div>
          </div>
@@ -180,6 +169,8 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
           ` : ''}
         </div>
       </div>
+
+      <!-- (Achievements moved to separate page) -->
 
       <!-- Game Modal Player -->
       <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-10">
@@ -402,34 +393,6 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
               });
             }
 
-            // Render Line Chart
-            const ctxLine = document.getElementById('lineChart');
-            if (ctxLine) {
-              new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                  labels: this.summary.lineChart.labels,
-                  datasets: [{
-                    label: 'Tren Nilai',
-                    data: this.summary.lineChart.data,
-                    fill: true,
-                    backgroundColor: 'rgba(255, 87, 34, 0.1)',
-                    borderColor: '#FF5722',
-                    tension: 0.4
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      max: 100
-                    }
-                  }
-                }
-              });
-            }
           },
           activeGame: null,
           questions: [],

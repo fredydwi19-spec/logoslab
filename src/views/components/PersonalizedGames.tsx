@@ -6,7 +6,7 @@ export const PersonalizedGames = ({ games }: { games: any[] }) => {
       <div class="container">
         <div class="section__header reveal">
           <h2 class="section__title" style="color: #1A237E !important; opacity: 1 !important;">✨ Games Untuk Kamu</h2>
-          <p class="section__subtitle" style="color: #64748b !important;">Berdasarkan minat yang kamu pilih</p>
+          <p class="section__subtitle" style="color: #64748b !important;">Berdasarkan kompetensi yang kamu pilih</p>
         </div>
         
         <div class="personalized-carousel-wrapper reveal">

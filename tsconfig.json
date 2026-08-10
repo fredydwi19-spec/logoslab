@@ -6,9 +6,7 @@
     "module": "Preserve",
     "moduleDetection": "force",
     "types": ["bun"],
-    "jsx": "react",
-    "jsxFactory": "html",
-    "jsxFragmentFactory": "html.Fragment",
+    "jsx": "react-jsx",
 
     // Bundler mode
     "moduleResolution": "bundler",

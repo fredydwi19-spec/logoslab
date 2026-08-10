@@ -1,5 +1,5 @@
 export const OnboardingModal = () => {
-  const interests = [
+  const competencies = [
     "Biblical Knowledge",
     "Eksegesis & Hermeneutik",
     "Biblical Theory",
@@ -16,13 +16,13 @@ export const OnboardingModal = () => {
         </div>
         
         <form id="onboarding-form" class="onboarding-form">
-          <div class="interests-grid">
-            ${interests.map(interest => `
-              <label class="interest-item">
-                <input type="checkbox" name="interests" value="${interest}" class="hidden-checkbox">
-                <div class="interest-box">
-                  <span class="icon">🔍</span>
-                  <span class="label">${interest}</span>
+          <div class="competencies-grid">
+            ${competencies.map(comp => `
+              <label class="competency-item">
+                <input type="checkbox" name="competencies" value="${comp}" class="hidden-checkbox">
+                <div class="competency-box">
+                  <div class="icon"><i class="bi bi-star-fill"></i></div>
+                  <span class="label">${comp}</span>
                 </div>
               </label>
             `).join('')}
@@ -82,45 +82,46 @@ export const OnboardingModal = () => {
         font-size: 16px;
         line-height: 1.6;
       }
-      .interests-grid {
+      .competencies-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 16px;
-        margin-bottom: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
       }
-      .interest-item {
+      .competency-item {
         cursor: pointer;
       }
       .hidden-checkbox {
         display: none;
       }
-      .interest-box {
-        background: #f8fafc;
-        border: 2px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 20px 16px;
+      .competency-box {
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 15px 10px;
+        text-align: center;
+        transition: all 0.3s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
-        transition: all 0.2s ease;
-        text-align: center;
+        gap: 8px;
       }
-      .interest-box .icon {
-        font-size: 24px;
+      .competency-box .icon {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.5);
       }
-      .interest-box .label {
+      .competency-box .label {
+        font-size: 11px;
         font-weight: 600;
-        font-size: 14px;
-        color: #334155;
+        color: rgba(255, 255, 255, 0.7);
       }
-      .hidden-checkbox:checked + .interest-box {
-        background: #fff5f2;
-        border-color: #FF5722;
-        transform: scale(1.02);
-        box-shadow: 0 10px 15px -3px rgba(255, 87, 34, 0.1);
+      .hidden-checkbox:checked + .competency-box {
+        background: rgba(255, 193, 7, 0.1);
+        border-color: #FFC107;
+        transform: translateY(-2px);
       }
-      .hidden-checkbox:checked + .interest-box .label {
+      .hidden-checkbox:checked + .competency-box .icon,
+      .hidden-checkbox:checked + .competency-box .label {
         color: #FF5722;
       }
       .onboarding-submit {
@@ -165,10 +166,10 @@ export const OnboardingModal = () => {
           form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(form);
-            const selectedInterests = formData.getAll('interests');
+            const selectedCompetencies = formData.getAll('competencies');
             
-            if (selectedInterests.length === 0) {
-              alert('Pilih setidaknya satu minat untuk melanjutkan.');
+            if (selectedCompetencies.length === 0) {
+              alert('Pilih setidaknya satu kompetensi untuk melanjutkan.');
               return;
             }
 
@@ -179,7 +180,7 @@ export const OnboardingModal = () => {
               const response = await fetch('/profile/onboarding', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ interests: selectedInterests })
+                body: JSON.stringify({ competencies: selectedCompetencies })
               });
 
               if (response.ok) {

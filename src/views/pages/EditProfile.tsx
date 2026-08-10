@@ -1,8 +1,8 @@
 export const ProfilePage = ({ user }: { user: any }) => {
   const isUser = user.role === "USER";
-  const userInterests = user.interests ? user.interests.split(",") : [];
+  const userCompetencies = user.competencies ? user.competencies.split(",") : [];
   
-  const allInterests = [
+  const allCompetencies = [
     "Biblical Knowledge",
     "Eksegesis & Hermeneutik",
     "Biblical Theory",
@@ -59,14 +59,14 @@ export const ProfilePage = ({ user }: { user: any }) => {
           object-fit: cover;
         }
         
-        .interest-chip {
-          transition: all 0.2s ease;
+        .competency-chip {
+          display: inline-block;
           cursor: pointer;
         }
-        .interest-chip:hover {
-          transform: translateY(-2px);
+        .competency-chip:hover {
+          transform: scale(1.05);
         }
-        .interest-checkbox:checked + .interest-label {
+        .competency-checkbox:checked + .competency-label {
           background-color: #FF5722;
           color: white;
           border-color: #FF5722;
@@ -80,10 +80,20 @@ export const ProfilePage = ({ user }: { user: any }) => {
           <div class="w-8 h-8 bg-[#FF5722] rounded flex items-center justify-center text-white">L</div>
           Logos LAB
         </a>
-        <div class="flex items-center gap-6">
-          <a href="/" class="text-sm font-medium text-slate-600 hover:text-[#FF5722] transition-colors">Beranda</a>
-          <a href="/api/auth/logout" class="text-sm font-bold text-red-500 bg-red-50 px-4 py-2 rounded-full hover:bg-red-100 transition-colors">Keluar</a>
-        </div>
+        <a href="/dashboard/${(() => {
+          switch(user.role) {
+            case 'KETUA_TIM':      return 'ketua';
+            case 'PEMBUAT_GAME':   return 'game';
+            case 'PEMBUAT_MATERI': return 'materi';
+            case 'PAKAR':          return 'pakar';
+            default:               return 'user';
+          }
+        })()}" class="flex items-center gap-2 text-sm font-semibold text-[#1A237E] hover:text-[#FF5722] transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Dashboard
+        </a>
       </nav>
 
       <main class="max-w-4xl mx-auto mt-12 px-6">
@@ -144,24 +154,24 @@ export const ProfilePage = ({ user }: { user: any }) => {
                   </div>
                 </div>
 
-                <!-- Bagian 2: Minat (Hanya untuk USER) -->
+                <!-- Bagian 2: Kategori Kompetensi (Hanya untuk USER) -->
                 ${isUser ? `
                   <div class="space-y-6">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-3">
-                      Minat Belajar
+                      Kategori Kompetensi Belajar
                       <div class="h-px bg-slate-100 flex-1"></div>
                     </h3>
                     
                     <p class="text-sm text-slate-500">Pilih kategori yang ingin kamu prioritaskan di beranda.</p>
                     
                     <div class="flex flex-wrap gap-3">
-                      ${allInterests.map(interest => {
-                        const checked = userInterests.includes(interest) ? 'checked' : '';
+                      ${allCompetencies.map(comp => {
+                        const checked = userCompetencies.includes(comp) ? 'checked' : '';
                         return `
-                          <label class="interest-chip">
-                            <input type="checkbox" name="interests" value="${interest}" class="interest-checkbox hidden" ${checked}>
-                            <div class="interest-label px-5 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-600 transition-all">
-                              ${interest}
+                          <label class="competency-chip">
+                            <input type="checkbox" name="competencies" value="${comp}" class="competency-checkbox hidden" ${checked}>
+                            <div class="competency-label px-5 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-600 transition-all">
+                              ${comp}
                             </div>
                           </label>
                         `;
@@ -204,13 +214,13 @@ export const ProfilePage = ({ user }: { user: any }) => {
 
           const formData = new FormData(form);
           const name = formData.get('name');
-          const interests = formData.getAll('interests');
+          const competencies = formData.getAll('competencies');
 
           try {
             const response = await fetch('/profile/update', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, interests })
+              body: JSON.stringify({ name, competencies })
             });
 
             if (response.ok) {

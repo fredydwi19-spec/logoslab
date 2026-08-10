@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk — Logos LAB</title>
+  <meta name="description" content="Masuk ke platform e-learning Logos LAB untuk mengakses game edukasi dan materi pembelajaran.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --clr-bg-primary: #06061a;
+      --clr-accent-primary: #FF5722;
+      --clr-accent-secondary: #E64A19;
+      --clr-accent-teal: #14b8a6;
+      --gradient-hero: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
+      --font-heading: 'Poppins', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: radial-gradient(ellipse at 20% 50%, #0f0a3a 0%, #06061a 40%, #0a1a2e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      padding: 1.5rem 1rem;
+    }
+
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-orb--1 {
+      width: 800px; height: 800px;
+      top: -25%; left: -20%;
+      background: radial-gradient(circle, rgba(255,87,34,0.55) 0%, rgba(255,87,34,0.1) 45%, transparent 70%);
+      filter: blur(90px);
+      animation: float-orb 18s ease-in-out infinite;
+    }
+    .bg-orb--2 {
+      width: 700px; height: 700px;
+      bottom: -20%; right: -15%;
+      background: radial-gradient(circle, rgba(20,184,166,0.5) 0%, rgba(20,184,166,0.1) 45%, transparent 70%);
+      filter: blur(80px);
+      animation: float-orb 22s ease-in-out infinite reverse;
+    }
+    .bg-orb--3 {
+      width: 500px; height: 500px;
+      top: 30%; left: 55%;
+      background: radial-gradient(circle, rgba(139,92,246,0.45) 0%, rgba(139,92,246,0.08) 45%, transparent 70%);
+      filter: blur(70px);
+      animation: float-orb 14s ease-in-out infinite 3s;
+    }
+    .bg-orb--4 {
+      width: 350px; height: 350px;
+      top: 60%; left: 10%;
+      background: radial-gradient(circle, rgba(251,191,36,0.3) 0%, transparent 70%);
+      filter: blur(60px);
+      animation: float-orb 20s ease-in-out infinite 6s;
+    }
+    @keyframes float-orb {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(40px,-40px) scale(1.08); }
+      66% { transform: translate(-30px,30px) scale(0.92); }
+    }
+
+    /* Grid pattern overlay */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* Main card */
+    .login-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 460px;
+      margin: auto;
+      background: #ffffff;
+      border: none;
+      border-radius: 28px;
+      padding: 2.5rem;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 30px 80px rgba(0,0,0,0.6),
+        0 0 60px rgba(255,87,34,0.08);
+      animation: slide-up 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2rem;
+      text-decoration: none;
+    }
+    .logo__img {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      object-fit: contain;
+    }
+    .logo__text {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Heading */
+    .card__title {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.35rem;
+    }
+    .card__subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 2rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 1.75rem;
+      border: 1.5px solid #e2e8f0;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.55rem;
+      border: none;
+      border-radius: 9px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: transparent;
+      color: #64748b;
+    }
+    .tab-btn.active {
+      background: var(--gradient-hero);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(255,87,34,0.35);
+    }
+
+    /* Forms */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; animation: fade-in 0.3s ease; }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.4rem;
+    }
+    .form-input-wrap { position: relative; }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      padding-right: 2.75rem;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      color: #0f172a;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .form-input:focus {
+      border-color: var(--clr-accent-primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,87,34,0.12);
+    }
+    .form-input::placeholder { color: #94a3b8; }
+    /* Toggle pw button */
+    .toggle-pw {
+      position: absolute;
+      right: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: #374151; }
+    .toggle-pw svg { width: 18px; height: 18px; }
+
+    /* Alert messages */
+    .alert {
+      display: none;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .alert--error {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #e11d48;
+    }
+    .alert--success {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      color: #0d9488;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--gradient-hero);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 20px rgba(255,87,34,0.3);
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(255,87,34,0.4);
+    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    /* Google button */
+    .btn-google {
+      width: 100%;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      color: #374151;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+    .btn-google:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .btn-google img { width: 20px; height: 20px; }
+
+    /* Guest button */
+    .btn-guest {
+      width: 100%;
+      padding: 0.75rem;
+      background: #f0fdfa;
+      border: 1.5px solid #99f6e4;
+      border-radius: 12px;
+      color: #0f766e;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.25s ease;
+      margin-top: 0.75rem;
+    }
+    .btn-guest:hover {
+      background: #ccfbf1;
+      border-color: #5eead4;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(20,184,166,0.15);
+    }
+    .btn-guest svg { width: 18px; height: 18px; }
+
+    /* Guest info badge */
+    .guest-section {
+      margin-top: 0.75rem;
+    }
+    .guest-info {
+      margin-top: 0.5rem;
+      padding: 0.55rem 0.9rem;
+      background: rgba(20,184,166,0.06);
+      border: 1px solid rgba(20,184,166,0.15);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="bg-orb bg-orb--1"></div>
+  <div class="bg-orb bg-orb--2"></div>
+  <div class="bg-orb bg-orb--3"></div>
+  <div class="bg-orb bg-orb--4"></div>
+  <div class="bg-grid"></div>
+
+  <div class="login-card">
+    <!-- Logo -->
+    <a href="/" class="logo">
+      <img src="/public/assets/logo.png" alt="Logos LAB" class="logo__img">
+      <span class="logo__text">Logos LAB</span>
+    </a>
+
+    <h1 class="card__title">Selamat Datang</h1>
+    <p class="card__subtitle">Platform E-Learning Berbasis Game Edukasi</p>
+
+    <!-- Tabs -->
+    <div class="tabs" id="auth-tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Masuk</button>
+      <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Daftar</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="form-panel active" id="panel-login">
+      <div class="alert alert--error" id="login-error"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-username">Username atau Email</label>
+          <div class="form-input-wrap">
+            <input class="form-input" type="text" id="login-username" name="username" placeholder="Masukkan username atau email" required autocomplete="username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <div class="form-input-wrap">
+            <input class="form-input" type="password" id="login-password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+            <button type="button" class="toggle-pw" id="toggle-login-pw" aria-label="Tampilkan password">
+              <svg id="eye-login-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eye-login-hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" id="login-submit-btn">Masuk</button>
+      </form>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="form-panel" id="panel-register">
+      <div class="alert alert--error" id="signup-error"></div>
+      <div class="alert alert--success" id="signup-success"></div>
+
+      <form id="signup-form">
+        <div class="form-group">
+          <label class="form-label" for="signup-name">Nama Lengkap</label>
+          <input class="form-input" type="text" id="signup-name" name="name" placeholder="Masukkan nama lengkap" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email</label>
+          <input class="form-input" type="email" id="signup-email" name="email" placeholder="Masukkan email aktif" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Password</label>
+          <div class="form-input-wrap">
+            <input class="form-input" type="password" id="signup-password" name="password" placeholder="Min. 8 karakter" required autocomplete="new-password">
+            <button type="button" class="toggle-pw" id="toggle-signup-pw" aria-label="Tampilkan password">
+              <svg id="eye-signup-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eye-signup-hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password-confirm">Konfirmasi Password</label>
+          <div class="form-input-wrap">
+            <input class="form-input" type="password" id="signup-password-confirm" name="password_confirm" placeholder="Ulangi password" required autocomplete="new-password">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" id="signup-submit-btn">Buat Akun</button>
+      </form>
+    </div>
+
+    <!-- ===== SHARED: Google + Guest (always visible) ===== -->
+    <div class="divider">atau lanjutkan dengan</div>
+
+    <a href="/api/auth/google" class="btn-google" id="btn-google">
+      <img src="https://www.google.com/favicon.ico" alt="Google">
+      Lanjutkan dengan Google
+    </a>
+
+    <div class="guest-section">
+      <button class="btn-guest" id="btn-guest-login">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Masuk sebagai Tamu
+      </button>
+      <p class="guest-info">Jelajahi game &amp; materi publik tanpa mendaftar. Kemajuan tidak disimpan.</p>
+    </div>
+
+  </div>
+
+  <script>
+    // ---- Tab switching ----
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('panel-' + tab).classList.add('active');
+    }
+
+    // ---- Password toggle helper ----
+    function setupToggle(btnId, inputId, showId, hideId) {
+      document.getElementById(btnId).addEventListener('click', () => {
+        const inp = document.getElementById(inputId);
+        const isHidden = inp.type === 'password';
+        inp.type = isHidden ? 'text' : 'password';
+        document.getElementById(showId).style.display = isHidden ? 'none' : '';
+        document.getElementById(hideId).style.display = isHidden ? '' : 'none';
+      });
+    }
+    setupToggle('toggle-login-pw', 'login-password', 'eye-login-show', 'eye-login-hide');
+    setupToggle('toggle-signup-pw', 'signup-password', 'eye-signup-show', 'eye-signup-hide');
+
+    // ---- Login form ----
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('login-error');
+      const btn = document.getElementById('login-submit-btn');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Memproses...';
+
+      const payload = {
+        username: document.getElementById('login-username').value,
+        password: document.getElementById('login-password').value
+      };
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          window.location.href = data.redirect || '/';
+        } else {
+          errEl.textContent = data.error || 'Login gagal. Silakan coba lagi.';
+          errEl.style.display = 'block';
+        }
+      } catch {
+        errEl.textContent = 'Terjadi kesalahan koneksi.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+      }
+    });
+
+    // ---- Sign up form ----
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('signup-error');
+      const okEl = document.getElementById('signup-success');
+      const btn = document.getElementById('signup-submit-btn');
+      errEl.style.display = 'none';
+      okEl.style.display = 'none';
+
+      const pw = document.getElementById('signup-password').value;
+      const pw2 = document.getElementById('signup-password-confirm').value;
+      if (pw !== pw2) {
+        errEl.textContent = 'Konfirmasi password tidak cocok.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Memproses...';
+
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('signup-name').value,
+            email: document.getElementById('signup-email').value,
+            password: pw
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          okEl.textContent = data.message || 'Pendaftaran berhasil. Silakan cek email Anda.';
+          okEl.style.display = 'block';
+          document.getElementById('signup-form').reset();
+        } else {
+          errEl.textContent = data.error || 'Pendaftaran gagal.';
+          errEl.style.display = 'block';
+        }
+      } catch {
+        errEl.textContent = 'Terjadi kesalahan koneksi.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Buat Akun';
+      }
+    });
+
+    // ---- Guest login ----
+    document.getElementById('btn-guest-login').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-guest-login');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Masuk sebagai Tamu...';
+
+      try {
+        const res = await fetch('/api/auth/guest', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          window.location.href = data.redirect || '/';
+        } else {
+          alert('Gagal masuk sebagai tamu. Silakan coba lagi.');
+        }
+      } catch {
+        alert('Terjadi kesalahan koneksi.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Masuk sebagai Tamu`;
+      }
+    });
+  </script>
+</body>
+</html>

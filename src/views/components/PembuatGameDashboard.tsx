@@ -29,6 +29,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
             userFTBAnswers: [],
             saveTimeout: null,
             stagingQuestions: [],
+            selectedQuestions: [],
             viewMode: new URLSearchParams(window.location.search).get('view') === 'all' ? 'all' : 'active',
             myProjects: JSON.parse(document.getElementById('pembuatProjectsData').textContent || '[]'),
             publishedProjects: JSON.parse(document.getElementById('pembuatPublishedData').textContent || '[]'),
@@ -37,7 +38,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
             searchActive: '',
             searchPublished: '',
             openGenerateModal: false,
-            generateData: { totalSoal: 10, jumlahMudah: 5, jumlahSedang: 3, jumlahSulit: 2 },
+            generateData: { totalSoal: 10, jumlahMudah: 5, jumlahSedang: 3, jumlahSulit: 2, competency: 'SEMUA' },
             isGenerating: false,
 
             async submitGenerate() {
@@ -58,7 +59,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                         totalSoal: Number(totalSoal),
                         jumlahMudah: Number(jumlahMudah),
                         jumlahSedang: Number(jumlahSedang),
-                        jumlahSulit: Number(jumlahSulit)
+                        jumlahSulit: Number(jumlahSulit),
+                        competency: this.generateData.competency
                      })
                   });
                   const json = await res.json();
@@ -161,6 +163,18 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
               this.debouncedSave();
             },
 
+            
+            deleteSelectedQuestions() {
+              if (this.selectedQuestions.length === 0) return;
+              if (confirm('Yakin ingin menghapus soal yang dipilih?')) {
+                const sortedIndexes = [...this.selectedQuestions].sort((a,b) => b - a);
+                for (const idx of sortedIndexes) {
+                  this.questions.splice(idx, 1);
+                }
+                this.selectedQuestions = [];
+                this.debouncedSave();
+              }
+            },
             removeQuestion(idx) {
               if (confirm('Hapus soal ini?')) {
                 this.questions.splice(idx, 1);
@@ -230,31 +244,52 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
               a.click();
             },
 
-            importCSV(e) {
+            importExcel(e) {
               const file = e.target.files[0];
               if (!file) return;
               const reader = new FileReader();
               reader.onload = (event) => {
-                const text = event.target.result;
-                const rows = text.split('\\n').slice(1);
+                const data = new Uint8Array(event.target.result);
+                const workbook = window.XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                // Read as array of arrays (defval makes empty cells empty strings)
+                const rows = window.XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' }).slice(1);
+                
                 const imported = [];
-                for (let row of rows) {
-                  if (!row.trim()) continue;
-                  const cols = row.split(',');
+                for (let cols of rows) {
+                  if (!cols || cols.length === 0 || !cols[0]) continue;
+                  
                   if (this.activeProject.gameType === 'QUIZ') {
                     if (cols.length < 6) continue;
-                    imported.push({ question: cols[0], optionA: cols[1], optionB: cols[2], optionC: cols[3], optionD: cols[4], correctAnswer: (cols[5] || 'A').trim().toUpperCase(), difficulty: (cols[6] || 'MUDAH').trim().toUpperCase(), explanation: cols[7] || '' });
+                    // Format: question, optionA, optionB, optionC, optionD, correctAnswer, difficulty, explanation, competency
+                    imported.push({ 
+                      question: cols[0], 
+                      optionA: String(cols[1]), 
+                      optionB: String(cols[2]), 
+                      optionC: String(cols[3]), 
+                      optionD: String(cols[4]), 
+                      correctAnswer: (String(cols[5]) || 'A').trim().toUpperCase(), 
+                      difficulty: (String(cols[6]) || 'MUDAH').trim().toUpperCase(), 
+                      explanation: String(cols[7] || '') 
+                    });
                   } else {
+                    // Format: fullText, difficulty, word1, explanation1, word2, explanation2, word3, explanation3
                     const answers = [];
-                    if (cols[1] && cols[2]) answers.push({ word: cols[1], explanation: cols[2] });
-                    if (cols[3] && cols[4]) answers.push({ word: cols[3], explanation: cols[4] });
-                    imported.push({ fullText: cols[0], answers, difficulty: 'MUDAH' });
+                    if (cols[2] && cols[3]) answers.push({ word: String(cols[2]), explanation: String(cols[3]) });
+                    if (cols[4] && cols[5]) answers.push({ word: String(cols[4]), explanation: String(cols[5]) });
+                    if (cols[6] && cols[7]) answers.push({ word: String(cols[6]), explanation: String(cols[7]) });
+                    imported.push({ 
+                      fullText: cols[0], 
+                      answers, 
+                      difficulty: (String(cols[1]) || 'MUDAH').trim().toUpperCase() 
+                    });
                   }
                 }
                 this.stagingQuestions = imported;
                 e.target.value = '';
               };
-              reader.readAsText(file);
+              reader.readAsArrayBuffer(file);
             },
 
             commitStaging() {
@@ -574,19 +609,17 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                 </div>
               </div>
               <div class="flex flex-wrap gap-2 justify-center">
-                 <button @click="downloadTemplate()" class="text-[10px] font-black uppercase bg-white border-2 border-slate-200 px-4 py-2 rounded-lg hover:border-[#1A237E] transition-all flex items-center gap-2">
-                   CSV Template
+                 <button @click="downloadExcelTemplate()" class="text-[10px] font-black uppercase bg-white border-2 border-slate-200 px-4 py-2 rounded-lg hover:border-[#1A237E] transition-all flex items-center gap-2">
+                   Template Excel
                  </button>
                  <label class="text-[10px] font-black uppercase bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-lg cursor-pointer hover:bg-[#FFD54F] transition-all flex items-center gap-2 shadow-sm">
-                   Import CSV
-                   <input type="file" accept=".csv" @change="importCSV" class="hidden">
+                   Import Excel
+                   <input type="file" accept=".xlsx,.xls" @change="importExcel" class="hidden">
                  </label>
                  <button x-show="activeProject?.gameType === 'QUIZ' || activeProject?.gameType === 'FILL_THE_BLANK'" @click="openGenerateModal = true" class="text-[10px] font-black uppercase bg-[#FF5722] text-white px-4 py-2 rounded-lg hover:bg-[#E64A19] transition-all flex items-center gap-2 shadow-md">
                    Generate Soal
                  </button>
-                 <button @click="previewGame()" class="text-[10px] font-black uppercase bg-[#1A237E] text-white px-4 py-2 rounded-lg hover:bg-indigo-900 transition-all flex items-center gap-2 shadow-md">
-                   Simulasi Game
-                 </button>
+
               </div>
             </div>
           </div>
@@ -630,6 +663,18 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
               </div>
               <div class="p-5 space-y-4">
                 <p class="text-xs text-slate-500 font-bold mb-4">Pastikan Total Soal = (Mudah + Sedang + Sulit). Auto-generate akan menarik soal secara acak dari Bank Soal global.</p>
+                <div x-show="activeProject?.gameType === 'QUIZ'">
+                  <label class="block text-sm font-semibold text-slate-700 mb-1">Kategori Kompetensi</label>
+                  <select x-model="generateData.competency" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                    <option value="SEMUA">Semua Kompetensi (Acak)</option>
+                    <option value="Biblical Knowledge">Biblical Knowledge</option>
+                    <option value="Eksegesis &amp; Hermeneutik">Eksegesis &amp; Hermeneutik</option>
+                    <option value="Biblical Theory">Biblical Theory</option>
+                    <option value="Homiletika">Homiletika</option>
+                    <option value="Apologetika">Apologetika</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
                 <div>
                   <label class="block text-sm font-semibold text-slate-700 mb-1">Total Soal</label>
                   <input type="number" min="1" x-model.number="generateData.totalSoal" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
@@ -663,36 +708,36 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
 
           <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6">
             <template x-for="(q, idx) in questions" :key="idx">
-              <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
+              <div class="bg-white border-2 border-slate-100 rounded-2xl p-6 shadow-md relative group transition-all hover:border-[#FFC107]">
                 <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="idx + 1"></div>
-                <button x-show="!isReadOnly()" @click="removeQuestion(idx)" class="absolute -right-3 -top-3 bg-red-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10">&times;</button>
+                <button x-show="!isReadOnly()" @click="removeQuestion(idx)" class="absolute -right-2 -top-2 bg-red-500 text-white h-8 w-8 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10 font-bold">&times;</button>
                 
                 <!-- Quiz Editor -->
                 <template x-if="activeProject?.gameType === 'QUIZ'">
-                  <div class="space-y-8 pl-4">
+                  <div class="space-y-6 pt-10">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Butir Pertanyaan</label>
-                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
+                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-semibold text-base text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <template x-for="opt in ['A', 'B', 'C', 'D']">
                         <div class="relative">
                           <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" x-text="'Pilihan ' + opt"></label>
-                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white transition-all pl-12 shadow-sm" :placeholder="'Opsi ' + opt">
-                          <div class="absolute left-4 top-10 font-black text-[#1A237E]" x-text="opt + '.'"></div>
+                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border border-slate-200 rounded-lg p-3 focus:border-[#1A237E] outline-none font-semibold text-sm text-slate-700 bg-white transition-all pl-10 shadow-sm" :placeholder="'Opsi ' + opt">
+                          <div class="absolute left-3 top-9 font-bold text-[#1A237E]" x-text="opt + '.'"></div>
                         </div>
                       </template>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Jawaban Benar</label>
-                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
+                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border border-slate-200 rounded-lg p-3 focus:border-[#1A237E] outline-none font-bold text-sm bg-white cursor-pointer text-[#1A237E] shadow-sm">
                           <option value="A">Opsi A</option><option value="B">Opsi B</option><option value="C">Opsi C</option><option value="D">Opsi D</option>
                         </select>
                       </div>
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Kesulitan</label>
-                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
+                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border border-slate-200 rounded-lg p-3 focus:border-[#1A237E] outline-none font-bold text-sm bg-white cursor-pointer text-[#1A237E] shadow-sm">
                           <option value="MUDAH">MUDAH (10 Poin)</option>
                           <option value="SEDANG">SEDANG (20 Poin)</option>
                           <option value="SULIT">SULIT (50 Poin)</option>

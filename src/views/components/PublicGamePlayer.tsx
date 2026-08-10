@@ -304,7 +304,23 @@ export const PublicGamePlayer = () => {
               this.userFTBAnswers = [];
               this.submissionResults = [];
             } else {
-              this.gameFinished = true;
+              this.finishGame();
+            }
+          },
+
+          async finishGame() {
+            this.gameFinished = true;
+            let scorePercentage = this.maxScore > 0 ? (this.currentScore / this.maxScore) * 100 : 0;
+            const isPassed = scorePercentage >= 75;
+            
+            try {
+              await fetch('/api/projects/' + this.activeGame.id + '/finish', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ score: Math.round(scorePercentage), isPassed })
+              });
+            } catch(e) {
+              console.error('Failed to submit game:', e);
             }
           },
 

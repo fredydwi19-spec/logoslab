@@ -2,16 +2,31 @@ export const BankSoalQuizUI = () => {
   return `
     <div class="p-6 md:p-10 space-y-8" x-data="bankSoalQuizData()">
       <!-- Header -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col gap-5">
         <div>
           <h1 class="text-xl md:text-2xl font-bold text-[#1A237E] font-poppins">Bank Soal Quiz</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal Quiz secara global.</p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div class="flex flex-wrap gap-3 items-center">
           <div class="relative w-full sm:w-64">
             <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input type="text" x-model="searchQuery" placeholder="Cari pertanyaan..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#1A237E] outline-none">
           </div>
+          <select x-model="filterCompetency" class="w-full sm:w-auto border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#1A237E] outline-none bg-white font-semibold text-slate-600">
+            <option value="SEMUA">Semua Kompetensi</option>
+            <option value="Biblical Knowledge">Biblical Knowledge</option>
+            <option value="Eksegesis &amp; Hermeneutik">Eksegesis &amp; Hermeneutik</option>
+            <option value="Biblical Theory">Biblical Theory</option>
+            <option value="Homiletika">Homiletika</option>
+            <option value="Apologetika">Apologetika</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+          <select x-model="filterDifficulty" class="w-full sm:w-auto border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#1A237E] outline-none bg-white font-semibold text-slate-600">
+            <option value="SEMUA">Semua Kesulitan</option>
+            <option value="MUDAH">Mudah</option>
+            <option value="SEDANG">Sedang</option>
+            <option value="SULIT">Sulit</option>
+          </select>
           <div class="flex gap-2">
             <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
               <i class="bi bi-trash"></i> <span x-text="'Hapus (' + selectedIds.length + ')'"></span>
@@ -39,16 +54,17 @@ export const BankSoalQuizUI = () => {
                 </th>
                 <th class="p-4 font-semibold">Pertanyaan</th>
                 <th class="p-4 font-semibold">Opsi & Jawaban</th>
-                <th class="p-4 font-semibold text-center">Tingkat Kesulitan</th>
-                <th class="p-4 font-semibold text-center">Aksi</th>
+                <th class="p-4 font-semibold text-center">Kompetensi</th>
+                 <th class="p-4 font-semibold text-center">Tingkat Kesulitan</th>
+                <th class="p-4 font-semibold text-center w-24 whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template x-if="loading">
-                <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+                <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
               </template>
               <template x-if="!loading && soalList.length === 0">
-                <tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal Quiz.</td></tr>
+                <tr><td colspan="6" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal Quiz.</td></tr>
               </template>
               <template x-for="soal in filteredSoalList()" :key="soal.id">
                 <tr class="hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50': selectedIds.includes(soal.id)}">
@@ -63,6 +79,9 @@ export const BankSoalQuizUI = () => {
                     <div>D: <span x-text="soal.optionD" :class="{'font-bold text-green-600': soal.correctAnswer === 'D'}"></span></div>
                   </td>
                   <td class="p-4 text-center align-top">
+                    <span class="px-2 py-1 rounded-full text-[10px] font-bold tracking-wide bg-indigo-50 text-[#1A237E]" x-text="soal.competency || 'Biblical Knowledge'"></span>
+                  </td>
+                  <td class="p-4 text-center align-top">
                     <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide"
                           :class="{
                             'bg-green-100 text-green-700': soal.difficulty === 'MUDAH',
@@ -70,7 +89,7 @@ export const BankSoalQuizUI = () => {
                             'bg-red-100 text-red-700': soal.difficulty === 'SULIT'
                           }" x-text="soal.difficulty"></span>
                   </td>
-                  <td class="p-4 text-center align-top space-x-2">
+                  <td class="p-4 text-center align-top space-x-2 whitespace-nowrap">
                     <button @click="openFormModal(soal)" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="bi bi-pencil-square"></i></button>
                     <button @click="deleteSoal(soal.id)" class="text-red-500 hover:text-red-700" title="Hapus"><i class="bi bi-trash"></i></button>
                   </td>
@@ -134,6 +153,17 @@ export const BankSoalQuizUI = () => {
               <label class="block text-sm font-semibold text-slate-700 mb-1">Penjelasan (Opsional)</label>
               <textarea x-model="formData.explanation" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none" rows="2"></textarea>
             </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">Kategori Kompetensi</label>
+              <select x-model="formData.competency" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <option value="Biblical Knowledge">Biblical Knowledge</option>
+                <option value="Eksegesis &amp; Hermeneutik">Eksegesis &amp; Hermeneutik</option>
+                <option value="Biblical Theory">Biblical Theory</option>
+                <option value="Homiletika">Homiletika</option>
+                <option value="Apologetika">Apologetika</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button @click="showForm = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
@@ -179,6 +209,8 @@ export const BankSoalQuizUI = () => {
           soalList: [],
           selectedIds: [],
           searchQuery: '',
+          filterDifficulty: 'SEMUA',
+          filterCompetency: 'SEMUA',
           loading: true,
           showForm: false,
           isEdit: false,
@@ -195,15 +227,19 @@ export const BankSoalQuizUI = () => {
             optionD: '',
             correctAnswer: 'A',
             difficulty: 'MUDAH',
-            explanation: ''
+            explanation: '',
+            competency: 'Biblical Knowledge'
           },
           init() {
             this.fetchData();
           },
           filteredSoalList() {
-            if (this.searchQuery.trim() === '') return this.soalList;
-            const q = this.searchQuery.toLowerCase();
-            return this.soalList.filter(s => (s.question || '').toLowerCase().includes(q));
+            return this.soalList.filter(s => {
+              const matchSearch = this.searchQuery.trim() === '' || (s.question || '').toLowerCase().includes(this.searchQuery.toLowerCase());
+              const matchDiff = this.filterDifficulty === 'SEMUA' || s.difficulty === this.filterDifficulty;
+              const matchComp = this.filterCompetency === 'SEMUA' || s.competency === this.filterCompetency;
+              return matchSearch && matchDiff && matchComp;
+            });
           },
           async fetchData() {
             this.loading = true;
@@ -224,7 +260,7 @@ export const BankSoalQuizUI = () => {
               this.formData = { ...soal };
             } else {
               this.isEdit = false;
-              this.formData = { id: null, question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'MUDAH', explanation: '' };
+              this.formData = { id: null, question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'MUDAH', explanation: '', competency: 'Biblical Knowledge' };
             }
             this.showForm = true;
           },

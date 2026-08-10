@@ -5,7 +5,7 @@ import {
   questionBank, gameFillTheBlank,
   projects
 } from "../db/schema";
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, sql, inArray, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import * as XLSX from "xlsx";
 
@@ -119,13 +119,14 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
   .post("/quiz", async ({ body, user }) => {
     const guard = guardBankSoal(user);
     if (guard) return guard;
-    const { question, optionA, optionB, optionC, optionD, correctAnswer, difficulty, explanation } = body as any;
+    const { question, optionA, optionB, optionC, optionD, correctAnswer, difficulty, explanation, competency } = body as any;
     if (!question || !optionA || !optionB || !optionC || !optionD || !correctAnswer || !difficulty) {
       return new Response(JSON.stringify({ error: "Field wajib tidak boleh kosong" }), { status: 400 });
     }
     const [result] = await db.insert(bankSoalQuiz).values({
       question, optionA, optionB, optionC, optionD,
       correctAnswer, difficulty, explanation: explanation || "",
+      competency: competency || "Biblical Knowledge",
       createdBy: user.id
     });
     return { success: true, id: result.insertId };
@@ -134,10 +135,11 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
   .put("/quiz/:id", async ({ params, body, user }) => {
     const guard = guardBankSoal(user);
     if (guard) return guard;
-    const { question, optionA, optionB, optionC, optionD, correctAnswer, difficulty, explanation } = body as any;
+    const { question, optionA, optionB, optionC, optionD, correctAnswer, difficulty, explanation, competency } = body as any;
     await db.update(bankSoalQuiz).set({
       question, optionA, optionB, optionC, optionD,
-      correctAnswer, difficulty, explanation: explanation || ""
+      correctAnswer, difficulty, explanation: explanation || "",
+      competency: competency || "Biblical Knowledge"
     }).where(eq(bankSoalQuiz.id, Number(params.id)));
     return { success: true };
   })
@@ -272,9 +274,21 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     if (type === "quiz") {
       filename = "Template_Bank_Soal_Quiz.xlsx";
       worksheet = XLSX.utils.json_to_sheet([
-        { question: "Apa ibukota Indonesia?", optionA: "Jakarta", optionB: "Bandung", optionC: "Surabaya", optionD: "Medan", correctAnswer: "A", difficulty: "MUDAH", explanation: "Jakarta adalah ibukota negara RI." },
-        { question: "Pusat tata surya adalah...", optionA: "Bumi", optionB: "Bulan", optionC: "Matahari", optionD: "Mars", correctAnswer: "C", difficulty: "SEDANG", explanation: "Matahari adalah pusat tata surya." }
+        { question: "Apa ibukota Indonesia?", optionA: "Jakarta", optionB: "Bandung", optionC: "Surabaya", optionD: "Medan", correctAnswer: "A", difficulty: "MUDAH", explanation: "Jakarta adalah ibukota negara RI.", competency: "Biblical Knowledge" },
+        { question: "Pusat tata surya adalah...", optionA: "Bumi", optionB: "Bulan", optionC: "Matahari", optionD: "Mars", correctAnswer: "C", difficulty: "SEDANG", explanation: "Matahari adalah pusat tata surya.", competency: "Apologetika" }
       ]);
+      // Set column widths for readability
+      worksheet['!cols'] = [
+        { wch: 50 }, // question
+        { wch: 20 }, // optionA
+        { wch: 20 }, // optionB
+        { wch: 20 }, // optionC
+        { wch: 20 }, // optionD
+        { wch: 14 }, // correctAnswer
+        { wch: 12 }, // difficulty
+        { wch: 40 }, // explanation
+        { wch: 25 }, // competency
+      ];
     } else if (type === "ftb") {
       filename = "Template_Bank_Soal_FTB.xlsx";
       worksheet = XLSX.utils.json_to_sheet([
@@ -372,6 +386,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
           const optD = r.optionD || r.pilihanD || r.pilihan_d || r.OptionD || '';
           const caRaw = r.correctAnswer || r.jawaban_benar || r.kunci_jawaban || r.kunci || r.jawaban || '';
           const expl = r.explanation || r.penjelasan || r.pembahasan || '';
+          const comp = r.competency || r.kompetensi || r.kategori_kompetensi || r.Competency || 'Biblical Knowledge';
 
           if (!q || !optA || !optB || !optC || !optD || !caRaw || !diffRaw) {
             errors.push(`Baris ${i + 2}: Field wajib kosong, dilewati`);
@@ -397,7 +412,9 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
             question: q, optionA: optA, optionB: optB,
             optionC: optC, optionD: optD,
             correctAnswer: ca as any, difficulty: diff as any,
-            explanation: expl, createdBy: user.id
+            explanation: expl,
+            competency: String(comp).trim() || 'Biblical Knowledge',
+            createdBy: user.id
           });
           // Flush batch setiap BATCH_SIZE baris
           if (batch.length >= BATCH_SIZE) {
@@ -556,7 +573,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     const guard = guardBankSoal(user);
     if (guard) return guard;
 
-    const { projectId, gameType, totalSoal, jumlahMudah, jumlahSedang, jumlahSulit } = body as any;
+    const { projectId, gameType, totalSoal, jumlahMudah, jumlahSedang, jumlahSulit, competency } = body as any;
 
     if (!projectId || !gameType) {
       return new Response(JSON.stringify({ error: "projectId dan gameType wajib diisi" }), { status: 400 });
@@ -586,8 +603,16 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
         // Tarik soal secara acak per kesulitan menggunakan ORDER BY RAND()
         const pullRandom = async (diff: string, count: number) => {
           if (count === 0) return [];
-          return db.select().from(bankSoalQuiz)
-            .where(eq(bankSoalQuiz.difficulty, diff as any))
+          
+          let query = db.select().from(bankSoalQuiz).$dynamic();
+          
+          const conditions = [eq(bankSoalQuiz.difficulty, diff as any)];
+          if (competency && competency !== "SEMUA") {
+            conditions.push(eq(bankSoalQuiz.competency, competency));
+          }
+          
+          return query
+            .where(and(...conditions))
             .orderBy(sql`RAND()`)
             .limit(count);
         };

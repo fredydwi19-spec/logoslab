@@ -27,6 +27,16 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           searchActive: '',
           searchPublished: '',
           uploading: false,
+          availableTags: [],
+          selectedTags: [],
+
+          async init() {
+            try {
+              const res = await fetch('/api/elearning/tags');
+              const json = await res.json();
+              if (json.success) this.availableTags = json.data;
+            } catch(e) {}
+          },
 
           getUserName(id) {
             const u = this.allUsers.find(u => u.id === id);
@@ -71,6 +81,15 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                   const glosJson = await glosRes.json();
                   if (glosJson.success) this.glossaryItems = glosJson.data;
                 }
+                
+                try {
+                  const tagRes = await fetch('/api/projects/' + id + '/tags');
+                  if (tagRes.ok) {
+                    const tagJson = await tagRes.json();
+                    if (tagJson.success) this.selectedTags = tagJson.data.map(t => t.tagId);
+                  }
+                } catch(e) { this.selectedTags = []; }
+
                 this.showAuditLog = false;
                 this.showPreview = false;
               } else {
@@ -87,8 +106,28 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             this.materiContents = [];
             this.sections = [];
             this.glossaryItems = [];
+            this.selectedTags = [];
             this.showAuditLog = false;
             this.showPreview = false;
+          },
+
+          async saveTags() {
+            if (this.isReadOnly()) return;
+            await fetch('/api/projects/' + this.activeProject.id + '/tags', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(this.selectedTags)
+            });
+          },
+
+          toggleTag(tagId) {
+            if (this.isReadOnly()) return;
+            if (this.selectedTags.includes(tagId)) {
+              this.selectedTags = this.selectedTags.filter(id => id !== tagId);
+            } else {
+              this.selectedTags.push(tagId);
+            }
+            this.saveTags();
           },
 
           isReadOnly() {
@@ -314,6 +353,22 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
         </button>
 
         ${ProjectHeader({ projectVar: 'activeProject', projectType: 'MATERI' })}
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 mt-6 mb-6">
+          <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-4">Tag Topik (E-Learning Adaptif)</h4>
+          <div class="flex flex-wrap gap-2">
+            <template x-for="tag in availableTags" :key="tag.id">
+              <button @click="toggleTag(tag.id)" 
+                      :class="selectedTags.includes(tag.id) ? 'bg-[#FFC107] text-[#1A237E] border-[#FFC107] shadow-md scale-105' : 'bg-slate-100 text-slate-500 border-slate-200 hover:border-slate-300'" 
+                      class="px-5 py-2 rounded-full text-xs font-black border-2 transition-all cursor-pointer">
+                <span x-text="tag.namaTag"></span>
+              </button>
+            </template>
+            <template x-if="availableTags.length === 0">
+              <div class="text-xs text-slate-400 font-bold">Belum ada tag tersedia. Hubungi Ketua Tim.</div>
+            </template>
+          </div>
+        </div>
 
         <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
           <div class="bg-[#1A237E] p-6 text-white border-b-4 border-[#FFC107] flex justify-between items-center">

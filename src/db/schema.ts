@@ -11,7 +11,7 @@ export const users = mysqlTable("users", {
   isVerified: boolean("is_verified").default(false),
   profilePicture: varchar("profile_picture", { length: 255 }),
   hasOnboarded: boolean("has_onboarded").default(false),
-  interests: varchar("interests", { length: 500 }), // Store as comma-separated or JSON string
+  competencies: varchar("competencies", { length: 500 }), // Store as comma-separated or JSON string
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
@@ -31,7 +31,7 @@ export const projects = mysqlTable("projects", {
   gameType: mysqlEnum("game_type", ["QUIZ", "FILL_THE_BLANK", "WORD_SEARCH", "CROSSWORD"]),
   type: mysqlEnum("type", ["GAME", "MATERI"]).notNull(),
   materiType: mysqlEnum("materi_type", ["TEKS", "VIDEO", "MANUAL"]),
-  category: varchar("category", { length: 100 }), // Matching user interests
+  category: varchar("category", { length: 100 }), // Matching user competencies
   status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
   deadline: timestamp("deadline"),
@@ -42,7 +42,7 @@ export const projects = mysqlTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
 
-export const interestCategoryEnum = mysqlEnum("interest_category", [
+export const competencyCategoryEnum = mysqlEnum("competency_category", [
   "Biblical Knowledge",
   "Eksegesis & Hermeneutik",
   "Biblical Theory",
@@ -51,10 +51,10 @@ export const interestCategoryEnum = mysqlEnum("interest_category", [
   "Lainnya"
 ]);
 
-export const gameInterests = mysqlTable("game_interests", {
+export const gameCompetencies = mysqlTable("game_competencies", {
   id: serial("id").primaryKey(),
   projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
-  category: interestCategoryEnum.notNull(),
+  category: competencyCategoryEnum.notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
   unq: unique("project_category_unq").on(table.projectId, table.category),
@@ -214,6 +214,7 @@ export const bankSoalQuiz = mysqlTable("bank_soal_quiz", {
   correctAnswer: mysqlEnum("correct_answer", ["A", "B", "C", "D"]).notNull(),
   difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
   explanation: text("explanation"),
+  competency: varchar("competency", { length: 100 }).default("Biblical Knowledge"), // Kategori Kompetensi
   createdBy: bigint("created_by", { mode: 'number', unsigned: true }).references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
@@ -238,4 +239,70 @@ export const bankSoalTts = mysqlTable("bank_soal_tts", {
   createdBy: bigint("created_by", { mode: 'number', unsigned: true }).references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+// ============================================================
+// ACHIVEMENTS & GAMIFICATION
+// ============================================================
+
+export const userGameHistory = mysqlTable("user_game_history", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  gameId: bigint("game_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  score: int("score").notNull(),
+  isPassed: boolean("is_passed").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userMaterialHistory = mysqlTable("user_material_history", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  materialId: bigint("material_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  isCompleted: boolean("is_completed").default(false),
+  timeSpentMinutes: int("time_spent_minutes").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+}, (table) => ({
+  unq: unique("user_material_unq").on(table.userId, table.materialId),
+}));
+
+export const userBadges = mysqlTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  badgeType: mysqlEnum("badge_type", ["GLOBAL_RANK", "MILESTONE"]).notNull(),
+  badgeRankNumber: int("badge_rank_number"),
+  milestoneName: mysqlEnum("milestone_name", ["FIRST_BLOOD", "THEOLOGIAN", "HERMENEUTIC_EXPERT", "PERFECT_SCORE"]),
+  isLocked: boolean("is_locked").default(false),
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+});
+
+// ============================================================
+// E-LEARNING ADAPTIF & TAGGING
+// ============================================================
+
+export const tags = mysqlTable("tags", {
+  id: serial("id").primaryKey(),
+  namaTag: varchar("nama_tag", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const questionTags = mysqlTable("question_tags", {
+  id: serial("id").primaryKey(),
+  questionId: bigint("question_id", { mode: 'number', unsigned: true }).notNull(), // mereferensikan question_bank.id atau bank_soal_quiz.id
+  tagId: bigint("tag_id", { mode: 'number', unsigned: true }).references(() => tags.id, { onDelete: 'cascade' }).notNull(),
+});
+
+export const materialTags = mysqlTable("material_tags", {
+  id: serial("id").primaryKey(),
+  materialId: bigint("material_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  tagId: bigint("tag_id", { mode: 'number', unsigned: true }).references(() => tags.id, { onDelete: 'cascade' }).notNull(),
+});
+
+export const studentLearningLogs = mysqlTable("student_learning_logs", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  tagId: bigint("tag_id", { mode: 'number', unsigned: true }).references(() => tags.id, { onDelete: 'cascade' }).notNull(),
+  questionId: bigint("question_id", { mode: 'number', unsigned: true }),
+  isCorrect: boolean("is_correct").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
