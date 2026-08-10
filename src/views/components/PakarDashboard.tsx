@@ -1,6 +1,7 @@
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 import { ProjectHeader } from "./ProjectHeader";
+import { ReviewerElearning } from "./ReviewerElearning";
 
 export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { myProjects: any[], publishedProjects: any[], allUsers: any[] }) => {
   const myProjectsJson = JSON.stringify(myProjects).replace(/</g, '\\u003c');
@@ -24,6 +25,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
           gameData: null,
           feedback: '',
           showPreview: false,
+          showElearningReviewer: false,
           showAuditLog: false,
           currentQuestionIndex: 0,
           selectedAnswer: null,
@@ -98,6 +100,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
             this.materiContents = [];
             this.showAuditLog = false;
             this.showPreview = false;
+            this.showElearningReviewer = false;
             this.feedback = '';
             this.stopSpeech();
           },
@@ -300,6 +303,35 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
               const err = await res.json();
               alert("Gagal submit review: " + (err.error || 'Terjadi kesalahan'));
             }
+          },
+
+          async submitElearningReview(statusGiven) {
+            if (statusGiven === 'REVISI' && !this.feedback) {
+              alert("Mohon isi masukan/feedback untuk revisi.");
+              return;
+            }
+            try {
+              // Endpoint khusus elearning
+              const res = await fetch('/api/elearning/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  projectId: this.activeProject.id, 
+                  feedback: this.feedback,
+                  statusGiven: statusGiven 
+                })
+              });
+              const json = await res.json();
+              if (json.success) {
+                alert("Review berhasil disubmit!");
+                window.location.reload();
+              } else {
+                alert("Gagal: " + (json.error || 'Terjadi kesalahan'));
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Terjadi kesalahan koneksi.");
+            }
           }
         }));
       });
@@ -493,7 +525,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
 
           ${ProjectHeader()}
 
-          <template x-if="activeProject && ['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(activeProject.status)">
+          <template x-if="activeProject && activeProject.type === 'GAME' && ['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(activeProject.status)">
             <div class="bg-white p-8 border-2 border-slate-100 rounded-2xl shadow-xl">
               <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
                 <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
@@ -507,12 +539,24 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers }: { my
             </div>
           </template>
 
-          <template x-if="activeProject && !['REVIEW_PAKAR','DRAFT','REVISI_PAKAR'].includes(activeProject.status)">
+          <template x-if="activeProject && activeProject.type === 'GAME' && !['REVIEW_PAKAR','DRAFT','REVISI_PAKAR'].includes(activeProject.status)">
             <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center">
               <p class="text-slate-500 font-bold text-sm">Proyek ini berstatus <span class="font-black text-[#1A237E] uppercase" x-text="activeProject?.status.replace(/_/g,' ')"></span> dan tidak memerlukan tindakan.</p>
             </div>
           </template>
+          
+          <template x-if="activeProject && activeProject.type === 'MATERI'">
+            <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center">
+              <p class="text-slate-500 font-bold text-sm mb-4">Gunakan Reviewer Layar Penuh (Split-Screen) untuk Materi E-Learning.</p>
+              <button @click="showElearningReviewer = true" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest shadow-md transition-all">
+                Buka Reviewer Materi
+              </button>
+            </div>
+          </template>
         </div><!-- /Detail View -->
+
+        ${ReviewerElearning()}
+
 
       </div><!-- /p-8 -->
 

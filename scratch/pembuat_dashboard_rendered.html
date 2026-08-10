@@ -1,0 +1,1340 @@
+
+    <script id="pembuatProjectsData" type="application/json">[{"id":5,"title":"Tes","description":"Tes","instructions":"Tes","gameType":"QUIZ","type":"GAME","category":"Eksegesis & Hermeneutik,Homiletika","status":"DRAFT","revisionCount":0,"deadline":"2026-05-23T00:00:00.000Z","idPembuat":2,"idPakar":14,"createdAt":"2026-05-09T00:24:55.000Z","updatedAt":"2026-05-09T01:40:41.000Z"}]</script>
+    <script>
+      document.addEventListener('alpine:init', () => {
+        Alpine.data('pembuatDashboard', () => ({
+            activeProject: null,
+            questions: [],
+            gameData: null,
+            showPreview: false,
+            showAuditLog: false,
+            currentQuestionIndex: 0,
+            selectedAnswer: null,
+            showExplanation: false,
+            isCorrect: false,
+            userFTBAnswers: [],
+            saveTimeout: null,
+            stagingQuestions: [],
+            myProjects: JSON.parse(document.getElementById('pembuatProjectsData').textContent || '[]'),
+
+            async openProject(id) {
+              try {
+                const res = await fetch('/api/projects/' + id);
+                const json = await res.json();
+                if (json.success) {
+                  this.activeProject = json.data;
+                  this.questions = json.data.questions || [];
+                  this.gameData = null;
+                  this.showAuditLog = false;
+                  if (this.activeProject.gameType === 'WORD_SEARCH') {
+                    const wsRes = await fetch('/api/word-search/' + id);
+                    const wsJson = await wsRes.json();
+                    if (wsJson.success) this.gameData = wsJson.data;
+                  }
+                  this.checkLocalRecovery(id);
+                  this.updateSaveIndicator('SYNCHRONIZED', 'bg-green-100 text-green-800');
+                } else {
+                  alert('Gagal memuat proyek: ' + (json.error || 'Terjadi kesalahan'));
+                }
+              } catch (err) {
+                console.error('openProject error:', err);
+                alert('Gagal terhubung ke server.');
+              }
+            },
+
+            closeProject() {
+              this.activeProject = null;
+              this.questions = [];
+              this.stagingQuestions = [];
+              this.showAuditLog = false;
+              this.showPreview = false;
+            },
+
+            isReadOnly() {
+              if (!this.activeProject) return true;
+              return !["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(this.activeProject.status);
+            },
+
+            updateSaveIndicator(text, classes) {
+              const el = document.getElementById('saveStatus');
+              if (!el) return;
+              el.innerText = text;
+              el.className = "text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner transition-all duration-500 " + classes;
+            },
+
+            addQuestion() {
+              if (this.activeProject?.gameType === 'QUIZ') {
+                this.questions.push({ question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'RENDAH', explanation: '' });
+              } else if (this.activeProject?.gameType === 'FILL_THE_BLANK') {
+                this.questions.push({ fullText: '', answers: [], difficulty: 'RENDAH' });
+              }
+              this.debouncedSave();
+            },
+
+            removeQuestion(idx) {
+              if (confirm('Hapus soal ini?')) {
+                this.questions.splice(idx, 1);
+                this.debouncedSave();
+              }
+            },
+
+            makeBlank(idx) {
+              const textarea = document.getElementById('ftb-text-' + idx);
+              if (!textarea) return;
+              const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+              if (!selectedText) { alert("Silakan sorot kata atau frasa terlebih dahulu."); return; }
+              if (!this.questions[idx].answers) this.questions[idx].answers = [];
+              this.questions[idx].answers.push({ word: selectedText, explanation: '' });
+              this.debouncedSave();
+            },
+
+            debouncedSave() {
+              if (this.isReadOnly()) return;
+              const localKey = 'project_draft_' + this.activeProject.id;
+              localStorage.setItem(localKey, JSON.stringify({ timestamp: Date.now(), questions: this.questions }));
+              this.updateSaveIndicator('LOCAL SAVED', 'bg-orange-100 text-orange-800 animate-pulse');
+              clearTimeout(this.saveTimeout);
+              this.saveTimeout = setTimeout(async () => {
+                this.updateSaveIndicator('UPLOADING...', 'bg-blue-600 text-white animate-bounce');
+                const res = await fetch('/api/projects/' + this.activeProject.id + '/questions', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(this.questions)
+                });
+                if (res.ok) {
+                  this.updateSaveIndicator('CLOUD SYNCED', 'bg-green-600 text-white');
+                  localStorage.removeItem(localKey);
+                } else {
+                  this.updateSaveIndicator('OFFLINE / ERROR', 'bg-red-600 text-white');
+                }
+              }, 3000);
+            },
+
+            checkLocalRecovery(id) {
+              const localData = localStorage.getItem('project_draft_' + id);
+              if (localData) {
+                const parsed = JSON.parse(localData);
+                if (confirm('Ditemukan draf pemulihan lokal (' + new Date(parsed.timestamp).toLocaleTimeString() + '). Ingin memulihkan?')) {
+                  this.questions = parsed.questions;
+                  this.debouncedSave();
+                } else {
+                  localStorage.removeItem('project_draft_' + id);
+                }
+              }
+            },
+
+            downloadTemplate() {
+              let header = '', dummy = '';
+              if (this.activeProject.gameType === 'QUIZ') {
+                header = "question,optionA,optionB,optionC,optionD,correctAnswer,difficulty,explanation\n";
+                dummy = "Siapa Presiden pertama RI?,Soekarno,Hatta,Soedirman,Habibie,A,RENDAH,Soekarno adalah proklamator\n";
+              } else {
+                header = "fullText,word1,explanation1,word2,explanation2\n";
+                dummy = "Kalimat dengan [kata] kunci.,kata,Penjelasan kata tersebut,,\n";
+              }
+              const blob = new Blob([header + dummy], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = "template_soal_" + this.activeProject.gameType.toLowerCase() + ".csv";
+              a.click();
+            },
+
+            importCSV(e) {
+              const file = e.target.files[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                const text = event.target.result;
+                const rows = text.split('\n').slice(1);
+                const imported = [];
+                for (let row of rows) {
+                  if (!row.trim()) continue;
+                  const cols = row.split(',');
+                  if (this.activeProject.gameType === 'QUIZ') {
+                    if (cols.length < 6) continue;
+                    imported.push({ question: cols[0], optionA: cols[1], optionB: cols[2], optionC: cols[3], optionD: cols[4], correctAnswer: (cols[5] || 'A').trim().toUpperCase(), difficulty: (cols[6] || 'RENDAH').trim().toUpperCase(), explanation: cols[7] || '' });
+                  } else {
+                    const answers = [];
+                    if (cols[1] && cols[2]) answers.push({ word: cols[1], explanation: cols[2] });
+                    if (cols[3] && cols[4]) answers.push({ word: cols[3], explanation: cols[4] });
+                    imported.push({ fullText: cols[0], answers, difficulty: 'RENDAH' });
+                  }
+                }
+                this.stagingQuestions = imported;
+                e.target.value = '';
+              };
+              reader.readAsText(file);
+            },
+
+            commitStaging() {
+              this.questions = [...this.questions, ...this.stagingQuestions];
+              this.stagingQuestions = [];
+              this.debouncedSave();
+            },
+
+            previewGame() {
+              if (this.activeProject?.gameType !== 'WORD_SEARCH' && this.questions.length === 0) { alert("Belum ada soal untuk di-preview."); return; }
+              if (this.activeProject?.gameType === 'WORD_SEARCH' && (!this.gameData || !this.gameData.gridData)) { alert("Data grid Word Search belum tersedia."); return; }
+              this.currentQuestionIndex = 0;
+              this.selectedAnswer = null;
+              this.showExplanation = false;
+              this.isCorrect = false;
+              this.userFTBAnswers = [];
+              this.showPreview = true;
+            },
+
+            checkAnswerQuiz(opt) {
+              if (this.showExplanation) return;
+              this.selectedAnswer = opt;
+              this.isCorrect = opt === this.questions[this.currentQuestionIndex].correctAnswer;
+              this.showExplanation = true;
+            },
+
+            renderFTB(q) {
+              if (!q || !q.fullText) return '';
+              let text = q.fullText;
+              const answers = q.answers || [];
+              const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
+              sortedAnswers.forEach((ans, i) => {
+                const regex = new RegExp(ans.word, 'gi');
+                text = text.replace(regex, '<input type="text" class="ftb-input border-b-2 border-blue-800 outline-none text-center px-2 text-orange-600 bg-slate-50 rounded-t w-24 mx-1" placeholder="..." onchange="window.updateFTB(' + i + ', this.value)">');
+              });
+              window.updateFTB = (idx, val) => { this.userFTBAnswers[idx] = val; };
+              return text;
+            },
+
+            checkAnswerFTB() {
+              const q = this.questions[this.currentQuestionIndex];
+              const answers = q.answers || [];
+              let allCorrect = true;
+              answers.forEach((ans, i) => {
+                const userVal = (this.userFTBAnswers[i] || '').trim().toLowerCase();
+                if (userVal !== ans.word.trim().toLowerCase()) allCorrect = false;
+              });
+              this.isCorrect = allCorrect;
+              this.showExplanation = true;
+            },
+
+            nextQuestion() {
+              if (this.currentQuestionIndex < this.questions.length - 1) {
+                this.currentQuestionIndex++;
+                this.selectedAnswer = null;
+                this.showExplanation = false;
+                this.userFTBAnswers = [];
+              } else {
+                this.showPreview = false;
+              }
+            },
+
+            prevQuestion() {
+              if (this.currentQuestionIndex > 0) {
+                this.currentQuestionIndex--;
+                this.selectedAnswer = null;
+                this.showExplanation = false;
+                this.userFTBAnswers = [];
+              }
+            },
+
+            async submitForReview() {
+              if (this.activeProject.gameType === 'WORD_SEARCH') {
+                if (!this.gameData || !this.gameData.words || this.gameData.words.length === 0) { alert("Minimal harus ada 1 kata di Word Search sebelum dikirim."); return; }
+              } else if (this.questions.length === 0) {
+                alert("Minimal harus ada 1 soal sebelum dikirim."); return;
+              }
+              const target = this.activeProject.status === 'REVISI_KETUA' ? 'Ketua Tim' : 'Pakar';
+              if (!confirm('Kirim proyek ke ' + target + ' untuk di-review?')) return;
+              const res = await fetch('/api/projects/' + this.activeProject.id + '/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ statusGiven: 'SUBMIT', feedback: 'Sent for review' })
+              });
+              if (res.ok) window.location.reload();
+              else alert("Gagal mengirim untuk review");
+            }
+          }));
+      });
+    </script>
+
+    <div class="bg-white p-0 rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" x-data="pembuatDashboard()">
+      <div class="bg-[#1A237E] p-6 border-b-4 border-[#FFC107] flex items-center justify-between">
+        <h2 class="text-xl font-black text-white uppercase tracking-widest">Workspace Produksi Game</h2>
+        <div class="flex items-center gap-4">
+           <span x-show="activeProject" id="saveStatus" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner transition-all duration-500">CLOUD SYNC ACTIVE</span>
+        </div>
+      </div>
+      
+      <div class="p-8">
+        <h2 x-show="!activeProject" class="text-lg font-bold text-[#1A237E] mb-6 flex items-center gap-2">
+          <span class="h-4 w-1 bg-[#FFC107] rounded-full"></span>
+          Penugasan Aktif
+        </h2>
+      
+        <!-- List View -->
+        <div x-show="!activeProject" class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-slate-100 text-slate-400 text-sm">
+                <th class="pb-4 font-semibold">ID</th>
+                <th class="pb-4 font-semibold">Nama Proyek</th>
+                <th class="pb-4 font-semibold">Deadline</th>
+                <th class="pb-4 font-semibold">Status</th>
+                <th class="pb-4 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-600">
+              <template x-for="p in myProjects" :key="p.id">
+                <tr class="border-b border-slate-50 hover:bg-blue-50/50 transition-all">
+                  <td class="py-5 font-bold text-[#1A237E]" x-text="'#G' + p.id"></td>
+                  <td class="py-5 font-black text-slate-800 text-base" x-text="p.title"></td>
+                  <td class="py-5 text-sm">
+                    <div class="flex flex-col">
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tenggat Waktu</span>
+                      <span :class="new Date(p.deadline) < new Date() ? 'text-red-600 font-black' : 'font-bold'" x-text="new Date(p.deadline).toLocaleDateString()"></span>
+                    </div>
+                  </td>
+                  <td class="py-5">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
+                      'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR' || p.status === 'REVIEW_KETUA',
+                      'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_PAKAR' || p.status === 'REVISI_KETUA',
+                      'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR' || p.status === 'PUBLISHED',
+                      'bg-slate-100 text-slate-600 border border-slate-200': !['DRAFT','REVIEW_PAKAR','REVIEW_KETUA','REVISI_PAKAR','REVISI_KETUA','ACCEPTED_PAKAR','PUBLISHED'].includes(p.status)
+                    }"
+                    x-text="p.status.replace(/_/g, ' ')">
+                  </span>
+                  </td>
+                  <td class="py-5 text-right">
+                    <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">DETAIL</button>
+                  </td>
+                </tr>
+              </template>
+              <template x-if="myProjects.length === 0">
+                <tr><td colspan="5" class="text-center py-10 text-slate-400 italic font-medium">Anda belum memiliki penugasan aktif saat ini.</td></tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Editor View -->
+        <div x-show="activeProject" style="display: none;" class="space-y-6">
+          <button @click="closeProject()" class="text-slate-500 hover:text-slate-800 mb-4 flex items-center gap-2">
+            ← Kembali
+          </button>
+
+          
+    <div x-show="activeProject" class="bg-[#1A237E] rounded-[2.5rem] p-8 md:p-12 mb-10 shadow-2xl relative overflow-hidden border-b-8 border-[#FFC107]">
+      <!-- Background Decorative Elements -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 w-48 h-48 bg-[#FFC107]/10 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+
+      <div class="relative z-10">
+        <!-- Top Row: Badges & Preview Button -->
+        <div class="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+          <div class="flex flex-wrap gap-3">
+            <span class="bg-[#FFC107] text-[#1A237E] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg" x-text="activeProject?.gameType"></span>
+            <span class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em]" x-text="activeProject?.status.replace('_', ' ')"></span>
+          </div>
+          
+          <button @click="previewGame()" class="bg-[#FFC107] text-[#1A237E] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-yellow-400 transition-all shadow-[0_8px_0_rgb(184,134,11)] active:shadow-none active:translate-y-2 flex items-center gap-3 group">
+            <div class="bg-[#1A237E] text-[#FFC107] rounded-full p-1 group-hover:scale-110 transition-transform">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+            </div>
+            SIMULASI GAME
+          </button>
+        </div>
+
+        <!-- Middle Row: Title & Description -->
+        <div class="mb-10">
+          <h1 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4 leading-none" x-text="activeProject?.title"></h1>
+          <p class="text-blue-100/70 text-lg font-medium italic leading-relaxed max-w-3xl" x-text="activeProject?.description"></p>
+        </div>
+
+        <!-- Bottom Row: Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pt-8 border-t border-white/10">
+          <!-- Instructions -->
+          <div class="lg:col-span-2 bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-[#FFC107]"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></span>
+              <span class="text-[10px] font-black text-[#FFC107] uppercase tracking-widest">Instruksi Pengerjaan</span>
+            </div>
+            <p class="text-white text-xs font-bold leading-relaxed" x-text="activeProject?.instructions"></p>
+          </div>
+
+          <!-- PIC Info -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white font-black border border-white/20 shadow-inner">P</div>
+              <div>
+                <div class="text-[8px] font-black text-blue-300 uppercase tracking-widest mb-0.5">PIC PAKAR</div>
+                <div class="text-white text-xs font-black uppercase tracking-tight" x-text="activeProject?.pakarName"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white font-black border border-white/20 shadow-inner">G</div>
+              <div>
+                <div class="text-[8px] font-black text-blue-300 uppercase tracking-widest mb-0.5">PIC PEMBUAT GAME</div>
+                <div class="text-white text-xs font-black uppercase tracking-tight" x-text="activeProject?.pembuatName"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats & History -->
+          <div class="flex flex-col justify-between gap-4">
+             <div class="flex items-center justify-between bg-[#FFC107]/10 p-4 rounded-2xl border border-[#FFC107]/20">
+                <div>
+                   <div class="text-[8px] font-black text-[#FFC107] uppercase tracking-widest mb-1">TOTAL SOAL</div>
+                   <div class="text-2xl font-black text-white leading-none" x-text="questions.length"></div>
+                </div>
+                <div class="h-10 w-1 bg-[#FFC107] rounded-full opacity-30"></div>
+                <div class="text-right">
+                   <div class="text-[8px] font-black text-[#FFC107] uppercase tracking-widest mb-1">REVISI TERAKHIR</div>
+                   <div class="text-[10px] font-black text-white" x-text="activeProject?.history?.length > 0 ? new Date(activeProject.history[0].createdAt).toLocaleDateString('id-ID') : '-'"></div>
+                </div>
+             </div>
+             
+             <button @click="showAuditLog = true" class="w-full py-3 bg-white/10 hover:bg-white text-white hover:text-[#1A237E] rounded-xl font-black uppercase tracking-widest text-[10px] transition-all border border-white/20 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                LOG AUDIT REVISI
+             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit Log Modal -->
+    <div x-show="showAuditLog" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/60 backdrop-blur-md flex items-center justify-center z-[200] p-6">
+      <div @click.away="showAuditLog = false" class="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden border-4 border-white">
+        <div class="bg-[#1A237E] p-8 text-white flex justify-between items-center border-b-8 border-[#FFC107]">
+          <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-[#FFC107] rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-black uppercase tracking-widest">History Log Audit</h3>
+              <p class="text-[10px] font-bold text-blue-200 uppercase tracking-[0.2em] mt-1">Rekaman jejak revisi dan persetujuan</p>
+            </div>
+          </div>
+          <button @click="showAuditLog = false" class="text-white/50 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        
+        <div class="p-8 max-h-[60vh] overflow-y-auto space-y-6 custom-scrollbar bg-slate-50">
+          <template x-for="log in activeProject?.history || []" :key="log.id">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden group hover:border-[#1A237E] transition-all">
+              <div class="absolute left-0 top-0 h-full w-2 transition-all group-hover:w-3" :class="log.statusGiven === 'ACCEPT' ? 'bg-green-500' : 'bg-orange-500'"></div>
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <div class="text-[10px] font-black uppercase tracking-[0.2em] mb-1" :class="log.statusGiven === 'ACCEPT' ? 'text-green-600' : 'text-orange-600'" x-text="log.statusGiven"></div>
+                  <div class="text-sm font-black text-[#1A237E]" x-text="log.reviewerName"></div>
+                </div>
+                <div class="text-[9px] text-slate-400 font-black uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full" x-text="new Date(log.createdAt).toLocaleString('id-ID')"></div>
+              </div>
+              <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 italic text-slate-600 text-sm font-bold leading-relaxed" x-text="log.feedback || 'Tidak ada catatan tambahan.'"></div>
+              <div class="mt-3 flex items-center gap-2">
+                <span class="text-[8px] font-black text-slate-300 uppercase tracking-widest">Role Penilai:</span>
+                <span class="text-[8px] font-black text-[#1A237E] bg-[#FFC107]/20 px-2 py-0.5 rounded" x-text="log.reviewerRole"></span>
+              </div>
+            </div>
+          </template>
+          
+          <template x-if="!activeProject?.history || activeProject?.history?.length === 0">
+            <div class="text-center py-20">
+               <div class="text-6xl mb-4 opacity-20">📜</div>
+               <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Belum ada rekaman log revisi untuk proyek ini.</p>
+            </div>
+          </template>
+        </div>
+
+        <div class="p-8 bg-white border-t border-slate-100 flex justify-center">
+           <button @click="showAuditLog = false" class="bg-[#1A237E] text-white px-10 py-3 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl hover:bg-indigo-900 transition-all">TUTUP LOG</button>
+        </div>
+      </div>
+    </div>
+  
+
+          <template x-if="activeProject?.gameType === 'WORD_SEARCH'">
+             <div class="mb-10">
+                <div class="bg-white p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-xl">
+                   
+    <div x-data="wordSearchEditor(activeProject)" class="space-y-10 animate-in fade-in duration-500">
+      <div class="w-full">
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6">
+          <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-[#FFC107] rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <div>
+              <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-tighter leading-none">Editor Word Search</h2>
+              <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Generate tantangan pencarian kata teologis</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3 w-full xl:w-auto">
+            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+               GENERATE GRID
+            </button>
+            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
+               <span x-text="isSaving ? 'SAVING...' : 'SIMPAN KE CLOUD'"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+          <!-- Left: Input Form -->
+          <div class="space-y-6">
+            <div class="bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Difficulty & Ukuran Grid</label>
+              <div class="grid grid-cols-3 gap-4">
+                <template x-for="diff in ['EASY', 'MEDIUM', 'HARD']">
+                  <button @click="difficulty = diff; updateGridSize()" 
+                          :class="difficulty === diff ? 'bg-[#1A237E] text-[#FFC107] border-[#1A237E]' : 'bg-white text-slate-400 border-slate-200'"
+                          class="py-3 rounded-xl border-2 font-black text-xs transition-all uppercase tracking-widest shadow-sm"
+                          x-text="diff"></button>
+                </template>
+              </div>
+              <div class="mt-4 text-[10px] font-bold text-slate-500 italic">
+                <span x-show="difficulty === 'EASY'">Grid 10x10. Kata: Horizontal & Vertikal.</span>
+                <span x-show="difficulty === 'MEDIUM'">Grid 12x12. Kata: + Terbalik.</span>
+                <span x-show="difficulty === 'HARD'">Grid 15x15. Semua arah + Diagonal.</span>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest">Daftar Kata Teologis</h3>
+                <button @click="addWord()" class="text-[#FF5722] font-black text-xs uppercase tracking-widest flex items-center gap-1 hover:underline">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                  Tambah Baris
+                </button>
+              </div>
+
+              <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                <template x-for="(item, index) in words" :key="index">
+                  <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3 animate-in slide-in-from-left duration-300">
+                    <div class="flex gap-3">
+                      <div class="flex-1">
+                        <input type="text" x-model="item.word" @input="item.word = item.word.toUpperCase()" placeholder="KATA (CONTOH: IMAN)" 
+                               class="w-full border-b-2 border-slate-100 focus:border-[#1A237E] outline-none py-2 font-black text-[#1A237E] placeholder:text-slate-300">
+                      </div>
+                      <button @click="removeWord(index)" class="text-slate-300 hover:text-red-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                      </button>
+                    </div>
+                    <textarea x-model="item.explanation" placeholder="Penjelasan Teologis..." 
+                              class="w-full bg-slate-50 rounded-lg p-3 text-xs font-medium text-slate-600 outline-none focus:ring-1 ring-[#1A237E] h-16 resize-none"></textarea>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Grid Preview -->
+          <div class="space-y-6">
+            <div class="bg-[#1A237E] p-4 sm:p-8 rounded-[2.5rem] shadow-2xl border-4 border-[#FFC107] relative overflow-hidden flex items-center justify-center min-h-[400px] md:min-h-[500px]">
+              <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+              
+              <div x-show="grid.length > 0" class="relative z-10 w-full flex justify-center">
+                <div class="grid gap-1 bg-[#1A237E]/50 p-2 rounded-xl" :style="'grid-template-columns: repeat(' + gridSize + ', minmax(0, 1fr))'">
+                  <template x-for="(row, rIdx) in grid">
+                    <template x-for="(char, cIdx) in row">
+                      <div class="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 bg-white/10 border border-white/20 rounded flex items-center justify-center font-black text-white text-[10px] sm:text-xs md:text-lg transition-all hover:bg-[#FFC107] hover:text-[#1A237E] cursor-default"
+                           x-text="char"></div>
+                    </template>
+                  </template>
+                </div>
+              </div>
+
+              <div x-show="grid.length === 0" class="text-center space-y-4">
+                <div class="h-20 w-20 bg-white/10 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-white/30">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                </div>
+                <p class="text-white/40 font-black uppercase tracking-widest text-xs">Grid belum di-generate</p>
+              </div>
+            </div>
+
+            <div class="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100">
+               <h4 class="text-[10px] font-black text-[#FF5722] uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                 Tips Pembuatan
+               </h4>
+               <ul class="text-[10px] font-bold text-orange-800 space-y-1 list-disc pl-4">
+                 <li>Gunakan kata minimal 3 huruf.</li>
+                 <li>Pastikan penjelasan teologis akurat dan ringkas.</li>
+                 <li>Klik "Generate Grid" setiap kali mengubah daftar kata.</li>
+               </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+                </div>
+             </div>
+          </template>
+
+          <div x-show="activeProject?.gameType !== 'WORD_SEARCH'" class="space-y-6 mb-10">
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 gap-4">
+              <div class="flex items-center gap-3">
+                <div class="h-8 w-1.5 bg-[#1A237E] rounded-full"></div>
+                <div>
+                  <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest">Editor Konten</h3>
+                  <p class="text-[10px] text-slate-400 font-bold">Kelola butir soal interaktif</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 justify-center">
+                 <button @click="downloadTemplate()" class="text-[10px] font-black uppercase bg-white border-2 border-slate-200 px-4 py-2 rounded-lg hover:border-[#1A237E] transition-all flex items-center gap-2">
+                   CSV Template
+                 </button>
+                 <label class="text-[10px] font-black uppercase bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-lg cursor-pointer hover:bg-[#FFD54F] transition-all flex items-center gap-2 shadow-sm">
+                   Import CSV
+                   <input type="file" accept=".csv" @change="importCSV" class="hidden">
+                 </label>
+                 <button @click="previewGame()" class="text-[10px] font-black uppercase bg-[#1A237E] text-white px-4 py-2 rounded-lg hover:bg-indigo-900 transition-all flex items-center gap-2 shadow-md">
+                   Simulasi Game
+                 </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Staging Validation UI -->
+          <template x-if="stagingQuestions.length > 0">
+            <div class="bg-blue-50 border-4 border-blue-200 p-8 rounded-3xl space-y-6 mb-10 shadow-xl">
+               <div class="flex justify-between items-center">
+                  <h4 class="text-lg font-black text-blue-900 uppercase">Validasi Import Soal (<span x-text="stagingQuestions.length"></span>)</h4>
+                  <div class="flex gap-2">
+                     <button @click="stagingQuestions = []" class="bg-white text-slate-400 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest">Batal</button>
+                     <button @click="commitStaging()" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg transform hover:scale-105 transition-all">Konfirmasi Tambah</button>
+                  </div>
+               </div>
+               <div class="max-h-64 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                  <template x-for="(sq, sidx) in stagingQuestions" :key="sidx">
+                     <div class="bg-white p-4 rounded-xl shadow-sm text-xs border border-blue-100">
+                        <p class="font-bold text-blue-900 mb-2" x-text="sq.question || sq.fullText"></p>
+                        <div class="flex gap-4 opacity-60 font-black uppercase text-[8px]">
+                           <span x-text="'TYPE: ' + (sq.question ? 'QUIZ' : 'FTB')"></span>
+                           <span x-text="'DIFFICULTY: ' + (sq.difficulty || 'RENDAH')"></span>
+                        </div>
+                     </div>
+                  </template>
+               </div>
+            </div>
+          </template>
+
+          <template x-if="isReadOnly()">
+            <div class="bg-red-50 text-red-600 p-3 rounded text-sm mb-4 font-bold border border-red-200">
+               Proyek dalam status <span x-text="activeProject?.status"></span> dan bersifat Read-Only.
+            </div>
+          </template>
+
+          <div x-show="activeProject?.gameType !== 'WORD_SEARCH'" class="space-y-6">
+            <template x-for="(q, idx) in questions" :key="idx">
+              <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
+                <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="idx + 1"></div>
+                <button x-show="!isReadOnly()" @click="removeQuestion(idx)" class="absolute -right-3 -top-3 bg-red-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10">&times;</button>
+                
+                <!-- Quiz Editor -->
+                <template x-if="activeProject?.gameType === 'QUIZ'">
+                  <div class="space-y-8 pl-4">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Butir Pertanyaan</label>
+                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-slate-50/30 transition-all" placeholder="Tuliskan pertanyaan di sini..."></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <template x-for="opt in ['A', 'B', 'C', 'D']">
+                        <div class="relative">
+                          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2" x-text="'Pilihan ' + opt"></label>
+                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-slate-50/30 transition-all pl-12" :placeholder="'Opsi ' + opt">
+                          <div class="absolute left-4 top-10 font-black text-[#1A237E]" x-text="opt + '.'"></div>
+                        </div>
+                      </template>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
+                      <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Jawaban Benar</label>
+                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E]">
+                          <option value="A">Opsi A</option><option value="B">Opsi B</option><option value="C">Opsi C</option><option value="D">Opsi D</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kesulitan</label>
+                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E]">
+                          <option value="RENDAH">RENDAH (10 Poin)</option>
+                          <option value="SEDANG">SEDANG (20 Poin)</option>
+                          <option value="SULIT">SULIT (50 Poin)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Penjelasan Edukatif</label>
+                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 italic bg-slate-50/30 transition-all" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- FTB Editor -->
+                <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                  <div class="space-y-6 pl-4">
+                     <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex justify-between">
+                           Teks Lengkap (Blok teks lalu klik 'Jadikan Blank')
+                           <button x-show="!isReadOnly()" @click="makeBlank(idx)" class="bg-[#FFC107] text-[#1A237E] px-4 py-1 rounded-full hover:bg-yellow-400 transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase">
+                             Jadikan Blank
+                           </button>
+                        </label>
+                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-50 rounded-2xl p-6 h-40 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-slate-50/30 transition-all" placeholder="Tuliskan kalimat di sini..."></textarea>
+                     </div>
+                     <div class="space-y-3">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Daftar Kata Rumpang</label>
+                        <template x-for="(ans, aidx) in q.answers" :key="aidx">
+                           <div class="bg-slate-50 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-start border border-slate-100">
+                              <div class="flex-none">
+                                 <div class="text-[8px] font-black text-blue-400 uppercase mb-1">KATA</div>
+                                 <div class="bg-[#1A237E] text-white px-3 py-1 rounded font-black text-sm" x-text="ans.word"></div>
+                              </div>
+                              <div class="flex-1 w-full">
+                                 <div class="text-[8px] font-black text-blue-400 uppercase mb-1">PENJELASAN</div>
+                                 <input type="text" x-model="ans.explanation" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full bg-white border-2 border-slate-100 rounded-lg p-2 text-xs font-bold focus:border-[#1A237E] outline-none transition-all" placeholder="Mengapa kata ini penting?">
+                              </div>
+                              <button x-show="!isReadOnly()" @click="q.answers.splice(aidx, 1); debouncedSave()" class="text-red-400 hover:text-red-600 pt-5 font-black">&times;</button>
+                           </div>
+                        </template>
+                        <template x-if="!q.answers?.length">
+                           <div class="text-center py-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-100 text-slate-400 text-xs font-bold uppercase italic opacity-50">Belum ada kata rumpang.</div>
+                        </template>
+                     </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <button x-show="!isReadOnly()" @click="addQuestion()" class="w-full border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-slate-400 font-black uppercase tracking-[0.3em] hover:border-[#1A237E] hover:text-[#1A237E] transition-all flex flex-col items-center gap-4 group">
+               <div class="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-[#1A237E] group-hover:text-[#FFC107] transition-all transform group-hover:rotate-90">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+               </div>
+               TAMBAH BUTIR SOAL BARU
+            </button>
+
+            <div x-show="!isReadOnly()" class="pt-10 flex flex-col items-center gap-3">
+               <button @click="submitForReview()" class="bg-[#FF5722] text-white px-12 py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#E64A19] transition-all transform hover:scale-110 active:scale-95 flex items-center gap-4">
+                  <span x-text="activeProject?.status === 'REVISI_KETUA' ? 'KIRIM KE KETUA TIM' : 'KIRIM KE PAKAR'"></span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+               </button>
+               <p class="text-xs text-slate-400 font-bold"
+                  x-text="activeProject?.status === 'REVISI_KETUA' ? '→ Proyek akan dikirim ke Ketua Tim untuk review akhir' : '→ Proyek akan dikirim ke Pakar yang ditugaskan untuk review konten'">
+               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Game Modal -->
+      <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
+         <div class="bg-white rounded-3xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+            <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-[#FF5722] z-10 text-3xl transition-colors font-black">&times;</button>
+            <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-[0.2em] border-b-4 border-[#FFC107]">
+              SIMULASI GAME: <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+            </div>
+            <div class="p-12 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center relative">
+               <button @click="prevQuestion()" x-show="currentQuestionIndex > 0 && activeProject?.gameType !== 'WORD_SEARCH'" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 z-20 border border-slate-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+               </button>
+               <button @click="nextQuestion()" x-show="currentQuestionIndex < questions.length - 1 && activeProject?.gameType !== 'WORD_SEARCH'" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 z-20 border border-slate-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+               </button>
+
+               <div class="text-center w-full max-w-2xl">
+                  <div x-show="activeProject?.gameType !== 'WORD_SEARCH'" class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
+                  
+                  <!-- Quiz Content -->
+                  <template x-if="activeProject?.gameType === 'QUIZ'">
+                    <div>
+                      <h3 class="text-2xl font-black text-[#1A237E] mb-10 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <template x-for="opt in ['A', 'B', 'C', 'D']">
+                           <button @click="checkAnswerQuiz(opt)" 
+                              :class="{
+                                'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
+                                'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
+                                'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
+                                'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === questions[currentQuestionIndex].correctAnswer)
+                              }"
+                              class="border-4 p-6 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-4 group disabled:cursor-default"
+                              :disabled="showExplanation">
+                              <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black" 
+                                    :class="showExplanation && opt === questions[currentQuestionIndex].correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
+                                <span x-text="opt"></span>
+                              </span>
+                              <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
+                           </button>
+                         </template>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- FTB Content -->
+                  <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                    <div>
+                      <div class="text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 rounded-3xl shadow-inner border-2 border-slate-100" 
+                           x-html="renderFTB(questions[currentQuestionIndex])"></div>
+                      <div class="mt-8 flex justify-center">
+                        <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-[#E64A19] transition-all">PERIKSA JAWABAN</button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- Word Search Content -->
+                  <template x-if="showPreview && activeProject?.gameType === 'WORD_SEARCH' && gameData">
+                    <div class="w-full">
+                       
+    <div x-data="wordSearchGame(${projectVar}, ${gameDataVar})" 
+         class="max-w-4xl mx-auto space-y-8 p-4 animate-in fade-in duration-700">
+      
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+           <div class="h-14 w-14 bg-[#FFC107] rounded-2xl flex items-center justify-center shadow-xl transform rotate-3">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+           </div>
+           <div>
+             <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
+             <div class="flex items-center gap-2">
+               <span class="text-[10px] font-black bg-[#1A237E] text-white px-2 py-0.5 rounded uppercase tracking-widest" x-text="difficulty"></span>
+               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="gridSize + 'x' + gridSize + ' GRID'"></span>
+             </div>
+           </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
+          <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
+            <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest">WAKTU</div>
+            <div class="text-xl font-black text-[#1A237E]" x-text="formatTime(timer)"></div>
+          </div>
+          <div class="bg-[#1A237E] p-3 px-6 rounded-2xl border-b-4 border-[#FFC107] shadow-lg text-center">
+            <div class="text-[8px] font-black text-blue-200 uppercase tracking-widest">SKOR</div>
+            <div class="text-xl font-black text-[#FFC107]" x-text="score"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Word List -->
+        <div class="lg:col-span-1 space-y-4">
+          <div class="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            </div>
+            <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest mb-6 flex items-center gap-2">
+              <span class="h-2 w-2 bg-[#FFC107] rounded-full animate-ping"></span>
+              Kata Tersembunyi:
+            </h3>
+            <div class="grid grid-cols-2 lg:grid-cols-1 gap-2">
+              <template x-for="w in wordsList">
+                <div class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-500"
+                     :class="foundWords.includes(w) ? 'bg-green-50 border-green-100 text-green-700' : 'bg-slate-50 border-transparent text-slate-700'">
+                  <div class="h-5 w-5 rounded-lg flex items-center justify-center transition-all" :class="foundWords.includes(w) ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-400'">
+                    <svg x-show="foundWords.includes(w)" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    <span x-show="!foundWords.includes(w)" class="text-[8px] font-black" x-text="w[0]"></span>
+                  </div>
+                  <span class="font-black text-xs uppercase tracking-wider" :class="foundWords.includes(w) ? 'line-through opacity-40' : ''" x-text="w"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100">
+             <p class="text-[10px] font-bold text-orange-800 leading-relaxed italic">"Temukan kata-kata di samping pada grid dengan cara menarik garis (drag) pada huruf-hurufnya. Kata bisa mendatar, menurun, atau diagonal!"</p>
+          </div>
+        </div>
+
+        <!-- Right: Game Grid -->
+        <div class="lg:col-span-2">
+          <div class="bg-[#1A237E] p-4 sm:p-10 rounded-[3.5rem] shadow-2xl border-[12px] border-white/5 relative overflow-hidden flex items-center justify-center min-h-[450px]">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            
+            <!-- Selection Layer (Canvas for smoother lines if needed, but we'll use CSS for now) -->
+            <div class="relative z-10 select-none touch-none" 
+                 @mousedown="startSelection" 
+                 @mousemove="updateSelection" 
+                 @mouseup="endSelection"
+                 @touchstart.prevent="startSelection" 
+                 @touchmove.prevent="updateSelection" 
+                 @touchend.prevent="endSelection"
+                 @mouseleave="endSelection">
+              
+              <div class="grid gap-1 bg-[#1A237E]/30 p-3 rounded-2xl backdrop-blur-sm" :style="'grid-template-columns: repeat(' + gridSize + ', minmax(0, 1fr))'">
+                <template x-for="(row, rIdx) in grid">
+                  <template x-for="(char, cIdx) in row">
+                    <div :data-row="rIdx" :data-col="cIdx"
+                         class="h-7 w-7 sm:h-9 sm:w-9 md:h-11 md:w-11 flex items-center justify-center font-black text-white text-[10px] sm:text-sm md:text-xl rounded-lg transition-all duration-150 cursor-pointer cell relative"
+                         :class="getCellClass(rIdx, cIdx)">
+                      <span class="relative z-10" x-text="char"></span>
+                      <!-- Correct background for found words -->
+                      <div x-show="isCellInFoundWords(rIdx, cIdx)" class="absolute inset-0 bg-[#FFC107] rounded-lg shadow-inner transform scale-90"></div>
+                    </div>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Educational Modal -->
+      <div x-show="showEduModal" style="display:none;" class="fixed inset-0 bg-[#1A237E]/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-[#FFC107] overflow-hidden animate-in zoom-in duration-300">
+          <div class="bg-[#1A237E] p-10 text-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="relative z-10">
+              <div class="h-24 w-24 bg-[#FFC107] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#1A237E]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+              </div>
+              <h2 class="text-4xl font-black text-white uppercase tracking-tighter">Luar Biasa!</h2>
+              <p class="text-blue-200 font-bold uppercase tracking-[0.3em] text-[10px] mt-2">Wawasan Teologis Baru:</p>
+              <h3 class="text-5xl font-black text-[#FFC107] mt-2 italic" x-text="currentWord?.word"></h3>
+            </div>
+          </div>
+          <div class="p-10 space-y-8">
+            <div class="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-lg text-center" x-text="currentWord?.explanation"></div>
+            <button @click="closeEduModal()" class="w-full bg-[#1A237E] text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4">
+              LANJUTKAN MISI
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Modal -->
+      <div x-show="showSummary" style="display:none;" class="fixed inset-0 bg-[#1A237E]/95 backdrop-blur-2xl flex items-center justify-center z-[110] p-4">
+        <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-12 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
+          <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#FFC107] via-[#FF5722] to-[#FFC107]"></div>
+          
+          <div class="space-y-4">
+            <div class="text-[10px] font-black text-[#FF5722] uppercase tracking-[0.5em]">MISSION COMPLETED</div>
+            <h2 class="text-6xl font-black text-[#1A237E] uppercase tracking-tighter italic leading-none">PAKAR KATA!<br><span class="text-[#FFC107]">TERLATIH</span></h2>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-8 py-6">
+            <div class="space-y-1">
+              <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TOTAL SKOR</div>
+              <div class="text-6xl font-black text-[#FF5722]" x-text="score"></div>
+            </div>
+            <div class="space-y-1 border-l-2 border-slate-100">
+              <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">WAKTU</div>
+              <div class="text-6xl font-black text-[#1A237E]" x-text="formatTime(timer)"></div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <button @click="window.location.href='/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-xl hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
+              KEMBALI KE DASHBOARD
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+            </button>
+            <button @click="window.location.reload()" class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] hover:text-[#1A237E] transition-colors py-2 block w-full">MAINKAN ULANG TANTANGAN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+                    </div>
+                  </template>
+
+                  <!-- Explanation Box -->
+                  <div x-show="showExplanation" x-transition class="mt-8 p-6 rounded-2xl text-left border-2 border-dashed"
+                       :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                     <div class="flex items-center gap-3 mb-2">
+                        <template x-if="isCorrect">
+                           <span class="bg-green-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg></span>
+                        </template>
+                        <template x-if="!isCorrect">
+                           <span class="bg-red-500 text-white p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></span>
+                        </template>
+                        <span class="font-black text-xs uppercase tracking-widest" :class="isCorrect ? 'text-green-800' : 'text-red-800'" x-text="isCorrect ? 'Luar Biasa!' : 'Belum Tepat!'"></span>
+                     </div>
+                     <div class="space-y-3">
+                        <template x-if="activeProject?.gameType === 'QUIZ'">
+                          <p class="text-sm font-bold text-slate-700 italic" x-text="questions[currentQuestionIndex]?.explanation"></p>
+                        </template>
+                        <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
+                          <div class="space-y-2">
+                            <template x-for="(ans, aidx) in questions[currentQuestionIndex]?.answers" :key="aidx">
+                              <div class="text-xs font-bold border-l-4 pl-3" :class="userFTBAnswers[aidx]?.toLowerCase() === ans.word.toLowerCase() ? 'border-green-400' : 'border-red-400'">
+                                <span class="text-[#1A237E] uppercase tracking-tighter" x-text="ans.word"></span>: 
+                                <span class="text-slate-500 italic" x-text="ans.explanation"></span>
+                              </div>
+                            </template>
+                          </div>
+                        </template>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+    </div>
+    
+  <script>
+    (function() {
+      const init = () => {
+        if (typeof Alpine === 'undefined') return;
+        if (Alpine.store('ws_editor_init')) return;
+        Alpine.store('ws_editor_init', true);
+
+        Alpine.data('wordSearchEditor', (project) => ({
+        projectId: project ? project.id : null,
+        words: [],
+        grid: [],
+        gridSize: 10,
+        difficulty: 'EASY',
+        isSaving: false,
+        
+        async init() {
+          if (!this.projectId) return;
+          const res = await fetch('/api/word-search/' + this.projectId);
+          const json = await res.json();
+          if(json.success && json.data) {
+            this.words = json.data.words || [];
+            this.grid = json.data.gridData || [];
+            this.gridSize = json.data.gridSize || 10;
+            this.difficulty = json.data.difficulty || 'EASY';
+          } else {
+            this.words = [{ word: '', explanation: '' }];
+          }
+          
+          // LocalStorage recovery
+          const saved = localStorage.getItem('ws_editor_' + this.projectId);
+          if(saved) {
+            const data = JSON.parse(saved);
+            if(confirm('Ditemukan perubahan yang belum tersimpan di cloud. Ingin memulihkan?')) {
+              this.words = data.words;
+              this.difficulty = data.difficulty;
+              this.gridSize = data.gridSize;
+              this.grid = data.grid;
+            }
+          }
+
+          this.$watch('words', val => this.localSave());
+          this.$watch('difficulty', val => this.localSave());
+        },
+
+        updateGridSize() {
+          this.gridSize = this.difficulty === 'EASY' ? 10 : this.difficulty === 'MEDIUM' ? 12 : 15;
+        },
+
+        addWord() {
+          this.words.push({ word: '', explanation: '' });
+        },
+
+        removeWord(index) {
+          this.words.splice(index, 1);
+        },
+
+        localSave() {
+          if (!this.projectId) return;
+          localStorage.setItem('ws_editor_' + this.projectId, JSON.stringify({
+            words: this.words,
+            difficulty: this.difficulty,
+            gridSize: this.gridSize,
+            grid: this.grid
+          }));
+        },
+
+        generateGrid() {
+          const size = this.gridSize;
+          const newGrid = Array(size).fill().map(() => Array(size).fill(''));
+          const directions = {
+            EASY: [[0, 1], [1, 0]],
+            MEDIUM: [[0, 1], [1, 0], [0, -1], [-1, 0]],
+            HARD: [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, -1], [1, -1], [-1, 1]]
+          };
+
+          const currentDirections = directions[this.difficulty];
+
+          for (const item of this.words) {
+            const word = item.word.trim().toUpperCase();
+            if (!word) continue;
+            
+            if (word.length > size) {
+              alert(`Kata "${word}" terlalu panjang untuk grid ${size}x${size}`);
+              return;
+            }
+
+            let placed = false;
+            let attempts = 0;
+            while (!placed && attempts < 200) {
+              const dir = currentDirections[Math.floor(Math.random() * currentDirections.length)];
+              const row = Math.floor(Math.random() * size);
+              const col = Math.floor(Math.random() * size);
+
+              if (this.canPlace(newGrid, word, row, col, dir)) {
+                this.placeWord(newGrid, word, row, col, dir);
+                placed = true;
+              }
+              attempts++;
+            }
+
+            if (!placed) {
+              alert(`Gagal menempatkan kata "${word}". Coba kurangi kata atau ganti difficulty.`);
+              return;
+            }
+          }
+
+          // Fill empty cells
+          for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+              if (newGrid[r][c] === '') {
+                newGrid[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+              }
+            }
+          }
+
+          this.grid = newGrid;
+          this.localSave();
+        },
+
+        canPlace(grid, word, row, col, dir) {
+          const size = grid.length;
+          for (let i = 0; i < word.length; i++) {
+            const r = row + i * dir[0];
+            const c = col + i * dir[1];
+            if (r < 0 || r >= size || c < 0 || c >= size) return false;
+            if (grid[r][c] !== '' && grid[r][c] !== word[i]) return false;
+          }
+          return true;
+        },
+
+        placeWord(grid, word, row, col, dir) {
+          for (let i = 0; i < word.length; i++) {
+            const r = row + i * dir[0];
+            const c = col + i * dir[1];
+            grid[r][c] = word[i];
+          }
+        },
+
+        async saveToServer() {
+          if (this.grid.length === 0) {
+            alert('Silakan generate grid terlebih dahulu!');
+            return;
+          }
+
+          this.isSaving = true;
+          try {
+            const res = await fetch('/api/word-search/' + this.projectId + '/questions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                words: this.words,
+                gridSize: this.gridSize,
+                difficulty: this.difficulty,
+                score: this.words.length * (this.difficulty === 'EASY' ? 10 : this.difficulty === 'MEDIUM' ? 20 : 50),
+                gridData: this.grid
+              })
+            });
+
+            if (res.ok) {
+              localStorage.removeItem('ws_editor_' + this.projectId);
+              alert('Data tersimpan ke cloud!');
+            } else {
+              alert('Gagal menyimpan data.');
+            }
+          } catch (e) {
+            alert('Terjadi kesalahan jaringan.');
+          } finally {
+            this.isSaving = false;
+          }
+        }
+      }));
+      };
+      if (window.Alpine) init();
+      else document.addEventListener('alpine:init', init);
+    })();
+  </script>
+
+    
+  <script>
+    (function() {
+      const init = () => {
+        if (typeof Alpine === 'undefined') return;
+        if (Alpine.store('ws_game_init')) return;
+        Alpine.store('ws_game_init', true);
+
+        Alpine.data('wordSearchGame', (project, gameData) => ({
+        activeProject: project,
+        grid: gameData ? gameData.gridData : [],
+        gridSize: gameData ? gameData.gridSize : 10,
+        difficulty: gameData ? gameData.difficulty : 'EASY',
+        wordsData: gameData ? gameData.words : [], 
+        wordsList: gameData ? gameData.words.map(w => w.word) : [],
+        
+        foundWords: [],
+        totalWords: gameData ? gameData.words.length : 0,
+        score: 0,
+        timer: 0,
+        timerInterval: null,
+        
+        isSelecting: false,
+        startCell: null,
+        currentCell: null,
+        foundCells: [], 
+        
+        showEduModal: false,
+        currentWord: null,
+        showSummary: false,
+        
+        init() {
+          this.timerInterval = setInterval(() => {
+            if (!this.showEduModal && !this.showSummary) this.timer++;
+          }, 1000);
+        },
+
+        formatTime(s) {
+          const mins = Math.floor(s / 60);
+          const secs = s % 60;
+          return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        },
+
+        getCellFromEvent(e) {
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          const el = document.elementFromPoint(clientX, clientY);
+          if (!el) return null;
+          const cell = el.closest('.cell');
+          if (!cell) return null;
+          return {
+            r: parseInt(cell.dataset.row),
+            c: parseInt(cell.dataset.col)
+          };
+        },
+
+        startSelection(e) {
+          if (this.showEduModal || this.showSummary) return;
+          const cell = this.getCellFromEvent(e);
+          if (cell) {
+            this.isSelecting = true;
+            this.startCell = cell;
+            this.currentCell = cell;
+            this.playClick();
+          }
+        },
+
+        updateSelection(e) {
+          if (!this.isSelecting) return;
+          const cell = this.getCellFromEvent(e);
+          if (cell && (cell.r !== this.currentCell.r || cell.c !== this.currentCell.c)) {
+            this.currentCell = cell;
+          }
+        },
+
+        endSelection() {
+          if (!this.isSelecting) return;
+          this.isSelecting = false;
+          this.checkSelection();
+        },
+
+        checkSelection() {
+          const selectedCells = this.getSelectedCells();
+          if (selectedCells.length === 0) return;
+          const word = selectedCells.map(c => this.grid[c.r][c.c]).join('');
+          const reversedWord = word.split('').reverse().join('');
+
+          if (this.wordsList.includes(word) && !this.foundWords.includes(word)) {
+            this.handleSuccess(word, selectedCells);
+          } else if (this.wordsList.includes(reversedWord) && !this.foundWords.includes(reversedWord)) {
+            this.handleSuccess(reversedWord, selectedCells);
+          }
+          
+          this.startCell = null;
+          this.currentCell = null;
+        },
+
+        handleSuccess(word, cells) {
+          this.foundWords.push(word);
+          // Store as string keys for easy lookup
+          cells.forEach(c => {
+            if(!this.isCellInFoundWords(c.r, c.c)) {
+               this.foundCells.push({r: c.r, c: c.c});
+            }
+          });
+          
+          this.score += this.difficulty === 'EASY' ? 10 : this.difficulty === 'MEDIUM' ? 20 : 50;
+          this.currentWord = this.wordsData.find(w => w.word === word);
+          this.showEduModal = true;
+          
+          if (this.foundWords.length === this.totalWords) {
+            this.submitScore();
+          }
+        },
+
+        isCellInFoundWords(r, c) {
+          return this.foundCells.some(fc => fc.r === r && fc.c === c);
+        },
+
+        async submitScore() {
+          await fetch('/api/word-search/' + this.activeProject.id + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              foundWordsCount: this.foundWords.length,
+              totalWords: this.totalWords,
+              difficulty: this.difficulty,
+              timeSpent: this.timer
+            })
+          });
+        },
+
+        closeEduModal() {
+          this.showEduModal = false;
+          if (this.foundWords.length === this.totalWords) {
+            this.showSummary = true;
+            clearInterval(this.timerInterval);
+          }
+        },
+
+        getSelectedCells() {
+          if (!this.startCell || !this.currentCell) return [];
+          
+          const dr = this.currentCell.r - this.startCell.r;
+          const dc = this.currentCell.c - this.startCell.c;
+          
+          const dist = Math.max(Math.abs(dr), Math.abs(dc));
+          if (dist === 0) return [this.startCell];
+
+          const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+          const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+          
+          // Only allow horizontal, vertical, or 45deg diagonal
+          if (dr !== 0 && dc !== 0 && Math.abs(dr) !== Math.abs(dc)) return [this.startCell];
+
+          const cells = [];
+          for (let i = 0; i <= dist; i++) {
+            cells.push({
+              r: this.startCell.r + i * stepR,
+              c: this.startCell.c + i * stepC
+            });
+          }
+          return cells;
+        },
+
+        getCellClass(r, c) {
+          if (this.isSelecting) {
+            const selected = this.getSelectedCells();
+            if (selected.some(sc => sc.r === r && sc.c === c)) {
+              return 'bg-[#FF5722] text-white scale-110 z-20 shadow-lg ring-2 ring-white';
+            }
+          }
+          return '';
+        },
+
+        playClick() {
+           if(window.navigator.vibrate) window.navigator.vibrate(10);
+        }
+      }));
+      };
+      if (window.Alpine) init();
+      else document.addEventListener('alpine:init', init);
+    })();
+  </script>
+
+  

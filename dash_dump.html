@@ -1,0 +1,391 @@
+
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Dashboard | Logos LAB Dashboard</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+      <style>
+        body { font-family: 'Outfit', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #1A237E; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFC107; }
+      </style>
+      <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    </head>
+    <body class="bg-[#F8FAFC] text-slate-900">
+      <div class="flex">
+        
+    <div class="sidebar w-64 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100]">
+      <!-- Brand Area -->
+      <div class="p-8 border-b border-white/10 flex flex-col items-center">
+        <img src="/public/assets/Logo LogosLAB.png" alt="Logos LAB" class="h-16 w-auto mb-4 bg-white p-2 rounded-xl shadow-lg"/>
+        <div class="text-center">
+          <span class="text-xl font-black text-white tracking-widest uppercase">LOGOS LAB</span>
+          <p class="text-[10px] text-[#FFC107] font-bold tracking-[0.2em] uppercase mt-1">Dashboard Portal</p>
+        </div>
+      </div>
+      
+      <!-- Menu Navigation -->
+      <div class="flex-1 mt-8 space-y-1">
+        <p class="px-8 text-[10px] font-black text-blue-300 uppercase tracking-[0.2em] mb-4 opacity-50">Navigasi Utama</p>
+        
+          <a href="/dashboard/user" class="flex items-center px-8 py-4 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
+            <span class="mr-4 text-xl transition-transform group-hover:scale-110">🏠</span>
+            <span class="font-bold uppercase tracking-wider text-xs">Dashboard</span>
+          </a>
+        
+          <a href="/dashboard/user" class="flex items-center px-8 py-4 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
+            <span class="mr-4 text-xl transition-transform group-hover:scale-110">🏆</span>
+            <span class="font-bold uppercase tracking-wider text-xs">Pencapaian Saya</span>
+          </a>
+        
+      </div>
+
+      <!-- Action Footer -->
+      <div class="p-6 space-y-3 bg-black/20 border-t border-white/5">
+        <a href="/" class="flex items-center justify-center gap-2 w-full py-3 text-xs font-black text-white bg-[#FF5722] hover:bg-[#E64A19] rounded-xl transition-all shadow-lg uppercase tracking-widest">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+           KE BERANDA
+        </a>
+        <a href="/api/auth/logout" class="flex items-center justify-center gap-2 w-full py-3 text-xs font-black text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all uppercase tracking-widest border border-white/10">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+           LOGOUT
+        </a>
+      </div>
+    </div>
+  
+        
+        <div class="flex-1 ml-64 min-h-screen flex flex-col">
+          <!-- Main Header -->
+          <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-5 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+               <div class="h-6 w-1 bg-[#FFC107] rounded-full"></div>
+               <h1 class="text-xl font-black text-[#1A237E] uppercase tracking-widest">Dashboard</h1>
+            </div>
+            
+            <div class="flex items-center gap-8">
+              <!-- Notification Center -->
+              <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" class="relative text-slate-400 hover:text-[#1A237E] transition-all transform hover:scale-110">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  
+                </button>
+                
+                <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" style="display:none;" class="absolute right-0 mt-4 w-96 bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 overflow-hidden ring-8 ring-black/5">
+                  <div class="bg-[#1A237E] px-6 py-4 flex justify-between items-center">
+                    <span class="text-xs font-black text-white uppercase tracking-widest">Pusat Notifikasi</span>
+                    
+                  </div>
+                  <div class="max-h-[500px] overflow-y-auto divide-y divide-slate-50">
+                    <div class="p-10 text-center text-xs text-slate-400 font-bold italic uppercase tracking-widest opacity-50">Tidak ada notifikasi baru.</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- User Profile (Corner Right) -->
+              <div class="flex items-center gap-4 bg-slate-50 p-2 pr-6 rounded-full border border-slate-100 shadow-inner">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[#1A237E] to-blue-600 flex items-center justify-center text-white font-black shadow-lg ring-2 ring-white">
+                  J
+                </div>
+                <div class="text-left">
+                  <div class="text-xs font-black text-[#1A237E] uppercase tracking-wide leading-none">jujukalase732</div>
+                  <div class="text-[8px] text-[#FF5722] font-black uppercase tracking-[0.2em] mt-1">USER</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- Main Content View -->
+          <main class="flex-1 p-10">
+            
+    <div class="space-y-10" x-data="memberDashboard()">
+         
+      <!-- Stats Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-gradient-to-br from-[#1A237E] to-blue-700 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden group">
+          <div class="absolute -right-4 -bottom-4 text-9xl opacity-10 group-hover:scale-110 transition-transform">⭐</div>
+          <div class="relative z-10">
+            <h3 class="text-sm font-black uppercase tracking-[0.2em] opacity-80 mb-2">Peringkat Saya</h3>
+            <div class="text-4xl font-black mb-2">Level 12</div>
+            <p class="text-blue-100 text-xs font-bold uppercase tracking-widest">Pelajar Alkitab Setia</p>
+          </div>
+        </div>
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl relative overflow-hidden group">
+           <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 text-slate-200">🎮</div>
+           <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Game Selesai</h3>
+           <div class="text-4xl font-black text-[#1A237E]">15</div>
+           <div class="mt-4 flex items-center gap-2">
+             <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-[#FFC107] w-[65%]"></div>
+             </div>
+             <span class="text-[10px] font-black text-slate-400">65%</span>
+           </div>
+        </div>
+        <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl relative overflow-hidden group">
+           <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 text-slate-200">💎</div>
+           <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Total Skor</h3>
+           <div class="text-4xl font-black text-[#FF5722]">2,450</div>
+           <p class="text-[10px] text-slate-400 font-bold mt-2 uppercase">Kumpulkan poin untuk hadiah!</p>
+        </div>
+      </div>
+
+      <!-- Published Games Grid -->
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+             <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
+             <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-wider">Permainan Tersedia</h2>
+          </div>
+          <a href="#" class="text-[10px] font-black text-[#FF5722] uppercase tracking-widest hover:underline">Lihat Semua &rarr;</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+            <div class="bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-slate-100 group transform hover:-translate-y-2">
+               <div class="relative h-48 overflow-hidden cursor-pointer" @click="playGame(1)">
+                  <img src="https://via.placeholder.com/400x250?text=Logos+LAB" class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#1A237E]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                     <button class="w-full bg-[#FFC107] text-[#1A237E] py-3 rounded-xl font-black uppercase tracking-widest shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">Mainkan Sekarang</button>
+                  </div>
+                  <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-[#1A237E] uppercase tracking-widest shadow-sm">QUIZ</div>
+               </div>
+               <div class="p-6">
+                  <h4 class="text-lg font-black text-[#1A237E] mb-2 group-hover:text-[#FF5722] transition-colors line-clamp-1 cursor-pointer" @click="playGame(1)">Perjalanan Bangsa Israel</h4>
+                  <p class="text-slate-500 text-xs font-medium line-clamp-2 mb-4 italic leading-relaxed">Perjalanan Bangsa Israel keluar dari Mesir</p>
+                  <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                     <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">👤</div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Logos Team</span>
+                     </div>
+                     <span class="text-[10px] font-black text-[#FFC107] bg-[#FFC107]/10 px-2 py-1 rounded-md uppercase tracking-tighter">Baru</span>
+                  </div>
+               </div>
+            </div>
+          
+          
+        </div>
+      </div>
+
+      <!-- Game Modal Player -->
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[200] backdrop-blur-xl p-4 md:p-10">
+         <!-- Game Container -->
+         <div class="bg-white w-full max-w-5xl h-full md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
+            
+            <template x-if="isPlaying && !gameFinished">
+               <div class="flex flex-col h-full">
+                  <!-- Game Header -->
+                  <div class="bg-[#1A237E] px-6 md:px-10 py-4 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                     <div class="flex items-center gap-3 md:gap-4">
+                        <img src="/public/assets/Logo LogosLAB.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
+                        <div>
+                           <h3 class="text-xs md:text-sm font-black uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
+                           <p class="text-[8px] md:text-[9px] font-bold opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
+                        </div>
+                     </div>
+                     <div class="flex items-center gap-4 md:gap-6">
+                        <div class="text-right hidden sm:block">
+                           <p class="text-[9px] font-black uppercase opacity-60">Skor Saat Ini</p>
+                           <div class="text-xl md:text-2xl font-black text-[#FFC107]" x-text="currentScore"></div>
+                        </div>
+                        <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                     </div>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="h-2 w-full bg-slate-100 relative">
+                     <div class="h-full bg-[#FF5722] transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
+                  </div>
+
+                  <!-- Question Body -->
+                  <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
+                     <div class="w-full max-w-3xl text-center">
+                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + getPoints(questions[currentIndex]?.difficulty) + ' POIN)'"></div>
+                        <h2 class="text-xl md:text-3xl font-black text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                           <template x-for="opt in ['A', 'B', 'C', 'D']">
+                              <button @click="selectAnswer(opt)" 
+                                 :class="{
+                                    'border-[#FFC107] bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
+                                    'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === questions[currentIndex]?.correctAnswer,
+                                    'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
+                                    'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
+                                 }"
+                                 class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
+                                 :disabled="showFeedback">
+                                 <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-sm md:text-lg transition-colors" 
+                                       :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
+                                    <span x-text="opt"></span>
+                                 </span>
+                                 <span class="text-[#1A237E] font-black text-sm md:text-lg" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                              </button>
+                           </template>
+                        </div>
+
+                        <!-- Educational Feedback -->
+                        <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-8 rounded-2xl md:rounded-3xl text-left border-4 border-dashed"
+                             :class="selectedAnswer === questions[currentIndex]?.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                           <div class="flex items-center gap-3 mb-2 md:mb-3">
+                              <span class="text-xl md:text-2xl" x-text="selectedAnswer === questions[currentIndex]?.correctAnswer ? '✨' : '💡'"></span>
+                              <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="selectedAnswer === questions[currentIndex]?.correctAnswer ? 'text-green-800' : 'text-red-800'">
+                                 <span x-text="selectedAnswer === questions[currentIndex]?.correctAnswer ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
+                              </h4>
+                           </div>
+                           <p class="text-slate-700 font-bold italic text-sm md:text-base leading-relaxed" x-text="questions[currentIndex]?.explanation"></p>
+                           
+                           <div class="mt-4 md:mt-6 flex justify-end">
+                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
+                                 <span x-text="currentIndex === questions.length - 1 ? 'LIHAT HASIL AKHIR' : 'SOAL BERIKUTNYA'"></span>
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
+            <!-- Result Screen -->
+            <template x-if="gameFinished">
+               <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
+                  <div class="w-full max-w-2xl">
+                     <div class="mb-6 md:mb-10 relative inline-block">
+                        <div class="text-6xl md:text-8xl mb-4 animate-bounce">🏆</div>
+                        <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-black shadow-xl ring-4 ring-white">100</div>
+                     </div>
+                     
+                     <h2 class="text-2xl md:text-4xl font-black text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
+                     <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus, <span x-text="username"></span>!</p>
+                     
+                     <!-- Stats Grid -->
+                     <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
+                           <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
+                           <div class="text-xl md:text-3xl font-black text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
+                        </div>
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-green-500">
+                           <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Benar</div>
+                           <div class="text-xl md:text-3xl font-black text-green-600" x-text="correctCount"></div>
+                        </div>
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-red-500">
+                           <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salah</div>
+                           <div class="text-xl md:text-3xl font-black text-red-600" x-text="wrongCount"></div>
+                        </div>
+                     </div>
+
+                     <div class="space-y-4">
+                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">SIMPAN & SELESAI</button>
+                        <p class="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-50">Skor Anda akan tercatat di papan peringkat.</p>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
+         </div>
+      </div>
+    </div>
+    <style>
+      [x-cloak] { display: none !important; }
+    </style>
+    
+    <script>
+      document.addEventListener('alpine:init', () => {
+        Alpine.data('memberDashboard', () => ({
+          activeGame: null,
+          questions: [],
+          isPlaying: false,
+          currentIndex: 0,
+          selectedAnswer: null,
+          showFeedback: false,
+          currentScore: 0,
+          maxScore: 0,
+          correctCount: 0,
+          wrongCount: 0,
+          gameFinished: false,
+          username: 'jujukalase732',
+          
+          async playGame(id) {
+            console.log('Playing game:', id);
+            try {
+              const res = await fetch('/api/projects/' + id);
+              const json = await res.json();
+              if(json.success) {
+                this.activeGame = json.data;
+                this.questions = json.data.questions || [];
+                if(this.questions.length === 0) {
+                   alert('Game ini belum memiliki soal.');
+                   return;
+                }
+                this.maxScore = this.questions.reduce((acc, q) => acc + this.getPoints(q.difficulty), 0);
+                this.currentIndex = 0;
+                this.currentScore = 0;
+                this.correctCount = 0;
+                this.wrongCount = 0;
+                this.selectedAnswer = null;
+                this.showFeedback = false;
+                this.gameFinished = false;
+                this.isPlaying = true;
+              } else {
+                 alert('Gagal memuat game dari server.');
+              }
+            } catch (e) {
+              console.error('Error fetching game:', e);
+              alert('Terjadi kesalahan jaringan.');
+            }
+          },
+
+          getPoints(diff) {
+             const points = { 'RENDAH': 10, 'SEDANG': 20, 'SULIT': 50, 'BONUS': 30 };
+             return points[diff] || 10;
+          },
+
+          selectAnswer(opt) {
+            if(this.showFeedback) return;
+            this.selectedAnswer = opt;
+            this.showFeedback = true;
+            
+            if(opt === this.questions[this.currentIndex].correctAnswer) {
+               this.currentScore += this.getPoints(this.questions[this.currentIndex].difficulty);
+               this.correctCount++;
+            } else {
+               this.wrongCount++;
+            }
+          },
+
+          nextQuestion() {
+            if(this.currentIndex < this.questions.length - 1) {
+              this.currentIndex++;
+              this.selectedAnswer = null;
+              this.showFeedback = false;
+            } else {
+              this.gameFinished = true;
+            }
+          },
+
+          quitGame() {
+            this.isPlaying = false;
+            this.activeGame = null;
+          }
+        }));
+      });
+    </script>
+  
+          </main>
+
+          <!-- System Footer -->
+          <footer class="px-10 py-8 text-center text-slate-300 text-[10px] font-black uppercase tracking-[0.4em] opacity-40">
+            &copy; 2026 LOGOS LAB PRODUCTION &bull; FAITH MEETS TECHNOLOGY
+          </footer>
+        </div>
+      </div>
+    </body>
+    </html>
+  

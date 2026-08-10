@@ -1,5 +1,5 @@
 import { db } from "../db/db";
-import { projects, users, reviewsHistory, achievements, materiReadProgress, userScores, gameInterests } from "../db/schema";
+import { projects, users, reviewsHistory, achievements, materiReadProgress, userScores, gameCompetencies } from "../db/schema";
 import { eq, and, sql, gte } from "drizzle-orm";
 
 /**
@@ -234,12 +234,12 @@ export async function getUserDashboardSummary(userId: number) {
   const categories = ["Biblical Knowledge", "Eksegesis & Hermeneutik", "Biblical Theory", "Homiletika", "Apologetika"];
   const spiderData = categories.map(() => 0);
 
-  // Fetch all game interests to map category to projectIds
-  const allGameInterests = await db.select().from(gameInterests);
+  // Fetch all game competencies to map category to projectIds
+  const allGameCompetencies = await db.select().from(gameCompetencies);
   
   for (let i = 0; i < categories.length; i++) {
     const cat = categories[i];
-    const catProjectIds = allGameInterests.filter(gi => gi.category === cat).map(gi => gi.projectId);
+    const catProjectIds = allGameCompetencies.filter(gi => gi.category === cat).map(gi => gi.projectId);
     if (catProjectIds.length > 0) {
       const catScores = scoresResult.filter(s => catProjectIds.includes(s.projectId));
       if (catScores.length > 0) {

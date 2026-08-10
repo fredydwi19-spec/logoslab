@@ -8,9 +8,9 @@
     cukup instruksikan secara high level
     nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan 
 
-2.  Jalankan github issue: https://github.com/fredydwi19-spec/logoslab/issues/5
+2.  kerjakan github issue ini: https://github.com/fredydwi19-spec/logoslab/issues/5
 
-3.  Buatkan pull request 
+3.  Buatkan pull request di github pull requests
 
 4.  Buatkan issue.md berisi planning untuk membuat ini:
     Buat table user dengan kolom:
@@ -68,7 +68,13 @@
     cukup instruksikan secara high level
     nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan
 
+
+
+
 7. bun run dev
+
+
+
 
 8. Buatkan github issue.md berisi planning untuk membuat ini:
 
@@ -108,3 +114,514 @@ Output: Tulis langkah-langkah setup SMTP email dan migrasi tabel token di issue.
 jangan terlalu low level atau detail
     cukup instruksikan secara high level
     nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan
+
+
+
+
+Buatkan github issue.md (submit ke github issue) berisi planning untuk membuat ini:
+Role: Lead Fullstack Developer & UX Architect
+
+Task: Implementasikan alur sesi pengguna dari Landing Page hingga Dashboard sesuai spesifikasi navigasi baru.
+
+1. Alur Login & Redirect:
+
+Setelah login sukses (Manual/Google), simpan data user dalam Session/JWT.
+
+Redirect: Semua user tanpa pengecualian harus diarahkan kembali ke GET / (Landing Page), namun dengan status authenticated.
+
+2. Dinamika Navbar (Landing Page):
+
+State 1 (Guest): Tampilkan tombol "Masuk / Daftar" seperti desain saat ini.
+
+State 2 (Logged In): Ganti tombol tersebut dengan Dropdown Menu:
+
+Label Dropdown: Menampilkan [Nama User].
+
+Sub-Menu 1: Dashboard -> Redirect otomatis ke /dashboard/:role (berdasarkan kolom role di DB).
+
+Sub-Menu 2: Edit Profil -> Link ke halaman /profile/edit.
+
+Sub-Menu 3: Logout -> Menghapus session/cookie dan redirect ke Landing Page awal (Guest state).
+
+3. Halaman Edit Profil:
+
+Buat halaman baru /profile/edit yang konsisten dengan tema Midnight Blue (#1A237E) dan Vibrant Orange (#FF5722).
+
+Form Features: Input Nama Lengkap, Upload/Ganti Foto Profil (gunakan input file yang rapi), dan tombol "Simpan Perubahan".
+
+4. Logika Logout:
+
+Pastikan saat logout, sistem membersihkan token keamanan agar user tidak bisa kembali ke dashboard menggunakan tombol "Back" di browser.
+
+Output: Tuliskan checklist pengerjaan, skema routing di ElysiaJS, dan struktur komponen Navbar yang mendukung kondisi isLoggedIn di issue.md.
+jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan
+
+Buatkan github issue.md (submit ke github issue) berisi planning untuk membuat ini:
+Role: Senior UX Engineer & Fullstack Developer
+
+Task: Implementasikan sistem Onboarding Minat User dan pembaruan Halaman Profil sesuai identitas visual Logos Lab.
+
+1. Alur First-Time Login (Role USER):
+
+Buat logika pengecekan kolom has_onboarded. Jika false, tampilkan Pop-up Modal interaktif saat pertama kali masuk ke Landing Page User.
+
+Konten Modal: Pilihan minat (Biblical Knowledge, Eksegesis & Hermeneutik, Biblical Theory, Homiletika, Apologetika). Dukung multi-select.
+
+Setelah disimpan, set has_onboarded = true dan simpan pilihan ke kolom interests.
+
+2. Halaman Profil Baru (/profile):
+
+Ganti sub-menu "Edit Profil" menjadi "Profil".
+
+Layout: Gunakan latar belakang Soft Grey (#F5F5F5) dengan kontainer putih bersih agar mata tidak lelah.
+
+Fitur Role USER:
+
+Bagian 1: Edit Nama & Foto Profil (Shield of Knowledge frame untuk foto).
+
+Bagian 2: Edit Minat (Checkbox/Toggle untuk 5 kategori minat).
+
+Fitur Role Lain (Ketua, Pakar, dll): Hanya menampilkan Bagian 1 (Edit Nama & Foto).
+
+3. Section "Games Untuk Mu" (Hanya Role USER):
+
+Tambahkan section baru di antara Hero dan Games Populer.
+
+Logic: Tampilkan konten yang kategorinya sesuai dengan isi kolom interests user.
+
+Desain: Gunakan gaya Carousel yang sedikit lebih menonjol dengan aksen Vibrant Orange untuk membedakannya dari section populer.
+
+Output: Tuliskan spesifikasi komponen modal, update skema database, dan rute halaman profil di issue.md.
+jangan terlalu low level atau detail
+    cukup instruksikan secara high level
+    nanti dokumen planningnya akan digunakan oleh programmer atau model lebih murah untuk diimplementasikan
+
+
+
+
+
+Berdasarkan workflow @logos-lab-development-cycle-secure-edition-.md mohon kerjakan hal ini:
+INSTRUKSI PENGERJAAN: SISTEM MANAJEMEN GAME QUIZ (END-TO-END)
+1. MODUL: PENUGASAN PROYEK (ROLE: KETUA TIM)
+A. Dashboard & Form Penugasan
+Trigger: Tombol "Tambah Proyek Game" membuka Pop-up Form.
+
+Input Fields:
+
+Dropdown Jenis Game: Quiz, Fill the Blank, Word Search, Teka-teki Silang.
+
+Text Input: Judul Proyek Game.
+
+Text Area: Deskripsi Proyek Game.
+
+Text Area Box: Instruksi Pengerjaan.
+
+Input Date: Deadline pengerjaan (Mini Calendar & Manual Input).
+
+Dropdown PIC: Memfilter user dengan role "Pembuat Game".
+
+AI Thumbnail Engine (Real-time):
+
+Implementasikan Debouncing (2-3 detik) setelah user mengisi Judul & Deskripsi.
+
+Otomatis generate thumbnail menggunakan API Image AI (dengan system prompt yang dioptimalkan di backend).
+
+Sediakan tombol "Regenerate Thumbnail" untuk proses manual jika hasil tidak sesuai.
+
+Status Awal: Saat disubmit, proyek tersimpan dengan status Draft.
+
+2. MODUL: PRODUKSI KONTEN & FORM QUIZ (ROLE: PEMBUAT GAME)
+A. Filter & Hak Akses
+Hanya menampilkan proyek yang ditugaskan kepada PIC yang sedang login.
+
+Mode Edit hanya aktif jika status: Draft, Revisi oleh Pakar, atau Revisi oleh Ketua Tim.
+
+Status Review atau Accept bersifat Read-Only.
+
+B. Header & Form Soal
+Header: Menampilkan info statis (Judul, Deskripsi, Instruksi, Deadline, & Thumbnail AI).
+
+Input Manual Soal:
+
+Fields: Pertanyaan, Pilihan A, B, C, D, Kunci Jawaban, Tingkat Kesulitan (Rendah, Sedang, Sulit, Bonus).
+
+Auto-Score Logic: Rendah (10), Sedang (20), Sulit (50), Bonus (30).
+
+Text Input: Penjelasan (Feedback jika jawaban user salah).
+
+Import System (XLSX/CSV):
+
+Fitur "Download Template" yang kolomnya sesuai dengan skema database.
+
+Validasi format file (tolak format selain XLSX/CSV).
+
+Staging Validation: Tampilkan pratinjau data yang diimport sebelum disimpan ke database untuk pengecekan error.
+
+C. Infrastruktur Data (Persistence & UI)
+Hybrid Autosave & Auto-recover:
+
+Simpan ke LocalStorage secara instan (on change).
+
+Simpan ke Database secara periodik (30-60 detik).
+
+Auto-recover: Saat halaman dibuka, deteksi jika data LocalStorage lebih baru dari Database. Berikan opsi pulihkan atau abaikan.
+
+Status Indicator: Tampilkan status "Saving...", "Saved to Cloud", atau "Offline Mode".
+
+Sistem Bank Soal:
+
+Setiap soal yang dibuat/diimport masuk ke tabel question_bank agar bisa dipanggil kembali di proyek masa depan.
+
+Preview Mode: Tombol untuk mencoba memainkan game dalam tampilan User (Modal/Pop-up).
+
+3. MODUL: WORKFLOW REVIEW & REVISI (ROLE: PAKAR & KETUA TIM)
+A. Role Pakar
+Menu: Tabel "Proyek Saya" dengan tab status: Review, Revisi, Accept.
+
+Review Action:
+
+Tombol Preview Game (Mencoba game secara penuh).
+
+Tombol Accept: Status berubah menjadi Accepted by Pakar (lanjut ke Ketua Tim).
+
+Tombol Revisi: Membuka input masukan/perbaikan.
+
+Sistem Penomoran Revisi: Jika Pakar memilih revisi, status proyek menjadi Revisi oleh Pakar. Setelah PIC memperbaiki dan submit ulang, status menjadi Revisi 1, lalu Revisi 2, dst.
+
+B. Role Ketua Tim
+Review hanya bisa dilakukan setelah status Accepted by Pakar.
+
+Memiliki fungsi yang sama dengan Pakar (Preview, Accept, Revisi).
+
+Tombol Publish: Hanya muncul jika status sudah Accepted by Ketua Tim.
+
+4. MODUL: NOTIFIKASI, BADGE, & UI (GLOBAL)
+A. Sistem Notifikasi & Badge
+Badge: Tampilkan angka pada Side Menu dan Tab Status (Draft, Review, Revisi, dsb) secara real-time jika ada tugas baru.
+
+Notification Center: List notifikasi berisi:
+
+Isi pesan (Contoh: "Pakar telah memberikan revisi pada Proyek A").
+
+Timestamp (Tanggal & Jam lengkap).
+
+Deep link langsung ke proyek terkait.
+
+B. Desain Tabel "Proyek Saya"
+Visual: Thumbnail (kecil), Judul, Jenis Game (Badge), PIC/Pakar terkait.
+
+Deadline: Warna teks berubah menjadi merah jika mendekati batas waktu.
+
+Fitur Search & Filter: Pencarian berdasarkan judul dan filter berdasarkan tab status.
+
+5. PERSYARATAN TEKNIS (BACKEND & DATABASE)
+Tech Stack: Bun, ElysiaJS, Drizzle ORM, MySQL.
+
+Database Constraints:
+
+Gunakan timestamp untuk tracking revisi dan autosave.
+
+Tabel reviews_history untuk menyimpan semua log masukan pakar/ketua tim.
+
+Security: Validasi role pada setiap endpoint API (PIC tidak bisa akses proyek orang lain, Pakar tidak bisa edit soal).
+
+
+Buat github issue pada repository github saya dengan menggunakan worfklow @contextScopeItemMention yang bertujuan membuat planning berdasarkan fitur yang akan saya buat berikut:
+Alur Game Fill the Blank (Logos Lab)
+Input Konten (Highlight-to-Blank):
+
+Pembuat game memasukkan teks lengkap (misal: satu ayat Alkitab atau paragraf teologis) ke dalam editor.
+
+Pembuat game cukup menyorot (highlight) kata atau frasa tertentu yang ingin dijadikan bagian rumpang.
+
+Sistem secara otomatis mengubah kata tersebut menjadi placeholder di sisi user dan menyimpannya sebagai kunci jawaban di database.
+
+Sistem Feedback Otomatis:
+
+Setiap bagian rumpang harus memiliki kolom Penjelasan/Edukasi.
+
+Jika user menjawab salah, sistem akan menampilkan jawaban yang benar beserta penjelasan teologisnya agar nilai Interaktif dan Edukatif tetap terjaga.
+
+Skoring Berbasis Kesulitan:
+
+Tingkat kesulitan ditentukan oleh pembuat soal (Rendah, Sedang, Sulit) yang akan menentukan bobot poin otomatis (10, 20, atau 50 poin).
+
+Poin ini akan diakumulasi ke dalam total skor proyek untuk referensi sistem skoring otomatis.
+
+Integrasi Bank Soal:
+
+Semua teks dan fragmen kata yang dikelola dalam game ini akan masuk ke game_questions_bank agar bisa digunakan kembali (reusable) dalam game atau kuis lainnya di masa depan.
+
+
+
+
+#Fitur Materi
+Dengan menggunakan workflow @contextScopeItemMention. Buatkan github issue pada repository github issue saya menggunakan command CLI yang membuat planning pengerjaan hal berikut:
+Master Prompt untuk High Agent (Architect)
+Role: High Agent (Architect & System Auditor)
+Context: Pengembangan Fitur Konten Materi pada platform Logos Lab (C:\Users\fredy\GitHub\). Fitur ini menggunakan stack Bun + ElysiaJS + Drizzle ORM + MySQL + Tailwind CSS dan wajib mematuhi UI/UX Skill Memory Protocol V3.0 (termasuk fluid typography & responsivitas).
+
+TUGAS MANDATORI SEBELUM CODING (SYSTEM AUDIT):
+Pelajari seluruh struktur website Logos Lab saat ini, khususnya pada:
+
+Skema database Drizzle (schema.ts) terkait manajemen User Role dan Fitur Quiz/Game.
+
+Alur kolaborasi state-machine (Draft -> Review -> Revision -> Ready -> Published) pada fitur Quiz.
+
+Komponen Header Form dan Smart Routing (logika pengembalian revisi dari Pakar vs Ketua Tim).
+
+SPESIFIKASI IMPLEMENTASI FITUR MATERI:
+
+1. Inisiasi Penugasan (Sisi Ketua Tim)
+Buat komponen tombol "Tugaskan Pembuatan Materi" khusus untuk Role Ketua Tim (RBAC diaktifkan).
+
+Jika diklik, tampilkan form responsif (Modals/Halaman Baru) dengan inputan wajib:
+
+Judul Materi, Deskripsi Materi, Instruksi Pengerjaan.
+
+Jenis Materi: Dropdown (Materi Teks / Materi Video).
+
+Klasifikasi Minat.
+
+PIC Pembuat Konten (Gunakan User ID hasil migrasi Opsi B).
+
+PIC Pakar (User ID).
+
+Deadline (DateTime) & Thumbnail (File/Path String).
+
+2. Refactoring Role & Database Migration (Opsi B)
+Ubah/Perluas nama role pembuat_soal di enum database menjadi pembuat_konten (Kontributor) tanpa merusak relasi data kuis yang lama.
+
+3. Tampilan Form Dinamis (Sisi Pembuat Konten)
+Pertahankan Header Form yang sama persis dengan form pembuatan game (pelajari komponen header yang ada).
+
+Kondisional UI: >   * Jika Jenis Materi = Teks, ganti komponen "Tambah Soal" menjadi area upload dokumen (PDF/PPT/Gambar).
+
+Jika Jenis Materi = Video, ganti komponen menjadi area upload/embed video.
+
+Aktifkan tombol Preview dinamis: Materi teks dapat langsung dibaca di tempat, materi video dapat di-play langsung, menggunakan pembatasan lebar teks max-w-2xl dan leading-relaxed sesuai Protokol V3.0.
+
+4. Smart Routing Keamanan & Log Revisi (Pakar & Ketua Tim)
+Pakar dan Ketua Tim memiliki akses preview yang sama dengan fitur kuis.
+
+Implementasikan Smart Routing Alur Revisi:
+
+Kondisi A: Jika direvisi oleh Pakar, submit perbaikan dari Pembuat Konten akan dikirim kembali ke Pakar (status: 'menunggu_review_pakar').
+
+Kondisi B: Jika direvisi oleh Ketua Tim, submit perbaikan bypass Pakar dan langsung masuk ke Ketua Tim (status: 'menunggu_publish').
+
+Wajib sertakan fitur Log Revisi (tabel riwayat catatan) untuk transparansi audit perubahan.
+
+5. Sisi Pengguna Akhir & Smart Recognition
+Tampilkan materi yang sudah published di Landing Page agar bisa dibaca/dimainkan langsung.
+
+Rancang arsitektur/logika Smart Recognition di frontend:
+
+Untuk Teks: Deteksi scroll event atau durasi baca minimum untuk memastikan user membaca dari atas sampai bawah.
+
+Untuk Video: Manfaatkan event listener media (onEnded) untuk memastikan video dimainkan dari awal sampai akhir tanpa di-skip ekstrem.
+
+Jika validasi terpenuhi, tembak endpoint klaim Achievement/Reward.
+
+OUTPUT YANG DIMINTA:
+Berikan cetak biru (blueprint) komprehensif yang berisi:
+
+File mana saja yang perlu diubah/dibuat.
+
+Potongan kode Skema Drizzle baru (Tabel Materi, Log Revisi, Achievement).
+
+Alur state middleware di ElysiaJS untuk Smart Routing Revisi.
+Jangan lakukan eksekusi file langsung sebelum cetak biru ini disetujui oleh Freddy.
+
+Tips Tambahan untuk Anda saat Mengevaluasi Kerja AI:
+Validasi Langkah 2 (Refactoring Role): Pastikan Low Agent nantinya melakukan migrasi database dengan aman. Jika database MySQL Anda sudah berisi data, perintah mengganti nama enum terkadang sensitif. Pastikan AI membuat script migrasi yang melakukan alter/update dengan mulus.
+
+Mekanisme Smart Recognition (Langkah 5): Untuk teks, mintalah AI menggunakan Intersection Observer API di Tailwind/JavaScript untuk mendeteksi apakah elemen footer/akhir materi sudah masuk ke layar user, digabung dengan timer sederhana (misal minimal 1-2 menit berada di halaman tersebut) agar metrik pembacaannya valid dan akurat secara kualitas.   
+
+
+
+Role: High Agent (Architect)
+Task: Rancang perencanaan (planning blueprint) untuk merombak isi halaman utama menu DASHBOARD milik Ketua Tim menjadi Dashboard KPI Interaktif.
+
+Aturan & Batasan Sistem (RBAC & Architecture Guardrails):
+1. JANGAN menambah sub-menu atau anak menu baru di sidebar. Fitur KPI ini harus langsung tampil di area konten utama sebelah kanan ketika menu "DASHBOARD" utama diklik.
+2. Pertahankan 4 role resmi yang sudah aktif di database Logos Lab: ['ketua_tim', 'pakar', 'pembuat_materi', 'pembuat_soal']. Pastikan halaman DASHBOARD KPI ini dikunci khusus untuk role 'ketua_tim'.
+3. JANGAN melakukan refactoring atau mengubah nama role 'pembuat_soal' agar fitur kuis lama tidak mengalami error/break.
+4. Rancang satu endpoint terpusat di ElysiaJS (GET /api/dashboard/kpi-summary) untuk mengumpulkan data statistik dari ke-4 role tersebut sebagai penyuplai data angka grafik di frontend.
+
+Spesifikasi Visual & Data Halaman Dashboard (Wajib Masuk Planning):
+- Top Row (KPI Cards): Total Proyek Berjalan (kombinasi tugas aktif dari pembuat_materi & pembuat_soal), Log Revisi Kritis (status catatan review dari Pakar yang belum direspons), Total Pengguna (1.000 user), dan Live User Online.
+- Middle Row (Charts): 
+  * Spider Chart 5-Sumbu wajib memetakan: Content Velocity (kecepatan pengerjaan materi), Expert Responsiveness (kecepatan review pakar), User Engagement (tingkat keaktifan user), Passing Rate (rata-rata kelulusan kuis), dan Category Coverage (sebaran topik teologi).
+  * Funnel Chart memetakan konversi aktivitas user (Membuka Materi -> Lolos Scroll Tracker -> Mencoba Kuis -> Klaim Achievement).
+- Bottom Row: Heatmap pola intensitas aktivitas mingguan pengguna (model grid kontribusi GitHub).
+
+Kewajiban Penggunaan GitHub CLI:
+Setelah blueprint ini selesai dirancang, buat GitHub Issue resmi untuk Low Agent menggunakan perintah run command:
+gh issue create --title "Dashboard Ketua Tim: Implementasi KPI Interaktif" --body "[Isi panduan kerja]"
+
+PENTING: Gunakan format Task List Markdown resmi dengan kotak kosong [ ] untuk setiap daftar tugas Low Agent (Frontend grid Tailwind, integrasi Chart.js/ApexCharts, dan integrasi API backend). Jangan mengeksekusi file proyek sebelum perencanaan ini disetujui oleh Freddy.
+
+
+
+Role: High Agent (Architect / Code Auditor)
+Task: Lakukan investigasi kode terlebih dahulu, kemudian rancang planning blueprint dan buat GitHub Issue untuk perombakan manajemen soal menjadi sistem "Pusat Bank Soal" di platform Logos Lab.
+
+========================================================================
+FASE 0: INVESTIGASI SKEMA ASLI (MANDATORI SEBELUM MEMBUAT PLANNING)
+========================================================================
+1. Temukan dan baca file skema database Drizzle Anda (misalnya di `src/db/schema.ts` atau file model sejenis di dalam proyek). Analisis bagaimana tabel Quiz, Fill The Blank (FTB), dan Teka-Teki Silang (TTS) didefinisikan saat ini.
+2. Temukan dan baca file route/controller backend ElysiaJS yang menangani proses simpan/input soal manual dan fungsi import saat ini.
+3. PELAJARI skema kolom yang Anda temukan di file lokal tersebut. Sesuaikan bentuk form input manual dan datatable CRUD di Bank Soal baru nanti mengikuti tipe data, kolom, dan relasi asli yang ada pada kode saya (JANGAN mengarang skema baru).
+
+========================================================================
+FASE 1: PERENCANAAN STRUKTUR & OTORISASI BANK SOAL
+========================================================================
+1. Rancang Dropdown Side Menu baru bernama "BANK SOAL" yang membawahi 3 submenu dengan MODEL INPUT FORM YANG BERBEDA (menyesuaikan hasil investigasi Fase 0):
+   - Bank Soal Quiz
+   - Bank Soal FTB
+   - Bank Soal TTS
+2. Kunci menu "BANK SOAL" ini di frontend agar HANYA muncul dan bisa diakses oleh pengguna dengan role 'ketua_tim' dan 'pembuat_soal'.
+3. Pindahkan seluruh fungsi Tambah Soal Manual dan Import Soal ke masing-masing submenu Bank Soal yang baru ini.
+4. Sediakan datatable di masing-masing halaman Bank Soal untuk menampilkan daftar soal yang sudah ada di database, lengkap dengan fitur "Update" (Edit) dan "Delete" (Hapus).
+5. Pastikan setiap form input manual wajib menyertakan input tingkat kesulitan dengan enum ['mudah', 'sedang', 'sulit'].
+
+========================================================================
+FASE 2: RANCANGAN FITUR AUTO-GENERATE SOAL
+========================================================================
+1. Pada halaman pembuatan paket kuis, buat sebuah tombol bernama "Generate Soal".
+2. Sediakan inputan form bagi pembuat soal untuk mengisi: Total Soal, Jumlah Mudah, Jumlah Sedang, dan Jumlah Sulit.
+3. Rancang logika validasi di backend (ElysiaJS): Pastikan rumus (Mudah + Sedang + Sulit) HARUS SAMA dengan Total Soal. Jika tidak sama, batalkan proses dan kirimkan error/alert ke frontend.
+4. Rancang query acak (menggunakan klausa RANDOM/RAND() di MySQL) untuk menarik data soal secara otomatis dari Bank Soal sesuai porsi tingkat kesulitan yang diinputkan pengguna.
+
+========================================================================
+KEWAJIBAN EKSEKUSI GITHUB CLI
+========================================================================
+Setelah Anda selesai melakukan investigasi (Fase 0) dan merancang blueprint (Fase 1 & 2), buat GitHub Issue resmi untuk Low Agent menggunakan perintah:
+gh issue create --title "Pusat Bank Soal: Refactoring & Auto-Generate System" --body "[Isi panduan kerja]"
+
+PENTING: Isi body wajib menggunakan format Task List Markdown resmi dengan kotak kosong [ ] untuk membagi tugas Low Agent (Refactoring database Drizzle, pembuatan API Endpoint ElysiaJS, UI Form Tailwind, dan validasi hitungan otomatis di frontend). Jangan mengubah file proyek sebelum perencanaan ini disetujui oleh Freddy.
+
+
+
+Role: High Agent / UI Architect (Antigravity)
+Task: Jalankan FASE 1 (Deep Contextual Observation) dan FASE 2 (Strategic Planning) sesuai dengan dokumen 'high-agent-workflow-architect-v3.0.md' untuk melakukan migrasi ikon global.
+
+RUANG LINGKUP AUDIT FILE:
+Sisir dan temukan semua penggunaan ikon lama (emoji 3D, gambar lokal, font-icon lain) di seluruh halaman yang sudah dibuat, meliputi:
+1. Sidebar / Side Menu utama.
+2. Halaman Utama Dashboard (KPI Halaman).
+3. Modul Bank Soal yang baru (Submenu Quiz, FTB, TTS, serta tombol aksi CRUD).
+4. Seluruh halaman pengerjaan kuis siswa dan review Pakar yang aktif di codebase.
+
+EKSEKUSI GITHUB CLI:
+Segera petakan padanan ikon lama tersebut ke Bootstrap Icons (sesuai standarisasi Poin C pada instruksi Anda), lalu jalankan perintah:
+
+gh issue create --title "UI Standardisation: Refactor Seluruh Ikon Halaman ke Bootstrap Icons" --body "[Isi Draf Task List Granular per File]"
+
+Laporkan kepada Freddy nomor/link GitHub Issue yang berhasil dibuat setelah eksekusi selesai. Jangan mengubah file kode apa pun secara langsung.
+
+
+Role: High Agent / Senior UI & Database Architect (Antigravity)
+Task: Rancang planning blueprint komprehensif dan sangat rinci (deep planning) untuk implementasi Dashboard User (Siswa) beserta Sistem Spider Chart 5 Kompetensi Minat Mahasiswa.
+
+PENTING: Jangan membuat file issue dulu. Lakukan investigasi kode lokal sesuai dengan dokumen 'high-agent-workflow-architect-v3.0.md' dan jabarkan rencana arsitektur Anda kepada saya terlebih dahulu yang mencakup poin-poin mendalam di bawah ini:
+
+1. ARSITEKTUR DATABASE & RELASI (Drizzle ORM & MySQL)
+   - Jabarkan pemetaan relasi Many-to-Many antara tabel game yang sudah ada (Quiz, FTB, TTS) dengan 5 klasifikasi minat resmi dari user dropdown (+ Tambah Minat...):
+     * Biblical Knowledge
+     * Eksegesis & Hermeneutik
+     * Biblical Theory
+     * Homiletika
+     * Apologetika
+   - Tuliskan rancangan blueprint struktur kolom untuk junction table baru `game_interests` (termasuk foreign key, indexing, dan data type enum untuk mengoptimalkan query pengerjaan).
+
+2. ALGORITMA & LOGIKA BACKEND (ElysiaJS)
+   - Rancang alur logika logika kalkulasi untuk endpoint baru: `GET /api/user/dashboard-summary`.
+   - Jabarkan formula matematika/SQL Aggregation untuk menghitung nilai akumulasi sumbu Spider Chart:
+     * Rumus: (Total Nilai Akurasi User pada Game Kategori X) dibagi (Total Jumlah Game Kategori X yang sudah dikerjakan) diubah ke dalam skala persentase (0-100%).
+   - Pastikan endpoint ini mengembalikan response JSON yang bersih, terstruktur, dan siap dikonsumsi langsung oleh pustaka grafik di frontend.
+
+3. STRUKTUR VISUAL & LAYOUT GRID (Tailwind CSS)
+   - Rancang arsitektur grid halaman dashboard kanan agar responsif (menggunakan prefix sm:, md:, lg:) dengan pembagian layout sebagai berikut:
+     * Top Row (KPI Cards): Tempat pelacakan data gamifikasi (Learning Streak dengan emoji api, Total XP, Completion Rate materi %, dan Badge Achievement).
+     * Middle Row (Dual Chart Layout): Sisi kiri untuk Spider Chart 5-Sumbu Minat Mahasiswa (menggunakan Chart.js atau ApexCharts) dan sisi kanan untuk Line Chart Tren Nilai Ujian mingguan.
+     * Bottom Row (Actionable Widgets): Komponen kartu dinamis "Next Task" untuk mengarahkan user ke materi yang belum selesai, berdampingan dengan widget Mini Leaderboard.
+
+4. PROTOKOL IKONOGRAFI KONSISTEN (Bootstrap Icons - Poin C Workflow)
+   - Definisikan secara spesifik nama-nama komponen Bootstrap Icons (terinstal di node_modules/bootstrap-icons/) yang akan dipakai sebagai referensi wajib di dashboard ini (Misal: ikon medal untuk badge, piala untuk leaderboard, dll).
+   - Tegaskan pemanggilan formatnya (inline SVG murni atau web-font lokal) lengkap dengan aturan utility class Tailwind (w-5 h-5 / text-xl) untuk memastikan konsistensi visual absolut.
+
+OUTPUT YANG DIMINTA:
+Jabarkan perencanaan teknis, skema relasi, dan draf algoritma di atas secara detail di sini. Setelah saya meninjau dan menyetujui detail perencanaan Anda, barulah Anda diizinkan mengeksekusi perintah `gh issue create` untuk membagi tugas kotak kosong [ ] kepada Low Agent.
+
+
+
+Role: High Agent / Senior UI & Database Architect (Antigravity)
+Task: Rancang planning blueprint komprehensif dan sangat rinci (deep planning) untuk menu "Pencapaian Saya" (My Achievements) pada sisi User (Mahasiswa) berdasarkan dokumen 'high-agent-workflow-architect-v3.0.md'.
+
+PENTING: Jangan membuat file issue terlebih dahulu. Lakukan investigasi codebase lokal dan jabarkan rancangan teknis Anda secara mendalam kepada saya di chat ini yang mencakup 4 aspek arsitektur berikut:
+
+========================================================================
+1. DESAIN ARSITEKTUR DATABASE & RELASI (Drizzle ORM & MySQL)
+========================================================================
+Rancang struktur tabel baru untuk mendukung fungsionalitas penjaminan mutu dan gamifikasi berikut:
+- user_game_history: Mencatat log riwayat pengerjaan Quiz, FTB, dan TTS, user_id, game_id, perolehan skor (0-100), status kelulusan (passing_grade >= 75), dan timestamp.
+- user_material_history: Mencatat log membaca materi teologi, mencakup data user_id, material_id, status selesai baca, dan tracking durasi waktu membaca nyata (time_spent dalam satuan menit).
+- user_badges: Menampung kepemilikan lencana dinamis untuk peringkat Top 5 Skor Global (`badge_rank_number` 1-5) serta lencana milestone akademik permanen.
+
+========================================================================
+2. ALGORITMA & LOGIKA BACKEND EVENT-DRIVEN (ElysiaJS)
+========================================================================
+Jabarkan alur logika backend untuk menyuplai data halaman pencapaian secara akurat:
+- Algoritma Peringkat Global & Lencana Angka Dinamis: Picu fungsi setiap kali ada penambahan skor di `user_game_history`. Hitung total skor kumulatif seluruh mahasiswa, urutkan (Sort Descending), potong data untuk Top 5 Skor Global, lalu distribusikan atau geser lencana angka dinamis di tabel `user_badges` secara real-time.
+- Logika Anti-Cheat Waktu Membaca: Validasi status selesai membaca materi berdasarkan durasi waktu tinggal di halaman (Time-Spent Tracker). Jika waktu membaca di bawah batas wajar, tandai materi sebagai "Dibaca Sekilas", bukan "Selesai".
+- Logika Agregasi Progres Minat: Hitung persentase ketuntasan permainan mahasiswa di masing-masing dari 5 klasifikasi minat teologi resmi: Biblical Knowledge, Eksegesis & Hermeneutik, Biblical Theory, Homiletika, dan Apologetika.
+
+========================================================================
+3. LAYOUT KOMPONEN VISUAL & GAMIFIKASI (Tailwind CSS)
+========================================================================
+Rancang arsitektur grid halaman agar responsif menggunakan utilitas Tailwind CSS dengan susunan komponen berikut:
+- Komponen Koleksi Lencana (UX Hook - Next Achievement Lock): Tampilkan lencana peringkat Top 5 yang aktif dengan warna terang, berdampingan dengan siluet abu-abu samar bertanda gembok untuk lencana milestone akademik yang masih terkunci (beserta teks petunjuk syarat membukanya).
+- Komponen 5 Linear Progress Bar: Menampilkan bilah kemajuan horizontal persentase penguasaan kompetensi di bawah 5 klasifikasi minat teologi secara visual.
+- Datatable Riwayat Game: Menampilkan daftar game yang telah dimainkan beserta skornya. Berikan indikator visual Lulus (centang hijau) atau Remedial (peringatan merah/oranye jika skor < 75) lengkap dengan tombol aksi untuk mengulang game.
+- Datatable Riwayat Materi: Menampilkan list judul materi teologi yang sudah diakses lengkap dengan catatan durasi waktu membaca nyata mahasiswa.
+
+========================================================================
+4. STANDARDISASI IKON (Bootstrap Icons - Poin C Workflow)
+========================================================================
+- Pilih secara mandiri dan spesifik nama-nama komponen Bootstrap Icons (terinstal di node_modules/bootstrap-icons/) untuk merepresentasikan lencana peringkat (1-5), lencana terkunci, status lulus/remedial, serta tombol aksi ulang game.
+- Pastikan penggunaan format inline SVG murni atau web-font lokal yang ukurannya diseragamkan lewat utility class Tailwind CSS (misal: w-5 h-5 atau text-xl) dengan efek transisi warna hover yang halus sesuai identitas visual Poin C.
+
+OUTPUT YANG DIMINTA:
+Jabarkan cetak biru teknis, kode skema tabel Drizzle, struktur JSON API, dan draf mockup tata letak UI Tailwind tersebut di chat ini. Jangan mengeksekusi perintah 'gh issue create' sebelum blueprint rinci ini saya tinjau dan saya setujui.
+
+
+
+"Agent, khusus untuk sesi ini, saya memberikan izin penuh kepadamu untuk menggunakan kredit token yang diperlukan untuk memindai dan membaca seluruh file kode (source code) di dalam repositori website saya.
+
+Tugas kamu adalah melakukan analisis mendalam terhadap struktur aplikasi saat ini, lalu merangkumnya menjadi satu file memori permanen bernama ARCHITECTURE.md yang diletakkan langsung di root folder website saya. File ini akan menjadi kompas utama kamu untuk pengerjaan tugas-tugas ke depan agar kita bisa menghemat kredit nantinya.
+
+Tolong abaikan folder eksternal seperti node_modules, .git, atau file log/lockfile. Fokuslah pada file kode utama di dalam backend (ElysiaJS, Bun) dan struktur databasenya. Buatlah dokumen ARCHITECTURE.md dengan struktur yang sangat rinci dan teknis sebagai berikut:
+
+Sistem Arsitektur Utama: Jelaskan bagaimana Bun dan ElysiaJS dikonfigurasi di file utama (seperti index.ts atau src/index.ts). Bagaimana pola penanganan routing dan middleware/plugin yang diterapkan?
+
+Peta Kode & Struktur Folder: Petakan folder penting (misal: routes, controllers, models, atau utils). Berikan penjelasan ringkas mengenai tanggung jawab setiap file kunci yang kamu temukan di dalam folder website ini.
+
+Implementasi Database MySQL: Identifikasi bagaimana koneksi database diatur. Rangkum seluruh tabel yang ada di dalam database, tipe data kolom-kolom kuncinya (seperti primary key, foreign key), serta relasi antar tabel yang didefinisikan di dalam kode.
+
+Daftar Fitur & Alur Logika Saat Ini: Rincikan fitur-fitur yang sudah berjalan (misal: autentikasi JWT, CRUD tertentu). Untuk setiap fitur, sebutkan route endpoint-nya, metode HTTP yang digunakan, file controller yang mengeksekusinya, dan tabel MySQL mana saja yang terdampak.
+
+Pola Koding & Best Practices Proyek: Analisis gaya koding yang konsisten dalam repositori ini (misal: format standard response API, mekanisme penanganan error/try-catch, penamaan variabel, atau proteksi route).
+
+Buat dokumen ini sejelas dan selengkap mungkin, namun tetap dalam format rangkuman teknis yang padat (gunakan deskripsi poin-poin teknis, hindari menyalin blok kode mentah yang panjang). Setelah analisis selesai, buat dan commit file ARCHITECTURE.md tersebut langsung ke dalam root folder repositori GitHub website saya."
+
+
+
+Agent, karena kamu baru saja menyelesaikan pengerjaan fitur/perubahan tadi dan sudah memasukkannya ke dalam kode repositori, sekarang tolong perbarui file ARCHITECTURE.md di root folder secara otomatis.
+
+Analisis kembali apa saja yang baru saja kamu kerjakan pada sesi ini (perubahan endpoint ElysiaJS, struktur folder, atau skema tabel MySQL baru yang kamu buat). Selipkan informasi baru tersebut ke bagian dokumen ARCHITECTURE.md yang relevan secara rapi.
+
+Aturan: Jangan menghapus atau mengubah informasi fitur terdahulu yang tidak berkaitan dengan tugas ini.

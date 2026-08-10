@@ -11,6 +11,9 @@ import { aiRoutes } from "./routes/ai";
 import { dashboardRoutes } from "./routes/dashboard";
 import { bankSoalRoutes } from "./routes/bank_soal";
 import { bankSoalUiRoutes } from "./routes/bank_soal_ui";
+import { tagsRoute } from "./routes/elearning/tags";
+import { reviewRoute } from "./routes/elearning/review";
+import { adaptiveRecommendRoute } from "./routes/elearning/adaptive-recommend";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
@@ -26,8 +29,12 @@ import { PembuatGameDashboard } from "./views/components/PembuatGameDashboard";
 import { PembuatMateriDashboard } from "./views/components/PembuatMateriDashboard";
 import { PakarDashboard } from "./views/components/PakarDashboard";
 import { MemberDashboard } from "./views/components/MemberDashboard";
+import { MemberAchievements } from "./views/components/MemberAchievements";
 import { KetuaTimAllProjects } from "./views/components/KetuaTimAllProjects";
 import { MateriSection } from "./views/components/MateriSection";
+import { DashboardGamesPage } from "./views/components/DashboardGamesPage";
+import { DashboardMateriPage } from "./views/components/DashboardMateriPage";
+import { AdaptiveLearningPage } from "./views/components/AdaptiveLearningPage";
 import { MateriViewer, MateriViewerScript } from "./views/components/MateriViewer";
 import { eq, inArray, and, desc } from "drizzle-orm";
 
@@ -42,35 +49,45 @@ const app = new Elysia()
       secret: process.env.JWT_SECRET || "super-secret-key",
     })
   )
-  .get("/", async ({ jwt, cookie: { auth } }) => {
+  .get("/", async ({ jwt, cookie }) => {
     let user: any = null;
     let personalizedGamesHtml = "";
     let onboardingModalHtml = "";
+    const auth = cookie.auth;
 
     if (auth?.value) {
       const payload: any = await jwt.verify(auth.value as string);
       if (payload) {
-        const [userData] = await db.select().from(users).where(eq(users.id, payload.id));
-        user = userData;
+        // Guest users: allow but no DB lookup
+        if (payload.isGuest) {
+          user = { username: 'Tamu', name: 'Tamu', role: 'GUEST', isGuest: true };
+        } else {
+          const [userData] = await db.select().from(users).where(eq(users.id, payload.id));
+          user = userData;
 
-        if (user) {
-          if (user.role === "USER" && !user.hasOnboarded) {
-            onboardingModalHtml = OnboardingModal();
-          }
-
-          if (user.role === "USER" && user.interests) {
-            const userInterests = user.interests.split(",");
-            const matchingGames = await db.select().from(projects).where(
-              and(
-                inArray(projects.category, userInterests),
-                eq(projects.type, "GAME"),
-                eq(projects.status, "PUBLISHED")
-              )
-            ).limit(10); // Ensure at least up to 10 for carousel
-            personalizedGamesHtml = PersonalizedGames({ games: matchingGames });
+          if (user) {
+            if (user.role === "USER" && !user.hasOnboarded) {
+              onboardingModalHtml = OnboardingModal();
+            }
+            if (user.role === "USER" && user.competencies) {
+              const userCompetencies = user.competencies.split(",");
+              const matchingGames = await db.select().from(projects).where(
+                and(
+                  inArray(projects.category, userCompetencies),
+                  eq(projects.type, "GAME"),
+                  eq(projects.status, "PUBLISHED")
+                )
+              ).limit(10);
+              personalizedGamesHtml = PersonalizedGames({ games: matchingGames });
+            }
           }
         }
       }
+    }
+
+    // If no valid session at all, redirect to login
+    if (!user) {
+      return Response.redirect("/login", 302);
     }
 
     // Fetch all games for the main section
@@ -163,16 +180,43 @@ const app = new Elysia()
   .use(bankSoalRoutes)
   .use(bankSoalUiRoutes)
   .use(dashboardRoutes)
+  .group("/api/elearning", (app) =>
+    app
+      .onBeforeHandle(async ({ jwt, cookie, set }) => {
+        const auth = cookie.auth;
+        if (!auth?.value) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+        const payload = await jwt.verify(auth.value as string);
+        if (!payload) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+      })
+      .derive(async ({ jwt, cookie }) => {
+        const auth = cookie.auth;
+        const payload = await jwt.verify(auth!.value as string);
+        return { user: payload };
+      })
+      .use(tagsRoute)
+      .use(reviewRoute)
+      .use(adaptiveRecommendRoute)
+  )
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
         const auth = cookie.auth;
         if (!auth?.value) {
-          return Response.redirect("/", 302);
+          return Response.redirect("/login", 302);
         }
         const payload = await jwt.verify(auth.value as string);
         if (!payload) {
-          return Response.redirect("/", 302);
+          return Response.redirect("/login", 302);
+        }
+        // Block guests from dashboard
+        if ((payload as any).isGuest) {
+          return Response.redirect("/login", 302);
         }
 
         // Security: Prevent browser back to dashboard after logout
@@ -187,7 +231,7 @@ const app = new Elysia()
       })
       .get("/projects", async ({ user }) => {
         if (!user || (user as any).role !== "KETUA_TIM") {
-          return Response.redirect("/", 302);
+          return Response.redirect("/login", 302);
         }
         
         const username = (user as any).username as string;
@@ -232,6 +276,134 @@ const app = new Elysia()
             "Content-Type": "text/html; charset=utf-8",
             "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
           }
+        });
+      })
+      .get("/user/achievements", async ({ user }) => {
+        if (!user || (user as any).role !== "USER") {
+          return Response.redirect("/login", 302);
+        }
+        const username = (user as any).username as string;
+        const userId = Number((user as any).id);
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+        
+        const htmlResponse = Layout({
+          title: "Pencapaian Saya",
+          username,
+          role: "USER",
+          children: MemberAchievements(),
+          notifications: userNotifications,
+          currentPage: "Pencapaian Saya"
+        });
+
+        return new Response(htmlResponse, {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+          }
+        });
+      })
+      // ── Adaptive Learning (USER only) ──
+      .get("/adaptive-learning", async ({ user }) => {
+        if (!user || (user as any).role !== "USER") {
+          return Response.redirect("/login", 302);
+        }
+        const username = (user as any).username as string;
+        const userId = Number((user as any).id);
+
+        const [publishedMateris, publishedGames, userNotifications] = await Promise.all([
+          db.select({
+            id: projects.id,
+            title: projects.title,
+            description: projects.description,
+            category: projects.category,
+          }).from(projects).where(and(eq(projects.type, "MATERI"), eq(projects.status, "PUBLISHED"))),
+          db.select({
+            id: projects.id,
+            title: projects.title,
+            description: projects.description,
+            category: projects.category,
+          }).from(projects).where(and(eq(projects.type, "GAME"), eq(projects.status, "PUBLISHED"))),
+          db.select().from(notifications)
+            .where(eq(notifications.userId, userId))
+            .orderBy(desc(notifications.createdAt)),
+        ]);
+
+        const htmlResponse = Layout({
+          title: "Adaptive Learning",
+          username,
+          role: "USER",
+          children: AdaptiveLearningPage({ username, publishedMateris, publishedGames }),
+          notifications: userNotifications,
+          currentPage: "Adaptive Learning"
+        });
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
+        });
+      })
+      // ── Game Tersedia (semua role) ──
+      .get("/games", async ({ user }) => {
+        if (!user) return Response.redirect("/login", 302);
+        const username = (user as any).username as string;
+        const userRole = (user as any).role as string;
+        const userId = Number((user as any).id);
+
+        const publishedGames = await db.select({
+          id: projects.id,
+          title: projects.title,
+          description: projects.description,
+          gameType: projects.gameType,
+          category: projects.category,
+          status: projects.status,
+        }).from(projects).where(
+          and(eq(projects.type, "GAME"), eq(projects.status, "PUBLISHED"))
+        );
+
+        const userNotifications = await db.select().from(notifications)
+          .where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+
+        const htmlResponse = Layout({
+          title: "Game Tersedia",
+          username,
+          role: userRole,
+          children: DashboardGamesPage({ games: publishedGames, username }),
+          notifications: userNotifications,
+          currentPage: "Game Tersedia"
+        });
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
+        });
+      })
+      // ── Materi Tersedia (semua role) ──
+      .get("/materi-list", async ({ user }) => {
+        if (!user) return Response.redirect("/login", 302);
+        const username = (user as any).username as string;
+        const userRole = (user as any).role as string;
+        const userId = Number((user as any).id);
+
+        const publishedMateris = await db.select({
+          id: projects.id,
+          title: projects.title,
+          description: projects.description,
+          materiType: projects.materiType,
+          category: projects.category,
+          status: projects.status,
+        }).from(projects).where(
+          and(eq(projects.type, "MATERI"), eq(projects.status, "PUBLISHED"))
+        );
+
+        const userNotifications = await db.select().from(notifications)
+          .where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+
+        const htmlResponse = Layout({
+          title: "Materi Pembelajaran",
+          username,
+          role: userRole,
+          children: DashboardMateriPage({ materis: publishedMateris }),
+          notifications: userNotifications,
+          currentPage: "Materi Pembelajaran"
+        });
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
         });
       })
       .get("/:role", async ({ params, user }) => {
@@ -425,9 +597,9 @@ const app = new Elysia()
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
         const auth = cookie.auth;
-        if (!auth?.value) return Response.redirect("/", 302);
+        if (!auth?.value) return Response.redirect("/login", 302);
         const payload = await jwt.verify(auth.value as string);
-        if (!payload) return Response.redirect("/", 302);
+        if (!payload) return Response.redirect("/login", 302);
 
         set.headers["Cache-Control"] = "no-store";
       })
@@ -441,11 +613,11 @@ const app = new Elysia()
       })
       .post("/update", async ({ body, jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const { name, interests } = body as { name: string, interests?: string[] };
+        const { name, competencies } = body as { name: string, competencies?: string[] };
 
         const updateData: any = { name };
-        if (interests) {
-          updateData.interests = interests.join(",");
+        if (competencies) {
+          updateData.competencies = competencies.join(",");
         }
 
         await db.update(users).set(updateData).where(eq(users.id, payload.id));
@@ -454,16 +626,17 @@ const app = new Elysia()
       })
       .post("/onboarding", async ({ body, jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const { interests } = body as { interests: string[] };
+        const { competencies } = body as { competencies: string[] };
 
         await db.update(users).set({
-          interests: interests.join(","),
+          competencies: competencies.join(","),
           hasOnboarded: true
         }).where(eq(users.id, payload.id));
 
         return { success: true, message: "Onboarding berhasil" };
       })
   )
+  .get("/app", () => Bun.file("public/app.html"))
   .listen(3000);
 
 console.log("🚀 Logos LAB Server is running at localhost:3000");

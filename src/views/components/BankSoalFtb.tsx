@@ -2,16 +2,22 @@ export const BankSoalFtbUI = () => {
   const html = `
     <div class="p-6 md:p-10 space-y-8" x-data="bankSoalFtbData()">
       <!-- Header -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col gap-5">
         <div>
           <h1 class="text-xl md:text-2xl font-bold text-[#1A237E] font-poppins">Bank Soal Fill The Blank</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal rumpang secara global.</p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div class="flex flex-wrap gap-3 items-center">
           <div class="relative w-full sm:w-64">
             <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input type="text" x-model="searchQuery" placeholder="Cari teks rumpang..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#1A237E] outline-none">
           </div>
+          <select x-model="filterDifficulty" class="w-full sm:w-auto border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#1A237E] outline-none bg-white font-semibold text-slate-600">
+            <option value="SEMUA">Semua Kesulitan</option>
+            <option value="MUDAH">Mudah</option>
+            <option value="SEDANG">Sedang</option>
+            <option value="SULIT">Sulit</option>
+          </select>
           <div class="flex gap-2">
             <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
               <i class="bi bi-trash"></i> <span x-text="'Hapus (' + selectedIds.length + ')'"></span>
@@ -40,7 +46,7 @@ export const BankSoalFtbUI = () => {
                 <th class="p-4 font-semibold w-2/5">Teks Utuh</th>
                 <th class="p-4 font-semibold">Kata Rumpang</th>
                 <th class="p-4 font-semibold text-center">Tingkat Kesulitan</th>
-                <th class="p-4 font-semibold text-center">Aksi</th>
+                <th class="p-4 font-semibold text-center w-24 whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -71,7 +77,7 @@ export const BankSoalFtbUI = () => {
                             'bg-red-100 text-red-700': soal.difficulty === 'SULIT'
                           }" x-text="soal.difficulty"></span>
                   </td>
-                  <td class="p-4 text-center align-top space-x-2">
+                  <td class="p-4 text-center align-top space-x-2 whitespace-nowrap">
                     <button @click="openFormModal(soal)" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="bi bi-pencil-square"></i></button>
                     <button @click="deleteSoal(soal.id)" class="text-red-500 hover:text-red-700" title="Hapus"><i class="bi bi-trash"></i></button>
                   </td>
@@ -167,6 +173,7 @@ export const BankSoalFtbUI = () => {
           soalList: [],
           selectedIds: [],
           searchQuery: '',
+          filterDifficulty: 'SEMUA',
           loading: true,
           showForm: false,
           isEdit: false,
@@ -184,9 +191,11 @@ export const BankSoalFtbUI = () => {
             this.fetchData();
           },
           filteredSoalList() {
-            if (this.searchQuery.trim() === '') return this.soalList;
-            const q = this.searchQuery.toLowerCase();
-            return this.soalList.filter(function(s) { return (s.fullText || '').toLowerCase().indexOf(q) !== -1; });
+            return this.soalList.filter(s => {
+              const matchSearch = this.searchQuery.trim() === '' || (s.fullText || '').toLowerCase().indexOf(this.searchQuery.toLowerCase()) !== -1;
+              const matchDiff = this.filterDifficulty === 'SEMUA' || s.difficulty === this.filterDifficulty;
+              return matchSearch && matchDiff;
+            });
           },
           async fetchData() {
             this.loading = true;

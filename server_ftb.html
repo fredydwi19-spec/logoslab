@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Logos LAB — Platform edukasi Alkitab dan berpikir kritis. Belajar melalui game interaktif, materi PDF, dan video pembelajaran.">
+  <title>Logos LAB — Edukasi Alkitab dan Berpikir Kritis</title>
+  <link rel="icon" href="/public/assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="/public/css/style.css?v=3.2">
+  <link rel="stylesheet" href="/public/css/auth-modal.css?v=2.3">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: { preflight: false }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="/" class="header__logo">
+        <img src="/public/assets/logo.png" alt="Logos LAB Logo">
+        <span>Logos LAB</span>
+      </a>
+      
+    <nav class="header__nav">
+      
+        <button class="btn-login" id="btn-login-trigger">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Masuk / Daftar
+        </button>
+      
+    </nav>
+    <style>
+      .user-dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      .user-dropdown__trigger {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 6px 6px 6px 16px;
+        border-radius: 50px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .user-dropdown__trigger:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .user-dropdown__info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .user-dropdown__name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .user-dropdown__avatar {
+        width: 32px;
+        height: 32px;
+        background: var(--clr-accent-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        overflow: hidden;
+      }
+      .user-dropdown__avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .user-dropdown__menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 200px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 8px;
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        border: 1px solid #eee;
+        animation: slideIn 0.2s ease-out;
+      }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .user-dropdown__menu.active {
+        display: flex;
+      }
+      .user-dropdown__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s;
+      }
+      .user-dropdown__item:hover {
+        background: #f5f5f5;
+        color: var(--clr-accent-primary);
+      }
+      .user-dropdown__divider {
+        height: 1px;
+        background: #eee;
+        margin: 8px 0;
+      }
+      .user-dropdown__item--logout {
+        color: #f44336;
+      }
+      .user-dropdown__item--logout:hover {
+        background: #fff5f5;
+        color: #d32f2f;
+      }
+    </style>
+    <script>
+      (function() {
+        const trigger = document.getElementById('user-dropdown-trigger');
+        const menu = document.getElementById('user-dropdown-menu');
+        if (trigger && menu) {
+          trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('active');
+          });
+          document.addEventListener('click', () => {
+            menu.classList.remove('active');
+          });
+        }
+      })();
+    </script>
+  
+    </div>
+  </header>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero" id="hero">
+    <div class="hero__bg"></div>
+    <div class="container">
+      <div class="hero__content">
+        <div class="hero__badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+          Platform Edukasi Interaktif
+        </div>
+        <h1 class="hero__title">
+          <span class="highlight">Edukasi Alkitab</span><br>dan Berpikir Kritis
+        </h1>
+        <p class="hero__desc">
+          Logos LAB hadir untuk membantu Anda memahami Alkitab secara mendalam
+          melalui pendekatan berpikir kritis, game interaktif, dan materi
+          pembelajaran yang menarik.
+        </p>
+        <a href="#games" class="hero__cta" id="cta-explore">
+          Mulai Menjelajah
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== GAMES CAROUSEL ========== -->
+  
+    <section class="section games-layout" id="games">
+      <div class="container">
+        <div class="games-grid-main">
+          
+          <!-- Left Column: All Games (70%) -->
+          <div class="games-main-content">
+            <div class="section__header reveal" style="text-align: left; margin-bottom: 40px;">
+              <h2 class="section__title" style="color: #1A237E !important; margin: 0;">Games</h2>
+              <p class="section__subtitle" style="margin: 8px 0 0 0;">Koleksi lengkap permainan edukatif Logos Lab</p>
+            </div>
+            
+            <div class="all-games-grid">
+              
+            </div>
+          </div>
+
+          <!-- Right Column: Popular Games (30%) -->
+          <div class="games-sidebar">
+            <div class="sidebar-header">
+              <h2 class="sidebar-title">Games Populer</h2>
+              <div class="sidebar-line"></div>
+            </div>
+            
+            <div class="popular-scroll-list">
+              
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .games-layout {
+        padding: 100px 0;
+        background: white;
+      }
+      .games-grid-main {
+        display: grid;
+        grid-template-columns: 70% 30%;
+        gap: 48px;
+      }
+      
+      /* Left Column */
+      .all-games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 24px;
+      }
+      .game-card-mini {
+        background: #f8fafc;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+      }
+      .game-card-mini:hover {
+        transform: translateY(-5px);
+        border-color: #FF5722;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      }
+      .game-card-mini__img {
+        height: 120px;
+      }
+      .game-card-mini__img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .game-card-mini__info {
+        padding: 16px;
+      }
+      .game-card-mini__info h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1A237E;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .game-card-mini__info span {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      /* Right Column */
+      .games-sidebar {
+        background: #1A237E;
+        border-radius: 32px;
+        padding: 32px;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+        color: white;
+      }
+      .sidebar-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        font-family: 'Poppins', sans-serif;
+      }
+      .sidebar-line {
+        width: 40px;
+        height: 4px;
+        background: #FF5722;
+        border-radius: 2px;
+        margin-bottom: 24px;
+      }
+      .popular-scroll-list {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+      }
+      .popular-scroll-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .popular-scroll-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+      }
+      .popular-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .popular-item:last-child {
+        border-bottom: none;
+      }
+      .popular-item__rank {
+        font-size: 24px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.2);
+        min-width: 30px;
+      }
+      .popular-item__img {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .popular-item__img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .popular-item__info h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+      }
+      .popular-item__info p {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      @media (max-width: 992px) {
+        .games-grid-main {
+          grid-template-columns: 1fr;
+        }
+        .games-sidebar {
+          position: static;
+        }
+      }
+    </style>
+  
+
+    <section class="section materi-layout" id="materi" style="background: #f8fafc; padding: 100px 0;">
+      <div class="container">
+        
+        <div class="section__header reveal" style="text-align: center; margin-bottom: 60px;">
+          <h2 class="section__title" style="color: #1A237E !important; margin: 0;">Materi Pembelajaran</h2>
+          <p class="section__subtitle" style="margin: 8px 0 0 0;">Perdalam pengetahuan Anda dengan materi teks dan video</p>
+        </div>
+        
+        <div class="materi-grid">
+          
+            <a href="/materi/9" style="text-decoration:none; color:inherit; display:block;">
+              <div class="materi-card reveal">
+                <div class="materi-card__img">
+                  <img src="data:image/png;base64,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CBCQlQACgKyeg94gYAMBBAAbIEIECMhKAAFAVs9BbxCwgQACgA0QIQIEZCWAACCr56A3CNhAAAHABogQAQKyEkAAkNVz0BsEbCCAAGADRIgAAVkJIADI6jnoDQI2EEAAsAEiRICArAQQAGT1HPQGARsIIADYABEiQEBWAggAsnoOeoOADQQQAGyACBEgICsBBABZPQe9QcAGAggANkCECBCQlQACgKyeg94gYAMBBAAbIEIECMhKAAFAVs9BbxCwgQACgA0QIQIEZCWAACCr56A3CNhAAAHABogQAQKyEkAAkNVz0BsEbCCAAGADRIgAAVkJIADI6jnoDQI2EEAAsAEiRICArAQQAGT1HPQGARsIIADYABEiQEBWAggAsnoOeoOADQQQAGyACBEgICuBiO7XTTwrq/LQGwRAAARAAARAwBwBXAGY44ZSIAACIAACICA1AXQApHYflAcBEAABEAABcwTQATDHDaVAAARAAARAQGoC6ABI7T4oDwIgAAIgAALmCKADYI4bSoEACIAACICA1ATQAZDafVAeBEAABEAABMwRQAfAHDeUAgEQAAEQAAGpCaADILX7oDwIgAAIgAAImCOADoA5bigFAiAAAiAAAlITQAdAavdBeRAAARAAARAwRwAdAHPcUAoEQAAEQAAEpCaADoDU7oPyIAACIAACIGCOADoA5rihFAiAAAiAAAhITQAdAKndB+VBAARAAARAwBwBdADMcUMpEAABEAABEJCaADoAUrsPyoMACIAACICAOQLoAJjjhlIgAAIgAAIgIDUBdACkdh+UBwEQAAEQAAFzBNABMMcNpUAABEAABEBAagLoAEjtPigPAiAAAiAAAuYIoANgjhtKgQAIgAAIgIDUBNABkNp9UB4EQAAEQAAEzBFAB8AcN5QCARAAARAAAakJoAMgtfugPAiAAAiAAAiYI4AOgDluKAUCIAACIAACUhNAB0Bq90F5EAABEAABEDBHAB0Ac9xQCgRAAARAAASkJoAOgNTug/IgAAIgAAIgYI4AOgDmuKEUCIAACIAACEhNAB0Aqd0H5UEABEAABEDAHAF0AMxxQykQAAEQAAEQkJoAOgBSuw/KgwAIgAAIgIA5AugAmOOGUiAAAiAAAiAgNQF0AKR2H5QHARAAARAAAXME0AEwxw2lQAAEQAAEQEBqAugASO0+KA8CIAACIAAC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" alt="Doktrin Trinitas: Satu Allah Tiga Pribadi" onerror="this.src='/public/assets/games/game1.png'">
+                  <div class="materi-card__badge badge-teks">
+                    📄 Teks
+                  </div>
+                </div>
+                <div class="materi-card__info">
+                  <h3>Doktrin Trinitas: Satu Allah Tiga Pribadi</h3>
+                  <p class="category">Biblical Theory,Apologetika</p>
+                </div>
+              </div>
+            </a>
+          
+          
+        </div>
+
+      </div>
+    </section>
+
+    <style>
+      .materi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 32px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .materi-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .materi-card:hover {
+        transform: translateY(-8px);
+        border-color: #1A237E;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .materi-card__img {
+        height: 160px;
+        position: relative;
+      }
+      .materi-card__img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .materi-card__badge {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        backdrop-filter: blur(4px);
+      }
+      .badge-video {
+        background: rgba(26, 35, 126, 0.9);
+        color: #FFC107;
+      }
+      .badge-teks {
+        background: rgba(255, 193, 7, 0.9);
+        color: #1A237E;
+      }
+      .materi-card__info {
+        padding: 20px;
+        flex: 1;
+      }
+      .materi-card__info h3 {
+        font-size: 18px;
+        color: #1A237E;
+        margin: 0 0 8px 0;
+        font-weight: 800;
+        line-height: 1.3;
+      }
+      .materi-card__info .category {
+        font-size: 12px;
+        color: #64748b;
+        margin: 0;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    </style>
+  
+
+  <!-- ========== MATERI PEMBELAJARAN ========== -->
+  <section class="section materi" id="materi">
+    <div class="container">
+      <div class="section__header reveal">
+        <h2 class="section__title">📚 Materi Pembelajaran</h2>
+        <p class="section__subtitle">Pelajari Alkitab melalui berbagai format yang mudah dipahami</p>
+      </div>
+      <div class="materi__grid">
+
+        <!-- PDF Card 1 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--pdf">📖</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--pdf">PDF</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Pengantar Perjanjian Baru</h3>
+            <p class="materi-card__desc">Memahami konteks sejarah, penulis, dan tema utama setiap kitab dalam Perjanjian Baru.</p>
+            <button class="materi-card__action materi-card__action--pdf" id="btn-baca-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              Baca
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF Card 2 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--pdf">🧠</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--pdf">PDF</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Dasar Berpikir Kritis</h3>
+            <p class="materi-card__desc">Panduan lengkap untuk mengembangkan kemampuan berpikir kritis dalam mempelajari teks Alkitab.</p>
+            <button class="materi-card__action materi-card__action--pdf" id="btn-baca-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              Baca
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Card 1 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--video">🏛️</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--video">Video</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Sejarah Israel Kuno</h3>
+            <p class="materi-card__desc">Perjalanan bangsa Israel dari masa Abraham hingga kehancuran Bait Allah kedua.</p>
+            <button class="materi-card__action materi-card__action--video" id="btn-tonton-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Tonton Video
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Card 2 -->
+        <div class="materi-card reveal">
+          <div class="materi-card__thumb">
+            <div class="materi-card__placeholder materi-card__placeholder--video">✝️</div>
+            <div class="materi-card__overlay">
+              <div class="materi-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+            </div>
+            <span class="materi-card__type-badge materi-card__type-badge--video">Video</span>
+          </div>
+          <div class="materi-card__body">
+            <h3 class="materi-card__title">Perumpamaan Yesus</h3>
+            <p class="materi-card__desc">Memahami makna mendalam di balik perumpamaan-perumpamaan yang diajarkan Yesus.</p>
+            <button class="materi-card__action materi-card__action--video" id="btn-tonton-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Tonton Video
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ENGAGEMENT & STATS SECTION ========== -->
+  <section class="section stats-engagement" id="engagement">
+    <div class="container">
+      <div class="stats-engagement__grid">
+        
+        <!-- Column 1: Engagement Platform -->
+        <div class="engagement reveal">
+          <div class="engagement__header">
+            <h2 class="engagement__title">Engagement Platform</h2>
+            <div class="engagement__line"></div>
+          </div>
+          <div class="engagement__list">
+            <div class="progress-group">
+              <div class="progress-group__info">
+                <span>Games Interaktif</span>
+                <span>85%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 85%"></div>
+              </div>
+            </div>
+            <div class="progress-group">
+              <div class="progress-group__info">
+                <span>Materi Video</span>
+                <span>70%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 70%"></div>
+              </div>
+            </div>
+            <div class="progress-group">
+              <div class="progress-group__info">
+                <span>Membaca PDF</span>
+                <span>55%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 55%"></div>
+              </div>
+            </div>
+            <div class="progress-group">
+              <div class="progress-group__info">
+                <span>Forum Diskusi</span>
+                <span>40%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 40%"></div>
+              </div>
+            </div>
+          </div>
+          <p class="engagement__footer">Data menunjukkan bahwa metode gamifikasi sangat efektif dalam meningkatkan durasi belajar user.</p>
+        </div>
+
+        <!-- Column 2: Live Stats -->
+        <div class="live-stats reveal">
+          <div class="section__header" style="text-align: left; margin-bottom: var(--space-xl);">
+            <h2 class="section__title">Statistik Live</h2>
+            <p class="section__subtitle">Pertumbuhan komunitas Logos LAB</p>
+          </div>
+          <div class="live-stats__cards">
+            <div class="stat-card">
+              <span class="stat-card__number" id="user-count">—</span>
+              <span class="stat-card__label">Pengguna Terdaftar</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__number" id="visit-count">—</span>
+              <span class="stat-card__label">Total Kunjungan</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== BIBLE VERSE SECTION ========== -->
+  <section class="verse-section" id="verse">
+    <div class="verse-section__overlay"></div>
+    <div class="container">
+      <div class="verse-section__content reveal">
+        <h2 class="verse-section__title">Membangun Generasi Berakal Budi</h2>
+        <p class="verse-section__text">
+          "Tetapi ujilah segala sesuatu dan peganglah yang baik." — 1 Tesalonika 5:21
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer__inner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div class="footer__brand" style="flex: 1; min-width: 300px;">
+          <div class="footer__logo">
+            <img src="/public/assets/logo.png" alt="Logos LAB">
+            <span>Logos LAB</span>
+          </div>
+          <p class="footer__tagline" style="margin-top: 10px;">Membangun generasi yang memahami Alkitab dan mampu berpikir kritis.</p>
+        </div>
+        <div class="footer__copyright" style="text-align: right; color: var(--clr-text-secondary);">
+          <p>&copy; 2026 FDS. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== UNIFIED AUTH MODAL ========== -->
+  <div class="auth-modal" id="auth-modal">
+    <div class="auth-container" id="auth-container">
+      <button class="close-auth" id="auth-modal-close">&times;</button>
+      
+      <div class="form-container sign-up-container">
+        <form action="#" id="signup-form">
+          <h2>Buat Akun</h2>
+          <div class="social-container">
+            <a href="/api/auth/google" class="social"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20"></a>
+          </div>
+          <span>atau gunakan email untuk registrasi</span>
+          <input type="text" name="name" placeholder="Nama Lengkap" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <input type="password" name="password" placeholder="Password" required />
+          <input type="password" name="password_confirm" placeholder="Konfirmasi Password" required />
+          <div id="signup-error" class="form-error" style="display: none; color: red; font-size: 12px; margin-top: 5px;"></div>
+          <div id="signup-success" class="form-success" style="display: none; color: green; font-size: 12px; margin-top: 5px;"></div>
+          <button type="submit" class="primary-btn" id="signup-submit-btn">Daftar</button>
+        </form>
+      </div>
+      
+      <div class="form-container sign-in-container">
+        <form action="#" id="login-form">
+          <h2>Masuk</h2>
+          <div class="social-container">
+            <a href="/api/auth/google" class="social"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20"></a>
+          </div>
+          <span>atau gunakan akun email Anda</span>
+          <input type="text" name="username" placeholder="Email/Username" required />
+          <input type="password" name="password" placeholder="Password" required />
+          <a href="#">Lupa password?</a>
+          <div id="login-error" class="form-error" style="display: none; color: red; font-size: 12px; margin-bottom: 5px;"></div>
+          <button type="submit" class="primary-btn" id="login-submit-btn">Masuk</button>
+        </form>
+      </div>
+      
+      <div class="overlay-container">
+        <div class="overlay">
+          <div class="overlay-panel overlay-left">
+            <h2>Selamat Datang Kembali!</h2>
+            <p>Untuk tetap terhubung dengan kami, silakan login dengan info personal Anda</p>
+            <button class="ghost-btn" id="signIn">Masuk</button>
+          </div>
+          <div class="overlay-panel overlay-right">
+            <h2>Halo, Teman!</h2>
+            <p>Daftarkan data personal Anda dan mulai perjalanan bersama Logos LAB</p>
+            <button class="ghost-btn" id="signUp">Daftar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/public/js/main.js?v=1.4"></script>
+
+    <div x-data="publicGamePlayerData()">
+      <!-- Game Modal Player -->
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[200] backdrop-blur-xl p-4 md:p-10">
+         <!-- Game Container -->
+         <div class="bg-white w-full max-w-5xl h-full md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
+            
+            <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
+               <div class="flex flex-col h-full">
+                  <!-- Game Header -->
+                  <div class="bg-[#1A237E] px-6 md:px-10 py-4 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                     <div class="flex items-center gap-3 md:gap-4">
+                        <img src="/public/assets/logo-logoslab.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
+                        <div>
+                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
+                           <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
+                        </div>
+                     </div>
+                     <div class="flex items-center gap-4 md:gap-6">
+                        <div class="text-right hidden sm:block">
+                           <p class="text-[9px] font-medium uppercase opacity-60">Skor Saat Ini</p>
+                           <div class="text-xl md:text-2xl font-bold text-[#FFC107]" x-text="currentScore"></div>
+                        </div>
+                        <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                     </div>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class="h-2 w-full bg-slate-100 relative">
+                     <div class="h-full bg-[#FF5722] transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
+                  </div>
+                  
+                  <!-- Question Body -->
+                  <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
+                     <div class="w-full max-w-3xl text-center">
+                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-medium uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
+                        
+                        <!-- Quiz Content -->
+                        <template x-if="activeGame?.gameType === 'QUIZ'">
+                          <div>
+                            <h2 class="text-lg md:text-2xl font-bold text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                               <template x-for="opt in ['A', 'B', 'C', 'D']">
+                                  <button @click="selectAnswer(opt)" 
+                                     :class="{
+                                        'border-[#FFC107] bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
+                                        'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === questions[currentIndex]?.correctAnswer,
+                                        'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
+                                        'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
+                                     }"
+                                     class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
+                                     :disabled="showFeedback">
+                                     <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-sm md:text-lg transition-colors" 
+                                           :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
+                                        <span x-text="opt"></span>
+                                     </span>
+                                     <span class="text-[#1A237E] font-semibold text-sm md:text-base" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                                  </button>
+                               </template>
+                            </div>
+                          </div>
+                        </template>
+
+                        <!-- Fill The Blank Content -->
+                        <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
+                          <div class="flex flex-col items-center">
+                            <div class="text-lg md:text-xl font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                                 x-html="renderFTB(questions[currentIndex])"></div>
+                            
+                            <div class="mt-4" x-show="!showFeedback">
+                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
+                            </div>
+                          </div>
+                        </template>
+
+                        <!-- Educational Feedback -->
+                        <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-8 rounded-2xl md:rounded-3xl text-left border-4 border-dashed"
+                             :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                           <div class="flex items-center gap-3 mb-2 md:mb-3">
+                              <span class="text-xl md:text-2xl" x-text="isCorrect ? '✨' : '💡'"></span>
+                              <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="isCorrect ? 'text-green-800' : 'text-red-800'">
+                                 <span x-text="isCorrect ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
+                              </h4>
+                           </div>
+                           
+                           <div class="space-y-3">
+                             <template x-if="activeGame?.gameType === 'QUIZ'">
+                               <p class="text-slate-700 font-bold italic text-sm md:text-base leading-relaxed" x-text="questions[currentIndex]?.explanation"></p>
+                             </template>
+                             <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
+                               <div class="space-y-3">
+                                 <template x-for="(res, ridx) in submissionResults" :key="ridx">
+                                   <div class="text-xs md:text-sm font-bold border-l-4 pl-4 py-1" :class="res.isCorrect ? 'border-green-400 bg-green-100/30' : 'border-red-400 bg-red-100/30'">
+                                     <span class="text-[#1A237E] uppercase tracking-tighter" x-text="res.correctAnswer"></span>: 
+                                     <span class="text-slate-500 italic" x-text="res.explanation"></span>
+                                   </div>
+                                 </template>
+                               </div>
+                             </template>
+                           </div>
+                           
+                           <div class="mt-4 md:mt-6 flex justify-end">
+                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
+                                 <span x-text="currentIndex === questions.length - 1 ? 'LIHAT HASIL AKHIR' : 'SOAL BERIKUTNYA'"></span>
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
+            <!-- Word Search Gameplay -->
+            <template x-if="isPlaying && !gameFinished && activeGame?.gameType === 'WORD_SEARCH' && gameData">
+               <div class="flex-1 overflow-y-auto bg-slate-50">
+                   
+    <div x-data="wordSearchGame(${projectVar}, ${gameDataVar})" 
+         class="max-w-4xl mx-auto space-y-8 p-4 animate-in fade-in duration-700">
+      
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+           <div class="h-14 w-14 bg-[#FFC107] rounded-2xl flex items-center justify-center shadow-xl transform rotate-3">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+           </div>
+           <div>
+             <h2 class="text-xl md:text-2xl font-bold text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
+             <div class="flex items-center gap-2">
+               <span class="text-[10px] font-black bg-[#1A237E] text-white px-2 py-0.5 rounded uppercase tracking-widest" x-text="difficulty"></span>
+               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="gridSize + 'x' + gridSize + ' GRID'"></span>
+             </div>
+           </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
+          <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
+            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">WAKTU</div>
+            <div class="text-xl md:text-2xl font-bold text-[#1A237E]" x-text="formatTime(timer)"></div>
+          </div>
+          <div class="bg-[#1A237E] p-3 px-6 rounded-2xl border-b-4 border-[#FFC107] shadow-lg text-center">
+            <div class="text-xs md:text-sm font-medium text-blue-200 uppercase tracking-widest">SKOR</div>
+            <div class="text-xl md:text-2xl font-bold text-[#FFC107]" x-text="score"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Word List -->
+        <div class="lg:col-span-1 space-y-4">
+          <div class="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            </div>
+            <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest mb-6 flex items-center gap-2">
+              <span class="h-2 w-2 bg-[#FFC107] rounded-full animate-ping"></span>
+              Kata Tersembunyi:
+            </h3>
+            <div class="grid grid-cols-2 lg:grid-cols-1 gap-2">
+              <template x-for="w in wordsList">
+                <div class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-500"
+                     :class="foundWords.includes(w) ? 'bg-green-50 border-green-100 text-green-700' : 'bg-slate-50 border-transparent text-slate-700'">
+                  <div class="h-5 w-5 rounded-lg flex items-center justify-center transition-all" :class="foundWords.includes(w) ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-400'">
+                    <svg x-show="foundWords.includes(w)" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    <span x-show="!foundWords.includes(w)" class="text-[8px] font-black" x-text="w[0]"></span>
+                  </div>
+                  <span class="font-black text-xs uppercase tracking-wider" :class="foundWords.includes(w) ? 'line-through opacity-40' : ''" x-text="w"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100">
+             <p class="text-[10px] font-bold text-orange-800 leading-relaxed italic">"Temukan kata-kata di samping pada grid dengan cara menarik garis (drag) pada huruf-hurufnya. Kata bisa mendatar, menurun, atau diagonal!"</p>
+          </div>
+        </div>
+
+        <!-- Right: Game Grid -->
+        <div class="lg:col-span-2">
+          <div class="bg-[#1A237E] p-4 sm:p-10 rounded-[3.5rem] shadow-2xl border-[12px] border-white/5 relative overflow-hidden flex items-center justify-center min-h-[450px]">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            
+            <!-- Selection Layer (Canvas for smoother lines if needed, but we'll use CSS for now) -->
+            <div class="relative z-10 select-none touch-none" 
+                 @mousedown="startSelection" 
+                 @mousemove="updateSelection" 
+                 @mouseup="endSelection"
+                 @touchstart.prevent="startSelection" 
+                 @touchmove.prevent="updateSelection" 
+                 @touchend.prevent="endSelection"
+                 @mouseleave="endSelection">
+              
+              <div class="grid gap-1 bg-[#1A237E]/30 p-3 rounded-2xl backdrop-blur-sm" :style="'grid-template-columns: repeat(' + gridSize + ', minmax(0, 1fr))'">
+                <template x-for="(row, rIdx) in grid">
+                  <template x-for="(char, cIdx) in row">
+                    <div :data-row="rIdx" :data-col="cIdx"
+                         class="h-7 w-7 sm:h-9 sm:w-9 md:h-11 md:w-11 flex items-center justify-center font-black text-white text-[10px] sm:text-sm md:text-xl rounded-lg transition-all duration-150 cursor-pointer cell relative"
+                         :class="getCellClass(rIdx, cIdx)">
+                      <span class="relative z-10" x-text="char"></span>
+                      <!-- Correct background for found words -->
+                      <div x-show="isCellInFoundWords(rIdx, cIdx)" class="absolute inset-0 bg-[#FFC107] rounded-lg shadow-inner transform scale-90"></div>
+                    </div>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Educational Modal -->
+      <div x-show="showEduModal" style="display:none;" class="fixed inset-0 bg-[#1A237E]/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-[#FFC107] overflow-hidden animate-in zoom-in duration-300">
+          <div class="bg-[#1A237E] p-10 text-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="relative z-10">
+              <div class="h-24 w-24 bg-[#FFC107] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#1A237E]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+              </div>
+              <h2 class="text-2xl md:text-3xl font-bold text-white uppercase tracking-tighter">Luar Biasa!</h2>
+              <p class="text-blue-200 font-medium uppercase tracking-[0.3em] text-xs mt-2">Wawasan Teologis Baru:</p>
+              <h3 class="text-3xl md:text-4xl font-bold text-[#FFC107] mt-2 italic" x-text="currentWord?.word"></h3>
+            </div>
+          </div>
+          <div class="p-10 space-y-8">
+            <div class="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-lg text-center" x-text="currentWord?.explanation"></div>
+            <button @click="closeEduModal()" class="w-full bg-[#1A237E] text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4">
+              LANJUTKAN MISI
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Modal -->
+      <div x-show="showSummary" style="display:none;" class="fixed inset-0 bg-[#1A237E]/95 backdrop-blur-2xl flex items-center justify-center z-[110] p-4">
+        <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-12 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
+          <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#FFC107] via-[#FF5722] to-[#FFC107]"></div>
+          
+          <div class="space-y-4">
+            <div class="text-xs md:text-sm font-medium text-[#FF5722] uppercase tracking-[0.5em]">MISSION COMPLETED</div>
+            <h2 class="text-4xl md:text-5xl font-bold text-[#1A237E] uppercase tracking-tighter italic leading-none">PAKAR KATA!<br><span class="text-[#FFC107]">TERLATIH</span></h2>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-8 py-6">
+            <div class="space-y-1">
+              <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">TOTAL SKOR</div>
+              <div class="text-4xl md:text-5xl font-bold text-[#FF5722]" x-text="score"></div>
+            </div>
+            <div class="space-y-1 border-l-2 border-slate-100">
+              <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">WAKTU</div>
+              <div class="text-4xl md:text-5xl font-bold text-[#1A237E]" x-text="formatTime(timer)"></div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <button @click="window.location.href='/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-xl hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
+              KEMBALI KE DASHBOARD
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+            </button>
+            <button @click="window.location.reload()" class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] hover:text-[#1A237E] transition-colors py-2 block w-full">MAINKAN ULANG TANTANGAN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+               </div>
+            </template>
+
+            <!-- Result Screen -->
+            <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
+               <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
+                  <div class="w-full max-w-2xl">
+                     <div class="mb-6 md:mb-10 relative inline-block">
+                        <div class="text-6xl md:text-8xl mb-4 animate-bounce">🏆</div>
+                        <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
+                     </div>
+                     
+                     <h2 class="text-xl md:text-3xl font-bold text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
+                     <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
+                     
+                     <!-- Stats Grid -->
+                     <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
+                           <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
+                           <div class="text-xl md:text-2xl font-bold text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
+                        </div>
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-green-500">
+                           <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Benar</div>
+                           <div class="text-xl md:text-2xl font-bold text-green-600" x-text="correctCount"></div>
+                        </div>
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-red-500">
+                           <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Salah</div>
+                           <div class="text-xl md:text-2xl font-bold text-red-600" x-text="wrongCount"></div>
+                        </div>
+                     </div>
+
+                     <div class="space-y-4">
+                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">TUTUP HASIL</button>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
+         </div>
+      </div>
+    </div>
+    <style>
+      [x-cloak] { display: none !important; }
+      .ftb-input::placeholder { color: #cbd5e1; opacity: 0.5; }
+    </style>
+    
+    <script>
+      window.publicGamePlayerData = function() {
+        return {
+          activeGame: null,
+          questions: [],
+          isPlaying: false,
+          currentIndex: 0,
+          selectedAnswer: null,
+          showFeedback: false,
+          currentScore: 0,
+          maxScore: 0,
+          correctCount: 0,
+          wrongCount: 0,
+          gameFinished: false,
+          gameData: null,
+          isCorrect: false,
+          userFTBAnswers: [],
+          submissionResults: [],
+          
+          async playGame(id) {
+            console.log('Playing public game:', id);
+            try {
+              const res = await fetch('/api/projects/' + id);
+              if (res.status === 401) {
+                  alert('Silakan login untuk memainkan game ini.');
+                  if(document.getElementById('btn-login-trigger')){
+                      document.getElementById('btn-login-trigger').click();
+                  }
+                  return;
+              }
+              const json = await res.json();
+              if(json.success) {
+                this.activeGame = json.data;
+                this.questions = json.data.questions || [];
+                if(this.questions.length === 0) {
+                   alert('Game ini belum memiliki soal.');
+                   return;
+                }
+                this.maxScore = this.questions.reduce((acc, q) => acc + (q.score || this.getPoints(q.difficulty)), 0);
+                this.currentIndex = 0;
+                this.currentScore = 0;
+                this.correctCount = 0;
+                this.wrongCount = 0;
+                this.selectedAnswer = null;
+                this.showFeedback = false;
+                this.gameFinished = false;
+                this.userFTBAnswers = [];
+                this.submissionResults = [];
+                this.gameData = null;
+
+                if (this.activeGame.gameType === 'WORD_SEARCH') {
+                  const wsRes = await fetch('/api/word-search/' + id);
+                  const wsJson = await wsRes.json();
+                  if (wsJson.success && wsJson.data) {
+                    this.gameData = wsJson.data;
+                  } else {
+                    alert('Data Word Search tidak ditemukan.');
+                    return;
+                  }
+                }
+
+                this.isPlaying = true;
+              } else {
+                 alert('Gagal memuat game dari server.');
+              }
+            } catch (e) {
+              console.error('Error fetching game:', e);
+              alert('Terjadi kesalahan jaringan.');
+            }
+          },
+
+          getPoints(diff) {
+             const points = { 'RENDAH': 10, 'SEDANG': 20, 'SULIT': 50, 'BONUS': 30 };
+             return points[diff] || 10;
+          },
+
+          selectAnswer(opt) {
+            if(this.showFeedback) return;
+            this.selectedAnswer = opt;
+            
+            if(opt === this.questions[this.currentIndex].correctAnswer) {
+               this.currentScore += (this.questions[this.currentIndex].score || this.getPoints(this.questions[this.currentIndex].difficulty));
+               this.correctCount++;
+               this.isCorrect = true;
+            } else {
+               this.wrongCount++;
+               this.isCorrect = false;
+            }
+            this.showFeedback = true;
+          },
+
+          renderFTB(q) {
+            if(!q || !q.fullText) return '';
+            let text = q.fullText;
+            const answers = q.answers || [];
+            
+            const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
+            
+            sortedAnswers.forEach((ans, i) => {
+              const regex = new RegExp(ans.word, 'gi');
+              text = text.replace(regex, '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updatePublicFTB(' + i + ', this.value)">');
+            });
+            
+            window.updatePublicFTB = (idx, val) => {
+              this.userFTBAnswers[idx] = val;
+            };
+            
+            return text;
+          },
+
+          async checkAnswerFTB() {
+            const question = this.questions[this.currentIndex];
+            const res = await fetch('/api/projects/' + this.activeGame.id + '/submit', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                questionId: question.id,
+                userAnswers: this.userFTBAnswers
+              })
+            });
+            const json = await res.json();
+            if(json.success) {
+              this.isCorrect = json.allCorrect;
+              this.currentScore += json.scoreEarned;
+              if(this.isCorrect) this.correctCount++; else this.wrongCount++;
+              this.submissionResults = json.details;
+              this.showFeedback = true;
+            }
+          },
+
+          nextQuestion() {
+            if(this.currentIndex < this.questions.length - 1) {
+              this.currentIndex++;
+              this.selectedAnswer = null;
+              this.showFeedback = false;
+              this.userFTBAnswers = [];
+              this.submissionResults = [];
+            } else {
+              this.gameFinished = true;
+            }
+          },
+
+          quitGame() {
+            this.isPlaying = false;
+            this.activeGame = null;
+          }
+        };
+      };
+      
+      // Global hook for Alpine component so links can trigger the game
+      window.triggerPublicGame = function(id) {
+          const gameEl = document.querySelector('[x-data="publicGamePlayerData()"]');
+          if (gameEl && gameEl.__x) {
+              gameEl.__x.$data.playGame(id);
+          } else if (gameEl && Alpine) {
+              Alpine.$data(gameEl).playGame(id);
+          } else {
+              // Wait for Alpine to init
+              document.addEventListener('alpine:initialized', () => {
+                  const el = document.querySelector('[x-data="publicGamePlayerData()"]');
+                  Alpine.$data(el).playGame(id);
+              }, {once: true});
+          }
+      };
+    </script>
+    
+  <script>
+    (function() {
+      const init = () => {
+        if (typeof Alpine === 'undefined') return;
+        if (Alpine.store('ws_game_init')) return;
+        Alpine.store('ws_game_init', true);
+
+        Alpine.data('wordSearchGame', (project, gameData) => ({
+        activeProject: project,
+        grid: gameData ? gameData.gridData : [],
+        gridSize: gameData ? gameData.gridSize : 10,
+        difficulty: gameData ? gameData.difficulty : 'EASY',
+        wordsData: gameData ? gameData.words : [], 
+        wordsList: gameData ? gameData.words.map(w => w.word) : [],
+        
+        foundWords: [],
+        totalWords: gameData ? gameData.words.length : 0,
+        score: 0,
+        timer: 0,
+        timerInterval: null,
+        
+        isSelecting: false,
+        startCell: null,
+        currentCell: null,
+        foundCells: [], 
+        
+        showEduModal: false,
+        currentWord: null,
+        showSummary: false,
+        
+        init() {
+          this.timerInterval = setInterval(() => {
+            if (!this.showEduModal && !this.showSummary) this.timer++;
+          }, 1000);
+        },
+
+        formatTime(s) {
+          const mins = Math.floor(s / 60);
+          const secs = s % 60;
+          return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        },
+
+        getCellFromEvent(e) {
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          const el = document.elementFromPoint(clientX, clientY);
+          if (!el) return null;
+          const cell = el.closest('.cell');
+          if (!cell) return null;
+          return {
+            r: parseInt(cell.dataset.row),
+            c: parseInt(cell.dataset.col)
+          };
+        },
+
+        startSelection(e) {
+          if (this.showEduModal || this.showSummary) return;
+          const cell = this.getCellFromEvent(e);
+          if (cell) {
+            this.isSelecting = true;
+            this.startCell = cell;
+            this.currentCell = cell;
+            this.playClick();
+          }
+        },
+
+        updateSelection(e) {
+          if (!this.isSelecting) return;
+          const cell = this.getCellFromEvent(e);
+          if (cell && (cell.r !== this.currentCell.r || cell.c !== this.currentCell.c)) {
+            this.currentCell = cell;
+          }
+        },
+
+        endSelection() {
+          if (!this.isSelecting) return;
+          this.isSelecting = false;
+          this.checkSelection();
+        },
+
+        checkSelection() {
+          const selectedCells = this.getSelectedCells();
+          if (selectedCells.length === 0) return;
+          const word = selectedCells.map(c => this.grid[c.r][c.c]).join('');
+          const reversedWord = word.split('').reverse().join('');
+
+          if (this.wordsList.includes(word) && !this.foundWords.includes(word)) {
+            this.handleSuccess(word, selectedCells);
+          } else if (this.wordsList.includes(reversedWord) && !this.foundWords.includes(reversedWord)) {
+            this.handleSuccess(reversedWord, selectedCells);
+          }
+          
+          this.startCell = null;
+          this.currentCell = null;
+        },
+
+        handleSuccess(word, cells) {
+          this.foundWords.push(word);
+          // Store as string keys for easy lookup
+          cells.forEach(c => {
+            if(!this.isCellInFoundWords(c.r, c.c)) {
+               this.foundCells.push({r: c.r, c: c.c});
+            }
+          });
+          
+          this.score += this.difficulty === 'EASY' ? 10 : this.difficulty === 'MEDIUM' ? 20 : 50;
+          this.currentWord = this.wordsData.find(w => w.word === word);
+          this.showEduModal = true;
+          
+          if (this.foundWords.length === this.totalWords) {
+            this.submitScore();
+          }
+        },
+
+        isCellInFoundWords(r, c) {
+          return this.foundCells.some(fc => fc.r === r && fc.c === c);
+        },
+
+        async submitScore() {
+          await fetch('/api/word-search/' + this.activeProject.id + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              foundWordsCount: this.foundWords.length,
+              totalWords: this.totalWords,
+              difficulty: this.difficulty,
+              timeSpent: this.timer
+            })
+          });
+        },
+
+        closeEduModal() {
+          this.showEduModal = false;
+          if (this.foundWords.length === this.totalWords) {
+            this.showSummary = true;
+            clearInterval(this.timerInterval);
+          }
+        },
+
+        getSelectedCells() {
+          if (!this.startCell || !this.currentCell) return [];
+          
+          const dr = this.currentCell.r - this.startCell.r;
+          const dc = this.currentCell.c - this.startCell.c;
+          
+          const dist = Math.max(Math.abs(dr), Math.abs(dc));
+          if (dist === 0) return [this.startCell];
+
+          const stepR = dr === 0 ? 0 : dr / Math.abs(dr);
+          const stepC = dc === 0 ? 0 : dc / Math.abs(dc);
+          
+          // Only allow horizontal, vertical, or 45deg diagonal
+          if (dr !== 0 && dc !== 0 && Math.abs(dr) !== Math.abs(dc)) return [this.startCell];
+
+          const cells = [];
+          for (let i = 0; i <= dist; i++) {
+            cells.push({
+              r: this.startCell.r + i * stepR,
+              c: this.startCell.c + i * stepC
+            });
+          }
+          return cells;
+        },
+
+        getCellClass(r, c) {
+          if (this.isSelecting) {
+            const selected = this.getSelectedCells();
+            if (selected.some(sc => sc.r === r && sc.c === c)) {
+              return 'bg-[#FF5722] text-white scale-110 z-20 shadow-lg ring-2 ring-white';
+            }
+          }
+          return '';
+        },
+
+        playClick() {
+           if(window.navigator.vibrate) window.navigator.vibrate(10);
+        }
+      }));
+      };
+      if (window.Alpine) init();
+      else document.addEventListener('alpine:init', init);
+    })();
+  </script>
+
+  
+</body>
+</html>

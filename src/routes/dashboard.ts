@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { getDashboardKpiSummary, getUserDashboardSummary } from "../services/dashboardService";
+import { getUserAchievements } from "../services/achievementService";
 
 export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
   .use(
@@ -57,6 +58,28 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
       console.error("[dashboard/user-summary] Error:", err.message);
       return new Response(
         JSON.stringify({ error: "Gagal mengambil data dashboard user", detail: err.message }),
+        { status: 500 }
+      );
+    }
+  })
+  /**
+   * GET /api/dashboard/achievements
+   * Data pencapaian dan gamifikasi user
+   */
+  .get("/achievements", async ({ user }) => {
+    if (!user || user.role !== "USER") {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403 }
+      );
+    }
+    try {
+      const achievements = await getUserAchievements(user.id);
+      return { success: true, data: achievements };
+    } catch (err: any) {
+      console.error("[dashboard/achievements] Error:", err.message);
+      return new Response(
+        JSON.stringify({ error: "Gagal mengambil data pencapaian", detail: err.message }),
         { status: 500 }
       );
     }

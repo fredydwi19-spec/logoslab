@@ -1,8 +1,8 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
-import { projects, materiReadProgress, achievements } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { projects, materiReadProgress, achievements, userMaterialHistory } from "../db/schema";
+import { eq, and, sql } from "drizzle-orm";
 
 export const materiRoutes = new Elysia({ prefix: "/api/materi" })
   .use(
@@ -50,7 +50,31 @@ export const materiRoutes = new Elysia({ prefix: "/api/materi" })
       });
     }
 
-    return { success: true, message: "Progress updated" };
+    const totalTimeSpentSeconds = existing ? (timeSpentSeconds !== undefined ? timeSpentSeconds : existing.timeSpentSeconds) : (timeSpentSeconds || 0);
+    const totalScroll = existing ? (scrollPercentage !== undefined ? scrollPercentage : existing.scrollPercentage) : (scrollPercentage || 0);
+    const timeSpentMinutes = Math.floor((totalTimeSpentSeconds || 0) / 60);
+    
+    let isCompleted = totalScroll >= 100 && timeSpentMinutes >= 2;
+    let note = "";
+    if (totalScroll >= 100 && timeSpentMinutes < 2) {
+      isCompleted = false;
+      note = "Dibaca Sekilas";
+    }
+
+    await db.insert(userMaterialHistory).values({
+      userId: user.id,
+      materialId: projectId,
+      timeSpentMinutes,
+      isCompleted
+    }).onDuplicateKeyUpdate({
+      set: {
+        timeSpentMinutes: sql`VALUES(time_spent_minutes)`,
+        isCompleted: sql`VALUES(is_completed)`,
+        updatedAt: new Date()
+      }
+    });
+
+    return { success: true, message: "Progress updated", note };
   }, {
     body: t.Object({
       scrollPercentage: t.Optional(t.Number()),
