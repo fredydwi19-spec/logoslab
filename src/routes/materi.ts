@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
-import { projects, materiReadProgress, achievements, userMaterialHistory } from "../db/schema";
+import { projects, materiReadProgress, achievements, userMaterialHistory, materialSections, materialGlossary, materiContents, questionBank } from "../db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export const materiRoutes = new Elysia({ prefix: "/api/materi" })
@@ -161,4 +161,45 @@ export const materiRoutes = new Elysia({ prefix: "/api/materi" })
     await db.update(materiReadProgress).set({ isCompleted: true }).where(eq(materiReadProgress.id, progress.id));
 
     return { success: true, message: "Achievement berhasil diklaim!" };
+  })
+  .get("/:id", async ({ params: { id }, user, set }) => {
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+
+    if (!project) {
+      set.status = 404;
+      return { error: "Materi not found" };
+    }
+
+    if (!user && project.status !== "PUBLISHED") {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    let materiContentsData: any[] = [];
+    let materialSectionsData: any[] = [];
+    let materialGlossaryData: any[] = [];
+    let questionsData: any[] = []; // Actually for MANUAL type, questions are stored in questionBank usually? Wait, projects.ts uses questionBank for QUIZ. The old SSR code checked `materi.questions`. In projects.ts for MATERI, questions are not loaded... Wait, if they are not loaded, maybe they were not stored in questionBank? Let me just import questionBank and materiContents and materialSections and materialGlossary.
+
+    if (project.materiType === "MANUAL") {
+      materialSectionsData = await db.select().from(materialSections).where(eq(materialSections.projectId, projectId)).orderBy(materialSections.sortOrder);
+      materialGlossaryData = await db.select().from(materialGlossary).where(eq(materialGlossary.projectId, projectId));
+      // In old MateriViewer, it checks projectVar?.questions
+      // I need to import questionBank
+      // We can fetch from questionBank for the mini quiz
+      questionsData = await db.select().from(questionBank).where(eq(questionBank.projectId, projectId));
+    } else {
+      materiContentsData = await db.select().from(materiContents).where(eq(materiContents.projectId, projectId)).orderBy(materiContents.sortOrder);
+    }
+
+    return { 
+      success: true, 
+      data: { 
+        ...project, 
+        materiContents: materiContentsData, 
+        materialSections: materialSectionsData, 
+        materialGlossary: materialGlossaryData,
+        questions: questionsData 
+      } 
+    };
   });
