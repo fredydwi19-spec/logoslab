@@ -153,7 +153,6 @@ logos-lab/                          # Root project
 │       │   ├── Navbar.tsx          #    Navbar adaptif (guest vs authenticated user)
 │       │   ├── Sidebar.tsx         #    Sidebar navigasi dashboard
 │       │   ├── KetuaTimDashboard.tsx        # Dashboard Ketua Tim (KPI Cards, Spider Chart)
-│       │   ├── KetuaTimAllProjects.tsx      # Manajemen seluruh proyek (table + modals)
 │       │   ├── PembuatGameDashboard.tsx     # Workspace Pembuat Game (editor soal Quiz, FTB, WS, CW)
 │       │   ├── PembuatMateriDashboard.tsx   # Workspace Pembuat Materi (upload, sections, glossary)
 │       │   ├── PakarDashboard.tsx           # Dashboard Pakar (review queue, feedback)
@@ -186,6 +185,7 @@ logos-lab/                          # Root project
 │   │   ├── dashboard/              # ⚛️ React SPA Dashboard per role
 │   │   │   ├── DashboardPage.tsx   #    Wrapper & router penentu role
 │   │   │   ├── KetuaTimDashboard.tsx
+│   │   │   ├── KetuaTimAllProjects.tsx
 │   │   │   ├── MemberDashboard.tsx
 │   │   │   ├── MemberAchievements.tsx
 │   │   │   ├── PembuatGameDashboard.tsx
