@@ -153,19 +153,13 @@ logos-lab/                          # Root project
 │       │   ├── Navbar.tsx          #    Navbar adaptif (guest vs authenticated user)
 │       │   ├── Sidebar.tsx         #    Sidebar navigasi dashboard
 │       │   ├── KetuaTimDashboard.tsx        # Dashboard Ketua Tim (KPI Cards, Spider Chart)
-│       │   ├── KetuaTimAllProjects.tsx      # Manajemen seluruh proyek (table + modals)
 │       │   ├── PembuatGameDashboard.tsx     # Workspace Pembuat Game (editor soal Quiz, FTB, WS, CW)
 │       │   ├── PembuatMateriDashboard.tsx   # Workspace Pembuat Materi (upload, sections, glossary)
 │       │   ├── PakarDashboard.tsx           # Dashboard Pakar (review queue, feedback)
 │       │   ├── MemberDashboard.tsx          # Dashboard Siswa (game list, progress)
 │       │   ├── MemberAchievements.tsx       # Halaman achievement & badge siswa
-│       │   ├── BankSoalQuiz.tsx             # Komponen tabel + CRUD Bank Soal Quiz
-│       │   ├── BankSoalFtb.tsx              # Komponen Bank Soal Fill-the-Blank
-│       │   ├── BankSoalTts.tsx              # Komponen Bank Soal TTS/Crossword
 │       │   ├── CrosswordEditor.tsx          # Editor interaktif untuk game TTS
-│       │   ├── CrosswordGame.tsx            # Game player TTS untuk siswa
 │       │   ├── WordSearchEditor.tsx         # Editor game Word Search
-│       │   ├── WordSearchGame.tsx           # Game player Word Search
 │       │   ├── MateriViewer.tsx             # (Deprecated) Reader materi (PDF, Video, Manual)
 │       │   ├── MateriSection.tsx            # Section materi di landing page
 │       │   ├── GamesSection.tsx             # Carousel game di landing page
@@ -186,16 +180,19 @@ logos-lab/                          # Root project
 │   │   ├── dashboard/              # ⚛️ React SPA Dashboard per role
 │   │   │   ├── DashboardPage.tsx   #    Wrapper & router penentu role
 │   │   │   ├── KetuaTimDashboard.tsx
+│   │   │   ├── KetuaTimAllProjects.tsx
 │   │   │   ├── MemberDashboard.tsx
 │   │   │   ├── MemberAchievements.tsx
 │   │   │   ├── PembuatGameDashboard.tsx
 │   │   │   ├── PembuatMateriDashboard.tsx
 │   │   │   ├── PakarDashboard.tsx
-│   │   │   ├── DashboardGamesPage.tsx      #    Halaman list & filter game untuk user
-│   │   │   ├── DashboardMateriPage.tsx     #    Katalog & Viewer Materi SPA
-│   │   │   ├── MateriViewerModal.tsx       #    Modal pembaca materi & kuis
-│   │   │   ├── WordSearchGame.tsx          #    Komponen SPA Word Search
-│   │   │   └── CrosswordGame.tsx           #    Komponen SPA Crossword
+│   │   │   ├── BankSoalQuiz.tsx            # SPA Bank Soal Quiz
+│   │   │   ├── BankSoalFtb.tsx             # SPA Bank Soal Fill-the-Blank
+│   │   │   ├── BankSoalTts.tsx             # SPA Bank Soal TTS/Crossword
+│   │   │   ├── DashboardGamesPage.tsx      # SPA Katalog Game & Universal Player
+│   │   │   ├── DashboardMateriPage.tsx     # Katalog & Viewer Materi SPA
+│   │   │   ├── MateriViewerModal.tsx       # Modal pembaca materi & kuis
+│   │   │   └── games/                      # SPA Sub-komponen game (WordSearchGame, CrosswordGame)
 │   │   ├── Dashboard.tsx           #    Dashboard utama versi React (Deprecated/Legacy)
 │   │   └── LoginPage.tsx           #    Halaman autentikasi (Login/Register) React SPA
 │   │

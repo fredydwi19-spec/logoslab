@@ -112,4 +112,31 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
         { status: 500 }
       );
     }
+  })
+  /**
+   * GET /api/dashboard/published-games
+   * Mengembalikan semua proyek game berstatus PUBLISHED
+   */
+  .get("/published-games", async () => {
+    try {
+      const publishedGames = await db.select({
+        id: projects.id,
+        title: projects.title,
+        description: projects.description,
+        gameType: projects.gameType,
+        thumbnailUrl: projects.thumbnailUrl,
+        category: projects.category,
+        status: projects.status,
+      }).from(projects).where(
+        and(eq(projects.type, "GAME"), eq(projects.status, "PUBLISHED"))
+      );
+      
+      return { success: true, data: publishedGames };
+    } catch (err: any) {
+      console.error("[dashboard/published-games] Error:", err.message);
+      return new Response(
+        JSON.stringify({ error: "Gagal mengambil data game", detail: err.message }),
+        { status: 500 }
+      );
+    }
   });
