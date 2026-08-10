@@ -22,7 +22,7 @@ export const authRoutes = new Elysia()
         return Response.redirect("/", 302);
       }
     }
-    const file = await Bun.file("public/login.html").text();
+    const file = await Bun.file("public/app.html").text();
     return new Response(file, { headers: { "Content-Type": "text/html; charset=utf-8" } });
   })
   // ---- Login ----
