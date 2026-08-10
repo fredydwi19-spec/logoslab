@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { KetuaTimAllProjects } from './pages/dashboard/KetuaTimAllProjects';
+import { BankSoalQuiz } from './pages/dashboard/BankSoalQuiz';
+import { BankSoalFtb } from './pages/dashboard/BankSoalFtb';
+import { BankSoalTts } from './pages/dashboard/BankSoalTts';
 
 const App = () => {
   const [path, setPath] = React.useState(window.location.pathname);
@@ -18,6 +21,15 @@ const App = () => {
   }
   if (path === '/dashboard/projects' || path === '/projects') {
     return <KetuaTimAllProjects />;
+  }
+  if (path === '/dashboard/bank-soal/quiz') {
+    return <BankSoalQuiz />;
+  }
+  if (path === '/dashboard/bank-soal/ftb') {
+    return <BankSoalFtb />;
+  }
+  if (path === '/dashboard/bank-soal/tts') {
+    return <BankSoalTts />;
   }
   if (path === '/app' || path.startsWith('/dashboard') || path === '/app/dashboard' || path === '/') {
     return <DashboardPage />;
