@@ -159,9 +159,7 @@ logos-lab/                          # Root project
 │       │   ├── MemberDashboard.tsx          # Dashboard Siswa (game list, progress)
 │       │   ├── MemberAchievements.tsx       # Halaman achievement & badge siswa
 │       │   ├── CrosswordEditor.tsx          # Editor interaktif untuk game TTS
-│       │   ├── CrosswordGame.tsx            # Game player TTS untuk siswa
 │       │   ├── WordSearchEditor.tsx         # Editor game Word Search
-│       │   ├── WordSearchGame.tsx           # Game player Word Search
 │       │   ├── MateriViewer.tsx             # Reader materi (PDF, Video, Manual)
 │       │   ├── MateriSection.tsx            # Section materi di landing page
 │       │   ├── GamesSection.tsx             # Carousel game di landing page
@@ -190,7 +188,9 @@ logos-lab/                          # Root project
 │   │   │   ├── PakarDashboard.tsx
 │   │   │   ├── BankSoalQuiz.tsx    # SPA Bank Soal Quiz
 │   │   │   ├── BankSoalFtb.tsx     # SPA Bank Soal Fill-the-Blank
-│   │   │   └── BankSoalTts.tsx     # SPA Bank Soal TTS/Crossword
+│   │   │   ├── BankSoalTts.tsx     # SPA Bank Soal TTS/Crossword
+│   │   │   ├── DashboardGamesPage.tsx # SPA Katalog Game & Universal Player
+│   │   │   └── games/              # SPA Sub-komponen game (WordSearchGame, CrosswordGame)
 │   │   ├── Dashboard.tsx           #    Dashboard utama versi React (Deprecated/Legacy)
 │   │   └── LoginPage.tsx           #    Halaman autentikasi (Login/Register) React SPA
 │   │
