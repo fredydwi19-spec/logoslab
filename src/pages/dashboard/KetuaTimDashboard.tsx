@@ -18,7 +18,7 @@ export const KetuaTimDashboard = () => {
     try {
       const res = await fetch('/api/dashboard/kpi-summary', { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP ${res.status} — Cek apakah Anda sudah login sebagai Ketua Tim`);
-      const json = await res.json();
+      const json = await res.json() as any;
       if (!json.success) throw new Error(json.error || 'Server error');
       
       const d = json.data;

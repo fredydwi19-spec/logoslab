@@ -9,7 +9,7 @@ export const MemberAchievements = () => {
     const fetchAchievements = async () => {
       try {
         const res = await fetch('/api/dashboard/achievements');
-        const json = await res.json();
+        const json = await res.json() as any;
         if (json.success) {
           setAchievements(json.data || []);
         } else {

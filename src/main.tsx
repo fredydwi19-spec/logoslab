@@ -4,7 +4,14 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 
 const App = () => {
-  const path = window.location.pathname;
+  const [path, setPath] = React.useState(window.location.pathname);
+
+  React.useEffect(() => {
+    const handleLocationChange = () => setPath(window.location.pathname);
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
   if (path === '/login' || path === '/app/login') {
     return <LoginPage />;
   }

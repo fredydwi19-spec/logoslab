@@ -16,7 +16,7 @@ export const MemberDashboard = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/dashboard/user-summary');
-      const json = await res.json();
+      const json = await res.json() as any;
       if (json.success) {
         setSummary(json.data);
       } else {
@@ -66,7 +66,9 @@ export const MemberDashboard = () => {
               angleLines: { color: 'rgba(0,0,0,0.1)' },
               grid: { color: 'rgba(0,0,0,0.1)' },
               pointLabels: { font: { size: 10, family: 'Inter' } },
-              ticks: { beginAtZero: true, max: 100, stepSize: 20 }
+              beginAtZero: true,
+              max: 100,
+              ticks: { stepSize: 20 }
             }
           }
         }
