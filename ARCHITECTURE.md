@@ -183,8 +183,15 @@ logos-lab/                          # Root project
 │   │   ├── Sidebar.tsx             #    Sidebar navigasi SPA
 │   │   └── ButtonCTA.tsx           #    Tombol CTA utama
 │   │
-│   ├── pages/                      # ⚛️ React.js Pages (Baru)
-│   │   ├── Dashboard.tsx           #    Dashboard utama versi React
+│   │   ├── dashboard/              # ⚛️ React SPA Dashboard per role
+│   │   │   ├── DashboardPage.tsx   #    Wrapper & router penentu role
+│   │   │   ├── KetuaTimDashboard.tsx
+│   │   │   ├── MemberDashboard.tsx
+│   │   │   ├── MemberAchievements.tsx
+│   │   │   ├── PembuatGameDashboard.tsx
+│   │   │   ├── PembuatMateriDashboard.tsx
+│   │   │   └── PakarDashboard.tsx
+│   │   ├── Dashboard.tsx           #    Dashboard utama versi React (Deprecated/Legacy)
 │   │   └── LoginPage.tsx           #    Halaman autentikasi (Login/Register) React SPA
 │   │
 │   ├── main.tsx                    # ⚛️ Entry point untuk React SPA (dibundle ke public/dist) dengan client-side routing sederhana

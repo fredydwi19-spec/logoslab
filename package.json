@@ -28,6 +28,7 @@
     "@types/nodemailer": "^8.0.0",
     "bcryptjs": "^3.0.3",
     "bootstrap-icons": "^1.13.1",
+    "chart.js": "^4.5.1",
     "drizzle-orm": "^0.45.2",
     "elysia": "^1.4.28",
     "mysql2": "^3.22.3",
