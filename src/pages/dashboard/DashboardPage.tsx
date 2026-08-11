@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { KetuaTimDashboard } from './KetuaTimDashboard';
 import { MemberDashboard } from './MemberDashboard';
 import { MemberAchievements } from './MemberAchievements';
+import { Navbar } from '../../components/Navbar';
+import { Sidebar } from '../../components/Sidebar';
 
 // Fallback empty components for other roles to ensure compilation
 export const PembuatGameDashboard = () => <div className="p-8 text-center bg-slate-50 min-h-screen text-slate-500 font-bold">Workspace Produksi Game (React Converted)</div>;
@@ -69,11 +71,15 @@ export const DashboardPage = () => {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen">
-      {/* Assuming a global layout or wrapper takes care of Sidebar/Navbar. */}
-      {/* If this is a standalone SPA, we just render the dashboard content here. */}
-      <div className="p-6 md:p-8">
-        {renderDashboard()}
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto bg-slate-50">
+          <div className="p-6 md:p-8">
+            {renderDashboard()}
+          </div>
+        </main>
       </div>
     </div>
   );
