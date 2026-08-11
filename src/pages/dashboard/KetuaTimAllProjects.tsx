@@ -298,7 +298,7 @@ export const KetuaTimAllProjects = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107] gap-4">
         <div className="flex items-center gap-4">
-          <img src="/public/assets/Logo LogosLAB.png" alt="Logos LAB" className="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" />
+          <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" className="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" />
           <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Manajemen Proyek Game</h2>
         </div>
         <div className="flex flex-wrap items-center gap-4">

@@ -315,7 +315,7 @@ export const DashboardGamesPage = () => {
               <div className="flex flex-col h-full">
                 <div className="bg-[#1A237E] px-8 py-4 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
                   <div className="flex items-center gap-4">
-                    <img src="/public/assets/logo-logoslab.png" className="h-10 w-auto bg-white p-1 rounded-lg" alt="Logo" />
+                    <img src="/public/assets/Logo-LogosLAB.png" className="h-10 w-auto bg-white p-1 rounded-lg" alt="Logo" />
                     <div>
                       <h3 className="text-sm font-black uppercase tracking-widest text-[#FFC107]">{activeGame?.title}</h3>
                       <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest">Soal {currentIndex + 1} dari {questions.length}</p>
