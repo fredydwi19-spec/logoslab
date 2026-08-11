@@ -104,7 +104,7 @@ export const LoginPage = () => {
         
         {/* Header & Logo */}
         <div className="flex flex-col items-center mb-8">
-          <img src="/public/assets/Logo LogosLAB.png" alt="Logos LAB Logo" className="w-16 h-16 object-contain mb-4 rounded-xl shadow-sm" onError={(e) => { e.currentTarget.src = '/public/assets/logo.png' }} />
+          <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB Logo" className="w-16 h-16 object-contain mb-4 rounded-xl shadow-sm" onError={(e) => { e.currentTarget.src = '/public/assets/logo.png' }} />
           <h1 className="text-2xl font-bold text-[#1A237E]">Selamat Datang</h1>
           <p className="text-sm text-slate-500 mt-1 text-center">Platform E-Learning Berbasis Game Edukasi</p>
         </div>
