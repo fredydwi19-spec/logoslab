@@ -50,9 +50,22 @@ const app = new Elysia()
       secret: process.env.JWT_SECRET || "super-secret-key",
     })
   )
-  .get("/", async () => {
-    const file = await Bun.file("public/app.html").text();
-    return new Response(file, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  .get("/", async ({ jwt, cookie }) => {
+    const auth = cookie.auth;
+    let loggedIn = false;
+
+    if (auth?.value) {
+      const payload = await jwt.verify(auth.value as string);
+      if (payload) {
+        loggedIn = true;
+      }
+    }
+
+    if (!loggedIn) {
+      return Response.redirect("/login", 302);
+    }
+
+    return Response.redirect("/dashboard", 302);
   })
   .onError(({ code, error, set }) => {
     if (code === 'NOT_FOUND') {
