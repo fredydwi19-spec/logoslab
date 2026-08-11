@@ -130,6 +130,28 @@ export const ProfilePage = () => {
   return (
     <div className="min-h-screen pb-20 bg-slate-50 font-sans">
       <main className="max-w-4xl mx-auto mt-12 px-6">
+        <div className="mb-8">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              let targetPath = '/dashboard/user';
+              switch(user.role) {
+                case 'KETUA_TIM':      targetPath = '/dashboard/ketua'; break;
+                case 'PEMBUAT_GAME':   targetPath = '/dashboard/game'; break;
+                case 'PEMBUAT_MATERI': targetPath = '/dashboard/materi'; break;
+                case 'PAKAR':          targetPath = '/dashboard/pakar'; break;
+              }
+              window.history.pushState({}, '', targetPath);
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="flex items-center gap-2 text-sm font-bold text-[#1A237E] hover:text-white hover:bg-[#1A237E] transition-all bg-white px-5 py-2.5 rounded-xl border-2 border-[#1A237E] shadow-sm inline-flex"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Kembali ke Dashboard
+          </button>
+        </div>
         <div className="flex flex-col md:flex-row gap-8">
           
           {/* Sidebar: Info Ringkas */}
