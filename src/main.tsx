@@ -34,7 +34,7 @@ const App = () => {
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
-  if (path === '/login' || path === '/app/login') {
+  if (path === '/' || path === '/login' || path === '/app/login') {
     return <LoginPage />;
   }
   if (path === '/app/profile' || path === '/profile') {
