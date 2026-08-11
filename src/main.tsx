@@ -10,6 +10,21 @@ import { BankSoalTts } from './pages/dashboard/BankSoalTts';
 import { DashboardGamesPage } from './pages/dashboard/DashboardGamesPage';
 import { ProfilePage } from './pages/ProfilePage';
 
+import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
+
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-col min-h-screen">
+    <Navbar />
+    <div className="flex flex-1 overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 overflow-y-auto bg-slate-50">
+        {children}
+      </main>
+    </div>
+  </div>
+);
+
 const App = () => {
   const [path, setPath] = React.useState(window.location.pathname);
 
@@ -22,32 +37,32 @@ const App = () => {
   if (path === '/login' || path === '/app/login') {
     return <LoginPage />;
   }
-  if (path === '/dashboard/projects' || path === '/projects') {
-    return <KetuaTimAllProjects />;
-  }
-  if (path === '/dashboard/bank-soal/quiz') {
-    return <BankSoalQuiz />;
-  }
-  if (path === '/dashboard/bank-soal/ftb') {
-    return <BankSoalFtb />;
-  }
-  if (path === '/dashboard/bank-soal/tts') {
-    return <BankSoalTts />;
-  }
-  if (path === '/dashboard/games' || path === '/games') {
-    return <DashboardGamesPage />;
-  }
   if (path === '/app/profile' || path === '/profile') {
     return <ProfilePage />;
   }
-  if (path === '/app' || path.startsWith('/dashboard') || path === '/app/dashboard' || path === '/') {
-    if (path === '/dashboard/materi-list' || path === '/materi-list') {
-      return <DashboardMateriPage />;
-    }
-    return <DashboardPage />;
+  
+  // Dashboard Routes with Layout Wrapper
+  let DashboardContent = <DashboardPage />;
+  
+  if (path === '/dashboard/projects' || path === '/projects') {
+    DashboardContent = <KetuaTimAllProjects />;
+  } else if (path === '/dashboard/bank-soal/quiz') {
+    DashboardContent = <BankSoalQuiz />;
+  } else if (path === '/dashboard/bank-soal/ftb') {
+    DashboardContent = <BankSoalFtb />;
+  } else if (path === '/dashboard/bank-soal/tts') {
+    DashboardContent = <BankSoalTts />;
+  } else if (path === '/dashboard/games' || path === '/games') {
+    DashboardContent = <DashboardGamesPage />;
+  } else if (path === '/dashboard/materi-list' || path === '/materi-list') {
+    DashboardContent = <DashboardMateriPage />;
   }
-  // Default fallback
-  return <DashboardPage />;
+
+  return (
+    <DashboardLayout>
+      {DashboardContent}
+    </DashboardLayout>
+  );
 };
 
 const rootElement = document.getElementById('root');
