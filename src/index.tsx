@@ -595,11 +595,9 @@ const app = new Elysia()
       headers: { "Content-Type": "text/html; charset=utf-8" }
     });
   })
-  .get("/profile", async ({ jwt, cookie, set }) => {
-    // optional auth check before serving SPA or just serve app.html
-    const auth = cookie.auth;
-    if (!auth?.value) return Response.redirect("/login", 302);
-    return new Response(await Bun.file("public/app.html").text(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  .get("/profile", async ({ cookie }) => {
+    if (!cookie.auth?.value) return Response.redirect("/login", 302);
+    return Bun.file("public/app.html");
   })
   .get("/app", () => Bun.file("public/app.html"))
   .listen(3000);
