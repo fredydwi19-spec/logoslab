@@ -4,6 +4,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardMateriPage } from './pages/dashboard/DashboardMateriPage';
 import { KetuaTimAllProjects } from './pages/dashboard/KetuaTimAllProjects';
+import { KetuaTimDashboard } from './components/KetuaTimDashboard';
 import { BankSoalQuiz } from './pages/dashboard/BankSoalQuiz';
 import { BankSoalFtb } from './pages/dashboard/BankSoalFtb';
 import { BankSoalTts } from './pages/dashboard/BankSoalTts';
@@ -68,7 +69,9 @@ const App = () => {
   // Dashboard Routes with Layout Wrapper
   let DashboardContent = null;
   
-  if (cleanPath === '/dashboard/ketua' || cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
+  if (cleanPath === '/dashboard/ketua') {
+    DashboardContent = <KetuaTimDashboard />;
+  } else if (cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
     DashboardContent = <KetuaTimAllProjects />;
   } else if (cleanPath === '/dashboard/bank-soal/quiz') {
     DashboardContent = <BankSoalQuiz />;
