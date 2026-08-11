@@ -415,4 +415,26 @@ Mengimplementasikan React.js secara hybrid/bertahap.
 
 ---
 
+### ADR-004: Client-Side Path Normalization & Global Route Guard
+
+**Status:** Accepted
+
+#### Context (Masalah)
+Pencocokan rute pada React SPA (`src/main.tsx`) sebelumnya menggunakan string literal eksak tanpa normalisasi. Hal ini menyebabkan URL dengan variasi huruf besar/kecil atau dengan trailing slash tidak dikenali, dan merender komponen fallback secara tidak sengaja. Selain itu, akses ke URL yang tidak terdaftar (unknown path) tidak tertangani dengan aman dan berpotensi mengekspos UI yang tidak seharusnya (komponen fallback generik).
+
+#### Decision (Keputusan)
+1. **Path Normalization**: Seluruh string `window.location.pathname` dinormalisasi dengan mengubahnya menjadi *lowercase* dan menghapus *trailing slash* `/` (kecuali jika path utamanya memang `/`).
+2. **Whitelist Routes**: Dibuat sebuah `dashboardWhitelist` yang secara spesifik mendaftarkan rute mana saja yang valid untuk di-handle oleh React SPA di area `/dashboard`.
+3. **Global Route Guard**: Jika path yang dinormalisasi tidak terdapat dalam *whitelist*, sistem secara paksa akan melakukan *redirect* (pengalihan otomatis) ke `/dashboard/ketua`. Komponen fallback generik `DashboardPage` telah dihapus sepenuhnya.
+
+#### Consequences (Konsekuensi)
+**✅ Keuntungan:**
+- **Keamanan Rute (Security by Default)**: Menutup celah eksploitasi visual di mana pengguna mencoba mengakses path yang tidak terdaftar.
+- **UX Konsisten**: Variasi penulisan URL oleh pengguna di address bar (misalnya `/Dashboard/`) tetap diarahkan dengan benar berkat normalisasi.
+
+**⚠️ Trade-off:**
+- Setiap penambahan halaman SPA baru wajib ditambahkan secara manual ke dalam array `dashboardWhitelist` di `src/main.tsx`, yang dapat memperlambat proses development jika terlupakan.
+
+---
+
 *Dokumen ini harus diperbarui setiap kali keputusan arsitektural signifikan dibuat atau tech stack berubah.*

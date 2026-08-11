@@ -151,6 +151,14 @@ const app = new Elysia()
         const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
         return { user: payload ? { ...payload } : null };
       })
+      .get("/", () => {
+        return new Response(Bun.file("public/app.html"), {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+          }
+        });
+      })
       .get("/projects", async ({ user }) => {
         if (!user || (user as any).role !== "KETUA_TIM") {
           return Response.redirect("/login", 302);

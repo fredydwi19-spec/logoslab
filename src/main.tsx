@@ -34,27 +34,47 @@ const App = () => {
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
-  if (path === '/' || path === '/login' || path === '/app/login') {
+  let cleanPath = path.toLowerCase();
+  if (cleanPath.length > 1 && cleanPath.endsWith('/')) {
+    cleanPath = cleanPath.slice(0, -1);
+  }
+
+  if (cleanPath === '/' || cleanPath === '/login' || cleanPath === '/app/login') {
     return <LoginPage />;
   }
-  if (path === '/app/profile' || path === '/profile') {
+  if (cleanPath === '/app/profile' || cleanPath === '/profile') {
     return <ProfilePage />;
   }
   
-  // Dashboard Routes with Layout Wrapper
-  let DashboardContent = <DashboardPage />;
+  const dashboardWhitelist = [
+    '/dashboard/projects', '/projects',
+    '/dashboard/bank-soal/quiz',
+    '/dashboard/bank-soal/ftb',
+    '/dashboard/bank-soal/tts',
+    '/dashboard/games', '/games',
+    '/dashboard/materi-list', '/materi-list',
+    '/dashboard/ketua'
+  ];
+
+  if (!dashboardWhitelist.includes(cleanPath)) {
+    window.location.replace('/dashboard/ketua');
+    return null;
+  }
   
-  if (path === '/dashboard/projects' || path === '/projects') {
+  // Dashboard Routes with Layout Wrapper
+  let DashboardContent = null;
+  
+  if (cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
     DashboardContent = <KetuaTimAllProjects />;
-  } else if (path === '/dashboard/bank-soal/quiz') {
+  } else if (cleanPath === '/dashboard/bank-soal/quiz') {
     DashboardContent = <BankSoalQuiz />;
-  } else if (path === '/dashboard/bank-soal/ftb') {
+  } else if (cleanPath === '/dashboard/bank-soal/ftb') {
     DashboardContent = <BankSoalFtb />;
-  } else if (path === '/dashboard/bank-soal/tts') {
+  } else if (cleanPath === '/dashboard/bank-soal/tts') {
     DashboardContent = <BankSoalTts />;
-  } else if (path === '/dashboard/games' || path === '/games') {
+  } else if (cleanPath === '/dashboard/games' || cleanPath === '/games') {
     DashboardContent = <DashboardGamesPage />;
-  } else if (path === '/dashboard/materi-list' || path === '/materi-list') {
+  } else if (cleanPath === '/dashboard/materi-list' || cleanPath === '/materi-list') {
     DashboardContent = <DashboardMateriPage />;
   }
 
