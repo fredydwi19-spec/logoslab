@@ -129,29 +129,29 @@ export const ProfilePage = () => {
 
   return (
     <div className="min-h-screen pb-20 bg-slate-50 font-sans">
-      <nav className="bg-white border-b border-slate-200 py-4 px-8 flex justify-between items-center sticky top-0 z-50">
-        <a href="/" className="flex items-center gap-2 font-bold text-xl text-[#1A237E]">
-          <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white">L</div>
-          Logos LAB
-        </a>
-        <a href={`/dashboard/${
-          (() => {
-            switch(user.role) {
-              case 'KETUA_TIM':      return 'ketua';
-              case 'PEMBUAT_GAME':   return 'game';
-              case 'PEMBUAT_MATERI': return 'materi';
-              case 'PAKAR':          return 'pakar';
-              default:               return 'user';
-            }
-          })()
-        }`} className="flex items-center gap-2 text-sm font-semibold text-[#1A237E] hover:text-orange-500 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-          </svg>
-          Dashboard
-        </a>
-      </nav>
       <main className="max-w-4xl mx-auto mt-12 px-6">
+        <div className="mb-8">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              let targetPath = '/dashboard/user';
+              switch(user.role) {
+                case 'KETUA_TIM':      targetPath = '/dashboard/ketua'; break;
+                case 'PEMBUAT_GAME':   targetPath = '/dashboard/game'; break;
+                case 'PEMBUAT_MATERI': targetPath = '/dashboard/materi'; break;
+                case 'PAKAR':          targetPath = '/dashboard/pakar'; break;
+              }
+              window.history.pushState({}, '', targetPath);
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="flex items-center gap-2 text-sm font-bold text-[#1A237E] hover:text-white hover:bg-[#1A237E] transition-all bg-white px-5 py-2.5 rounded-xl border-2 border-[#1A237E] shadow-sm inline-flex"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Kembali ke Dashboard
+          </button>
+        </div>
         <div className="flex flex-col md:flex-row gap-8">
           
           {/* Sidebar: Info Ringkas */}
