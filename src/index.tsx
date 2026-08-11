@@ -55,9 +55,13 @@ const app = new Elysia()
     let loggedIn = false;
 
     if (auth?.value) {
-      const payload = await jwt.verify(auth.value as string);
-      if (payload) {
-        loggedIn = true;
+      try {
+        const payload = await jwt.verify(auth.value as string);
+        if (payload) {
+          loggedIn = true;
+        }
+      } catch (e) {
+        loggedIn = false;
       }
     }
 
