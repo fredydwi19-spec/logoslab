@@ -140,9 +140,9 @@ export const ProfilePage = () => {
                 case 'PEMBUAT_GAME':   targetPath = '/dashboard/game'; break;
                 case 'PEMBUAT_MATERI': targetPath = '/dashboard/materi'; break;
                 case 'PAKAR':          targetPath = '/dashboard/pakar'; break;
+                default:               targetPath = '/dashboard/user'; break;
               }
-              window.history.pushState({}, '', targetPath);
-              window.dispatchEvent(new PopStateEvent('popstate'));
+              window.location.replace(targetPath);
             }}
             className="flex items-center gap-2 text-sm font-bold text-[#1A237E] hover:text-white hover:bg-[#1A237E] transition-all bg-white px-5 py-2.5 rounded-xl border-2 border-[#1A237E] shadow-sm inline-flex"
           >

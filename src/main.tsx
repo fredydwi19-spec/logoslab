@@ -4,11 +4,15 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardMateriPage } from './pages/dashboard/DashboardMateriPage';
 import { KetuaTimAllProjects } from './pages/dashboard/KetuaTimAllProjects';
+import { KetuaTimDashboard } from './components/KetuaTimDashboard';
 import { BankSoalQuiz } from './pages/dashboard/BankSoalQuiz';
 import { BankSoalFtb } from './pages/dashboard/BankSoalFtb';
 import { BankSoalTts } from './pages/dashboard/BankSoalTts';
 import { DashboardGamesPage } from './pages/dashboard/DashboardGamesPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { PembuatDashboard } from './components/PembuatDashboard';
+import { PakarDashboard } from './components/PakarDashboard';
+import { UserDashboard } from './components/UserDashboard';
 
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -53,7 +57,12 @@ const App = () => {
     '/dashboard/bank-soal/tts',
     '/dashboard/games', '/games',
     '/dashboard/materi-list', '/materi-list',
-    '/dashboard/ketua'
+    '/dashboard/ketua',
+    '/dashboard/pembuat',
+    '/dashboard/game',
+    '/dashboard/materi',
+    '/dashboard/pakar',
+    '/dashboard/user'
   ];
 
   if (!dashboardWhitelist.includes(cleanPath)) {
@@ -64,7 +73,9 @@ const App = () => {
   // Dashboard Routes with Layout Wrapper
   let DashboardContent = null;
   
-  if (cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
+  if (cleanPath === '/dashboard/ketua') {
+    DashboardContent = <KetuaTimDashboard />;
+  } else if (cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
     DashboardContent = <KetuaTimAllProjects />;
   } else if (cleanPath === '/dashboard/bank-soal/quiz') {
     DashboardContent = <BankSoalQuiz />;
@@ -72,10 +83,16 @@ const App = () => {
     DashboardContent = <BankSoalFtb />;
   } else if (cleanPath === '/dashboard/bank-soal/tts') {
     DashboardContent = <BankSoalTts />;
-  } else if (cleanPath === '/dashboard/games' || cleanPath === '/games') {
+  } else if (cleanPath === '/dashboard/game' || cleanPath === '/dashboard/games' || cleanPath === '/games') {
     DashboardContent = <DashboardGamesPage />;
-  } else if (cleanPath === '/dashboard/materi-list' || cleanPath === '/materi-list') {
+  } else if (cleanPath === '/dashboard/materi' || cleanPath === '/dashboard/materi-list' || cleanPath === '/materi-list') {
     DashboardContent = <DashboardMateriPage />;
+  } else if (cleanPath === '/dashboard/pembuat') {
+    DashboardContent = <PembuatDashboard />;
+  } else if (cleanPath === '/dashboard/pakar') {
+    DashboardContent = <PakarDashboard />;
+  } else if (cleanPath === '/dashboard/user') {
+    DashboardContent = <UserDashboard />;
   }
 
   return (

@@ -175,11 +175,14 @@ logos-lab/                          # Root project
 │   ├── components/                 # ⚛️ React.js UI Components (Baru)
 │   │   ├── Navbar.tsx              #    Navbar SPA
 │   │   ├── Sidebar.tsx             #    Sidebar navigasi SPA
-│   │   └── ButtonCTA.tsx           #    Tombol CTA utama
+│   │   ├── ButtonCTA.tsx           #    Tombol CTA utama
+│   │   ├── KetuaTimDashboard.tsx   #    Dashboard SPA Ketua Tim
+│   │   ├── PembuatDashboard.tsx    #    Dashboard SPA Pembuat (Game/Materi)
+│   │   ├── PakarDashboard.tsx      #    Dashboard SPA Pakar
+│   │   └── UserDashboard.tsx       #    Dashboard SPA User
 │   │
 │   │   ├── dashboard/              # ⚛️ React SPA Dashboard per role
 │   │   │   ├── DashboardPage.tsx   #    Wrapper & router penentu role
-│   │   │   ├── KetuaTimDashboard.tsx
 │   │   │   ├── KetuaTimAllProjects.tsx
 │   │   │   ├── MemberDashboard.tsx
 │   │   │   ├── MemberAchievements.tsx
@@ -425,7 +428,10 @@ Pencocokan rute pada React SPA (`src/main.tsx`) sebelumnya menggunakan string li
 #### Decision (Keputusan)
 1. **Path Normalization**: Seluruh string `window.location.pathname` dinormalisasi dengan mengubahnya menjadi *lowercase* dan menghapus *trailing slash* `/` (kecuali jika path utamanya memang `/`).
 2. **Whitelist Routes**: Dibuat sebuah `dashboardWhitelist` yang secara spesifik mendaftarkan rute mana saja yang valid untuk di-handle oleh React SPA di area `/dashboard`.
-3. **Global Route Guard**: Jika path yang dinormalisasi tidak terdapat dalam *whitelist*, sistem secara paksa akan melakukan *redirect* (pengalihan otomatis) ke `/dashboard/ketua`. Komponen fallback generik `DashboardPage` telah dihapus sepenuhnya.
+3. **Route Component Mapping & Porting**: 
+   - Rute role-specific kini dipetakan secara eksklusif ke komponen React SPA masing-masing: `<KetuaTimDashboard />` (`/dashboard/ketua`), `<PembuatDashboard />` (`/dashboard/pembuat`), `<PakarDashboard />` (`/dashboard/pakar`), dan `<UserDashboard />` (`/dashboard/user`). Seluruh dashboard overview ini telah di-porting sepenuhnya dari versi SSR.
+   - Komponen `src/components/Sidebar.tsx` telah disinkronisasi tampilannya secara dinamis berdasarkan `user.role` agar 100% identik dengan versi SSR (`src/views/components/Sidebar.tsx`), memastikan pengalaman hibrida yang konsisten antara *full-page load* dan *client-side navigation*.
+4. **Global Route Guard**: Jika path yang dinormalisasi tidak terdapat dalam *whitelist*, sistem secara paksa akan melakukan *redirect* (pengalihan otomatis) ke `/dashboard/ketua`. Komponen fallback generik `DashboardPage` telah dihapus sepenuhnya.
 
 #### Consequences (Konsekuensi)
 **✅ Keuntungan:**
