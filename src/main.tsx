@@ -8,6 +8,7 @@ import { BankSoalQuiz } from './pages/dashboard/BankSoalQuiz';
 import { BankSoalFtb } from './pages/dashboard/BankSoalFtb';
 import { BankSoalTts } from './pages/dashboard/BankSoalTts';
 import { DashboardGamesPage } from './pages/dashboard/DashboardGamesPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 const App = () => {
   const [path, setPath] = React.useState(window.location.pathname);
@@ -35,6 +36,9 @@ const App = () => {
   }
   if (path === '/dashboard/games' || path === '/games') {
     return <DashboardGamesPage />;
+  }
+  if (path === '/app/profile' || path === '/profile') {
+    return <ProfilePage />;
   }
   if (path === '/app' || path.startsWith('/dashboard') || path === '/app/dashboard' || path === '/') {
     if (path === '/dashboard/materi-list' || path === '/materi-list') {

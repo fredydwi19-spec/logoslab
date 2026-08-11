@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia";
 import { staticPlugin } from "@elysiajs/static";
 import { jwt } from "@elysiajs/jwt";
 import { userRoutes } from "./routes/users";
+import { apiUserRoutes } from "./routes/api_user";
 import { authRoutes } from "./routes/auth";
 import { projectRoutes } from "./routes/projects";
 import { wordSearchRoutes } from "./routes/word_search";
@@ -180,6 +181,7 @@ const app = new Elysia()
   .use(bankSoalRoutes)
   .use(bankSoalUiRoutes)
   .use(dashboardRoutes)
+  .use(apiUserRoutes)
   .group("/api/elearning", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
@@ -593,49 +595,12 @@ const app = new Elysia()
       headers: { "Content-Type": "text/html; charset=utf-8" }
     });
   })
-  .group("/profile", (app) =>
-    app
-      .onBeforeHandle(async ({ jwt, cookie, set }) => {
-        const auth = cookie.auth;
-        if (!auth?.value) return Response.redirect("/login", 302);
-        const payload = await jwt.verify(auth.value as string);
-        if (!payload) return Response.redirect("/login", 302);
-
-        set.headers["Cache-Control"] = "no-store";
-      })
-      .get("/", async ({ jwt, cookie }) => {
-        const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const [user] = await db.select().from(users).where(eq(users.id, payload.id));
-
-        return new Response(ProfilePage({ user }), {
-          headers: { "Content-Type": "text/html; charset=utf-8" }
-        });
-      })
-      .post("/update", async ({ body, jwt, cookie }) => {
-        const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const { name, competencies } = body as { name: string, competencies?: string[] };
-
-        const updateData: any = { name };
-        if (competencies) {
-          updateData.competencies = competencies.join(",");
-        }
-
-        await db.update(users).set(updateData).where(eq(users.id, payload.id));
-
-        return { success: true, message: "Profil berhasil diperbarui" };
-      })
-      .post("/onboarding", async ({ body, jwt, cookie }) => {
-        const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const { competencies } = body as { competencies: string[] };
-
-        await db.update(users).set({
-          competencies: competencies.join(","),
-          hasOnboarded: true
-        }).where(eq(users.id, payload.id));
-
-        return { success: true, message: "Onboarding berhasil" };
-      })
-  )
+  .get("/profile", async ({ jwt, cookie, set }) => {
+    // optional auth check before serving SPA or just serve app.html
+    const auth = cookie.auth;
+    if (!auth?.value) return Response.redirect("/login", 302);
+    return new Response(await Bun.file("public/app.html").text(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  })
   .get("/app", () => Bun.file("public/app.html"))
   .listen(3000);
 
