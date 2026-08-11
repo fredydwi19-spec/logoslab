@@ -17,9 +17,13 @@ export const authRoutes = new Elysia()
   .get("/login", async ({ jwt, cookie, set }) => {
     const auth = cookie.auth;
     if (auth?.value) {
-      const payload = await jwt.verify(auth.value as string);
-      if (payload) {
-        return Response.redirect("/", 302);
+      try {
+        const payload = await jwt.verify(auth.value as string);
+        if (payload) {
+          return Response.redirect("/", 302);
+        }
+      } catch (e) {
+        // ignore invalid token
       }
     }
     const file = await Bun.file("public/app.html").text();
