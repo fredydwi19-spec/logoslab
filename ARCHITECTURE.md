@@ -425,7 +425,8 @@ Pencocokan rute pada React SPA (`src/main.tsx`) sebelumnya menggunakan string li
 #### Decision (Keputusan)
 1. **Path Normalization**: Seluruh string `window.location.pathname` dinormalisasi dengan mengubahnya menjadi *lowercase* dan menghapus *trailing slash* `/` (kecuali jika path utamanya memang `/`).
 2. **Whitelist Routes**: Dibuat sebuah `dashboardWhitelist` yang secara spesifik mendaftarkan rute mana saja yang valid untuk di-handle oleh React SPA di area `/dashboard`.
-3. **Global Route Guard**: Jika path yang dinormalisasi tidak terdapat dalam *whitelist*, sistem secara paksa akan melakukan *redirect* (pengalihan otomatis) ke `/dashboard/ketua`. Komponen fallback generik `DashboardPage` telah dihapus sepenuhnya.
+3. **Route Component Mapping**: Rute role-specific (`/dashboard/ketua`, `/dashboard/game`, `/dashboard/materi`) kini dipetakan ke komponen React utama masing-masing (`KetuaTimAllProjects`, `DashboardGamesPage`, `DashboardMateriPage`) di blok render utama `main.tsx`.
+4. **Global Route Guard**: Jika path yang dinormalisasi tidak terdapat dalam *whitelist*, sistem secara paksa akan melakukan *redirect* (pengalihan otomatis) ke `/dashboard/ketua`. Komponen fallback generik `DashboardPage` telah dihapus sepenuhnya.
 
 #### Consequences (Konsekuensi)
 **✅ Keuntungan:**

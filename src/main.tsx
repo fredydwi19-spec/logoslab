@@ -68,7 +68,7 @@ const App = () => {
   // Dashboard Routes with Layout Wrapper
   let DashboardContent = null;
   
-  if (cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
+  if (cleanPath === '/dashboard/ketua' || cleanPath === '/dashboard/projects' || cleanPath === '/projects') {
     DashboardContent = <KetuaTimAllProjects />;
   } else if (cleanPath === '/dashboard/bank-soal/quiz') {
     DashboardContent = <BankSoalQuiz />;
@@ -76,10 +76,13 @@ const App = () => {
     DashboardContent = <BankSoalFtb />;
   } else if (cleanPath === '/dashboard/bank-soal/tts') {
     DashboardContent = <BankSoalTts />;
-  } else if (cleanPath === '/dashboard/games' || cleanPath === '/games') {
+  } else if (cleanPath === '/dashboard/game' || cleanPath === '/dashboard/games' || cleanPath === '/games') {
     DashboardContent = <DashboardGamesPage />;
-  } else if (cleanPath === '/dashboard/materi-list' || cleanPath === '/materi-list') {
+  } else if (cleanPath === '/dashboard/materi' || cleanPath === '/dashboard/materi-list' || cleanPath === '/materi-list') {
     DashboardContent = <DashboardMateriPage />;
+  } else if (cleanPath === '/dashboard/pakar' || cleanPath === '/dashboard/user') {
+    // Optional fallback, currently no specific SPA component for pakar or user
+    DashboardContent = <div className="p-8">Memuat dashboard...</div>;
   }
 
   return (
