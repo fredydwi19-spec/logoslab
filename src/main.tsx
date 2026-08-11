@@ -53,7 +53,11 @@ const App = () => {
     '/dashboard/bank-soal/tts',
     '/dashboard/games', '/games',
     '/dashboard/materi-list', '/materi-list',
-    '/dashboard/ketua'
+    '/dashboard/ketua',
+    '/dashboard/game',
+    '/dashboard/materi',
+    '/dashboard/pakar',
+    '/dashboard/user'
   ];
 
   if (!dashboardWhitelist.includes(cleanPath)) {
