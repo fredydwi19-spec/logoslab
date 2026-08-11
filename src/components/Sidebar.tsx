@@ -128,7 +128,7 @@ export const Sidebar = () => {
         {/* ③ KELUAR */}
         <div className="flex-shrink-0 p-4 border-t border-white/10 bg-black/30">
           <a href="/api/auth/logout"
-            className="flex items-center justify-center gap-2 w-full py-3 text-[10px] font-black text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-orange-900/50">
+            className="flex items-center justify-center gap-2 w-full py-3 text-[10px] font-black text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-red-900/50">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>

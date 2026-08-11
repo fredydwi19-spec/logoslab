@@ -10,6 +10,9 @@ import { BankSoalFtb } from './pages/dashboard/BankSoalFtb';
 import { BankSoalTts } from './pages/dashboard/BankSoalTts';
 import { DashboardGamesPage } from './pages/dashboard/DashboardGamesPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { PembuatDashboard } from './components/PembuatDashboard';
+import { PakarDashboard } from './components/PakarDashboard';
+import { UserDashboard } from './components/UserDashboard';
 
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -55,6 +58,7 @@ const App = () => {
     '/dashboard/games', '/games',
     '/dashboard/materi-list', '/materi-list',
     '/dashboard/ketua',
+    '/dashboard/pembuat',
     '/dashboard/game',
     '/dashboard/materi',
     '/dashboard/pakar',
@@ -83,9 +87,12 @@ const App = () => {
     DashboardContent = <DashboardGamesPage />;
   } else if (cleanPath === '/dashboard/materi' || cleanPath === '/dashboard/materi-list' || cleanPath === '/materi-list') {
     DashboardContent = <DashboardMateriPage />;
-  } else if (cleanPath === '/dashboard/pakar' || cleanPath === '/dashboard/user') {
-    // Optional fallback, currently no specific SPA component for pakar or user
-    DashboardContent = <div className="p-8">Memuat dashboard...</div>;
+  } else if (cleanPath === '/dashboard/pembuat') {
+    DashboardContent = <PembuatDashboard />;
+  } else if (cleanPath === '/dashboard/pakar') {
+    DashboardContent = <PakarDashboard />;
+  } else if (cleanPath === '/dashboard/user') {
+    DashboardContent = <UserDashboard />;
   }
 
   return (

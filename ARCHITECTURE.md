@@ -175,11 +175,14 @@ logos-lab/                          # Root project
 │   ├── components/                 # ⚛️ React.js UI Components (Baru)
 │   │   ├── Navbar.tsx              #    Navbar SPA
 │   │   ├── Sidebar.tsx             #    Sidebar navigasi SPA
-│   │   └── ButtonCTA.tsx           #    Tombol CTA utama
+│   │   ├── ButtonCTA.tsx           #    Tombol CTA utama
+│   │   ├── KetuaTimDashboard.tsx   #    Dashboard SPA Ketua Tim
+│   │   ├── PembuatDashboard.tsx    #    Dashboard SPA Pembuat (Game/Materi)
+│   │   ├── PakarDashboard.tsx      #    Dashboard SPA Pakar
+│   │   └── UserDashboard.tsx       #    Dashboard SPA User
 │   │
 │   │   ├── dashboard/              # ⚛️ React SPA Dashboard per role
 │   │   │   ├── DashboardPage.tsx   #    Wrapper & router penentu role
-│   │   │   ├── KetuaTimDashboard.tsx
 │   │   │   ├── KetuaTimAllProjects.tsx
 │   │   │   ├── MemberDashboard.tsx
 │   │   │   ├── MemberAchievements.tsx
