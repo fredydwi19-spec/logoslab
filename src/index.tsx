@@ -158,6 +158,7 @@ const app = new Elysia()
           children: DuelHubPage({ username, userId }),
           notifications: userNotifications,
           currentPage: "Mode Duel 1v1",
+          email: (user as any).email,
           avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
@@ -183,6 +184,7 @@ const app = new Elysia()
           children: UserJournalPage(),
           notifications: userNotifications,
           currentPage: "Jurnal Saya",
+          email: (user as any).email,
           avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
@@ -207,6 +209,7 @@ const app = new Elysia()
           children: UserGamesPage({ games }),
           notifications: userNotifications,
           currentPage: "Jelajah Game",
+          email: (user as any).email,
           avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
@@ -231,6 +234,7 @@ const app = new Elysia()
           children: UserMaterialsPage({ materials }),
           notifications: userNotifications,
           currentPage: "Materi Belajar",
+          email: (user as any).email,
           avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
@@ -279,6 +283,7 @@ const app = new Elysia()
           children: dashboardContent,
           notifications: userNotifications,
           currentPage: "Manajemen Proyek Game — Ketua Tim",
+          email: (user as any).email,
           avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
@@ -630,6 +635,7 @@ const app = new Elysia()
           children: dashboardContent,
           notifications: userNotifications,
           currentPage: aiCurrentPage,
+          email: (user as any).email,
           avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
@@ -841,11 +847,12 @@ const app = new Elysia()
 
         const htmlResponse = Layout({
           title: "Pengaturan Profil",
-          username: user.username || "",
+          username: user.name || user.username || "",
           role: user.role || "USER",
           children: ProfilePage({ user }),
           notifications: userNotifications,
           currentPage: "Pengaturan Profil",
+          email: user.email,
           avatarUrl: user.avatarUrl || user.profilePicture || undefined
         });
 

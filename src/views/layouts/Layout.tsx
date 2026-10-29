@@ -2,7 +2,7 @@ import { Sidebar } from "../components/Sidebar";
 import { FloatingChatWidget } from "../components/FloatingChatWidget";
 import { ProjectChatDrawer } from "../components/ProjectChatDrawer";
 
-export const Layout = ({ children, title, username, role, notifications = [], currentPage, avatarUrl }: { children: string; title: string; username: string; role: string; notifications?: any[]; currentPage?: string; avatarUrl?: string }) => {
+export const Layout = ({ children, title, username, role, notifications = [], currentPage, avatarUrl, email }: { children: string; title: string; username: string; role: string; notifications?: any[]; currentPage?: string; avatarUrl?: string; email?: string }) => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   // Show AI widget for all team roles (not for regular USER)
   const showChatWidget = role !== 'USER';
@@ -82,7 +82,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
                       </div>
                       <div class="flex flex-col overflow-hidden">
                         <span class="font-bold text-slate-800 text-sm truncate">${username}</span>
-                        <span class="text-slate-500 text-xs truncate">${username.toLowerCase().replace(/\\s+/g, '')}@logoslab.com</span>
+                        ${email ? `<span class="text-slate-500 text-xs truncate">${email}</span>` : ''}
                         <span class="text-[9px] font-black text-[#FF5722] mt-1 tracking-widest uppercase">${role.replace('_', ' ')}</span>
                       </div>
                     </div>

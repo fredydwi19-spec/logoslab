@@ -39,6 +39,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
       children: BankSoalQuizUI(),
       notifications: userNotifications,
       currentPage: "Bank Soal Quiz",
+      email: (user as any).email,
       avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   })
@@ -55,6 +56,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
       children: BankSoalFtbUI(),
       notifications: userNotifications,
       currentPage: "Bank Soal FTB",
+      email: (user as any).email,
       avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   })
@@ -71,6 +73,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
       children: BankSoalTtsUI(),
       notifications: userNotifications,
       currentPage: "Bank Soal TTS",
+      email: (user as any).email,
       avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   });
