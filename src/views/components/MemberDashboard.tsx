@@ -191,7 +191,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                   <!-- Game Header -->
                   <div class="bg-[#1A237E] px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
                      <div class="flex items-center gap-3 md:gap-4">
-                        <img src="/public/assets/logo-logoslab.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
+                        <img src="/public/assets/Logo-LogosLAB.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
                            <h3 class="text-xs md:text-sm font-black uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
                            <p class="text-[8px] md:text-[9px] font-bold opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>

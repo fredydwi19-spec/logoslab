@@ -28,7 +28,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
         <!-- Header -->
         <div class="bg-[#1A237E] px-5 py-2.5 flex items-center justify-between border-b-4 border-[#FFC107] shrink-0">
           <div class="flex items-center gap-3">
-            <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-8 w-auto bg-white rounded-lg p-1 shadow-sm" onerror="this.style.display='none'"/>
+            <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-8 w-auto bg-white rounded-lg p-1 shadow-sm" onerror="this.style.display='none'"/>
             <div>
               <div class="text-white font-black text-sm uppercase tracking-widest leading-none">Logos AI</div>
               <div class="text-[#FFC107] text-[9px] font-bold uppercase tracking-[0.2em] mt-0.5">Assistant</div>

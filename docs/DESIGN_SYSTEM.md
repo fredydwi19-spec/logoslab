@@ -34,7 +34,7 @@
 - **H3:** 20px, Semibold (Poppins)
 - **Isi teks:** 16px, Regular (Inter)
 - **Keterangan kecil:** 14px, Regular (Inter). Label sangat kecil (10–12px) hanya untuk badge.
-- ⚠️ `src/views/layouts/Layout.tsx` masih memakai font **Outfit**. Harus diganti ke Poppins + Inter.
+- Font dimuat di `src/views/layouts/Layout.tsx` (dashboard) dan `public/css/style.css` (halaman publik).
 
 ## 04 Jarak (Spacing)
 Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 6, 8, 12, 16`).

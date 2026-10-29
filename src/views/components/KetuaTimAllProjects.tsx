@@ -351,7 +351,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
     <div class="space-y-8" x-data="ketuaDashboard()">
       <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
         <div class="flex items-center gap-4">
-          <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
+          <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
           <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Manajemen Proyek Game</h2>
         </div>
         <div class="flex flex-wrap items-center gap-4">

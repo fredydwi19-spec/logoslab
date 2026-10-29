@@ -305,7 +305,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
       <!-- Header -->
       <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
         <div class="flex items-center gap-4">
-          <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
+          <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
           <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight" x-text="activeProject ? 'Workspace Produksi Materi' : (menuTab === 'dashboard' ? 'Dashboard Analitik' : 'Manajemen Proyek')">Workspace Konten</h2>
         </div>
         <div class="flex items-center gap-4">
