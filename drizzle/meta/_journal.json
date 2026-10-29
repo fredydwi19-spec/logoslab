@@ -15,6 +15,13 @@
       "when": 1793250219837,
       "tag": "0001_sistem_level",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1793278876834,
+      "tag": "0002_terbit_bertahap",
+      "breakpoints": true
     }
   ]
 }

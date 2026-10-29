@@ -39,6 +39,8 @@ export const projects = mysqlTable("projects", {
   status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
   passPercentage: int("pass_percentage").default(70).notNull(), // Nilai minimal (%) untuk membuka level berikutnya, ditentukan Ketua Tim
+  publishedLevelCount: int("published_level_count").default(0).notNull(), // Jumlah level yang sudah bisa dimainkan pemain
+  levelReviewStatus: mysqlEnum("level_review_status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA"]), // Alur review level baru pada game yang sudah terbit (null = tidak ada)
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
   deadline: timestamp("deadline"),
