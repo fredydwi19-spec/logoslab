@@ -38,6 +38,7 @@ export const projects = mysqlTable("projects", {
   category: varchar("category", { length: 100 }), // Matching user interests
   status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
+  passPercentage: int("pass_percentage").default(70).notNull(), // Nilai minimal (%) untuk membuka level berikutnya, ditentukan Ketua Tim
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
   deadline: timestamp("deadline"),
@@ -78,6 +79,7 @@ export const questionBank = mysqlTable("question_bank", {
   correctAnswer: mysqlEnum("correct_answer", ["A", "B", "C", "D"]).notNull(),
   difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT", "BONUS"]).notNull(),
   score: int("score").notNull(),
+  level: int("level").default(1).notNull(), // Nomor level dalam proyek, mulai dari 1
   explanation: text("explanation"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
@@ -100,6 +102,7 @@ export const gameFillTheBlank = mysqlTable("game_fill_the_blank", {
   answers: text("answers").notNull(), // JSON string: Array<{ word: string, explanation: string }>
   difficulty: mysqlEnum("difficulty", ["MUDAH", "SEDANG", "SULIT"]).notNull(),
   score: int("score").notNull(),
+  level: int("level").default(1).notNull(), // Nomor level dalam proyek, mulai dari 1
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
@@ -129,6 +132,7 @@ export const gameWordSearch = mysqlTable("game_word_search", {
   gridSize: int("grid_size").notNull(),
   difficulty: mysqlEnum("difficulty", ["EASY", "MEDIUM", "HARD"]).notNull(),
   score: int("score").notNull(),
+  level: int("level").default(1).notNull(), // Nomor level dalam proyek, mulai dari 1
   gridData: text("grid_data").notNull(), // JSON string: 2D array of characters
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
@@ -141,6 +145,7 @@ export const gameCrossword = mysqlTable("game_crossword", {
   gridSize: int("grid_size").notNull(),
   difficulty: mysqlEnum("difficulty", ["EASY", "MEDIUM", "HARD"]).notNull(),
   score: int("score").notNull(),
+  level: int("level").default(1).notNull(), // Nomor level dalam proyek, mulai dari 1
   gridData: text("grid_data").notNull(), // JSON string: matriks 2D cell object Array<Array<{letter:string, isBlack:boolean, number:number|null}>>
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
@@ -151,6 +156,7 @@ export const userScores = mysqlTable("user_scores", {
   userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
   projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
   score: int("score").notNull(),
+  level: int("level").default(1).notNull(), // Nomor level dalam proyek, mulai dari 1
   createdAt: timestamp("created_at").defaultNow(),
 });
 
