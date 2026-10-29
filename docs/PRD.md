@@ -44,6 +44,21 @@
 - **Jurnal Refleksi:** pengguna menulis refleksi pribadi atas quiz atau materi yang sudah diselesaikan.
 - **Pencapaian (achievement):** diberikan saat menyelesaikan materi teks, materi video, atau game.
 
+## 05a Fitur Berikutnya (sedang dikembangkan)
+Urutan pengerjaan: Sistem Level lebih dulu, lalu Adventure Studi Kasus.
+
+- **Sistem Level dalam game:** satu proyek game bisa berisi beberapa level dengan jenis game yang sama (Quiz, Fill the Blank, Word Search, Teka-Teki Silang, dan nanti Adventure).
+  - Ketua mengisi nilai minimal lulus level saat membuat proyek (bawaan 70%). Jumlah level per proyek tidak dibatasi.
+  - Pembuat Game mengisi soal/grid per level lewat tab "Level 1 | Level 2 | + Tambah Level". Word Search dan TTS: satu grid per level. Import Excel memakai kolom `level`.
+  - Pakar dan Ketua mereview semua level lewat Preview, lalu memakai fitur revisi proyek yang sudah ada.
+  - Pemain melihat peta level; level berikutnya terkunci sampai level sebelumnya lulus dengan nilai minimal. Level yang sudah lulus boleh diulang. Skor dicatat per level.
+  - Soal dan grid yang sudah ada otomatis menjadi Level 1; proyek dengan satu level dimainkan seperti biasa.
+- **Game Adventure Studi Kasus:** cerita bercabang tentang situasi nyata anak muda atau kisah Alkitab. Pemain memilih respons, pilihannya menentukan alur, dan di tengah cerita ada tantangan soal dari Bank Soal Quiz. Cerita berakhir dengan ending, skor, ayat, dan ajakan menulis Jurnal Refleksi.
+  - Dikerjakan sebagai proyek GAME biasa (`game_type = ADVENTURE`) dengan alur yang sama: Ketua menugaskan PIC Pembuat Game dan Pakar → Pembuat mengerjakan → Pakar (accept/revisi) → Ketua (accept/revisi) → terbit.
+  - Isi game terdiri dari scene dengan 3 jenis: **Cerita** (2–4 pilihan menuju scene lain), **Tantangan** (soal Bank Soal; jawaban benar/salah menuju scene berbeda), dan **Akhir** (ending + refleksi + ayat).
+  - Editor versi 1 berbentuk form: kartu scene dengan dropdown "menuju scene", pemeriksa otomatis (tidak ada jalan buntu, semua scene tercapai, minimal satu ending), peta alur yang bisa dilihat, dan Preview.
+  - Pakar dan Ketua mereview dengan mencoba Preview, lalu memakai fitur revisi proyek yang sudah ada (accept/revisi + catatan).
+
 ## 06 Di Luar Cakupan (belum dibuat sekarang)
 - Forum tanya pakar (Expert Insight Forum)
 - Usulan tema dari gereja/komunitas (Community Contribution)
@@ -53,7 +68,8 @@
 - Mode baca gelap / soft grey
 - Pencarian berdasarkan tema (Smart Search)
 - Formulir lapor bug & masukan
-- Jenis game baru (dibahas terpisah)
+- Jenis game baru selain Adventure: Urutkan Peristiwa, Siapa Aku?/Tebak Gambar, Peta Alkitab, Detektif/Escape Room, Eksplorasi Peta
+- Editor Adventure berbentuk peta drag & drop (versi 1 memakai editor form)
 - Aplikasi mobile Android/iOS
 
 ## 07 Ukuran Keberhasilan
