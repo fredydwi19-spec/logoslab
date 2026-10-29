@@ -9,7 +9,7 @@ import { BankSoalFtbUI } from "../views/components/BankSoalFtb";
 import { BankSoalTtsUI } from "../views/components/BankSoalTts";
 
 export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
-  .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "super-secret-key" }))
+  .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET! }))
   .onBeforeHandle(async ({ jwt, cookie, set }) => {
     const auth = cookie.auth;
     if (!auth?.value) return Response.redirect("/", 302);

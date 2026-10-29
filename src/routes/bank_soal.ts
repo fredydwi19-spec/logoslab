@@ -93,7 +93,7 @@ function guardBankSoal(user: any) {
 }
 
 export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
-  .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "super-secret-key" }))
+  .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET! }))
   .onBeforeHandle(async ({ jwt, cookie }) => {
     const auth = cookie.auth;
     if (!auth?.value) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

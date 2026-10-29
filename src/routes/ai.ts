@@ -64,7 +64,7 @@ export const aiRoutes = new Elysia({ prefix: "/api/ai" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .post("/chat", async ({ body }) => {

@@ -6,7 +6,7 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .derive(async ({ jwt, cookie }) => {

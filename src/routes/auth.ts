@@ -10,7 +10,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .post(

@@ -8,7 +8,7 @@ export const materiRoutes = new Elysia({ prefix: "/api/materi" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .derive(async ({ jwt, cookie: { auth }, set }) => {

@@ -8,7 +8,7 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .onBeforeHandle(async ({ jwt, cookie, request }) => {

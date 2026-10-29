@@ -8,7 +8,7 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .onBeforeHandle(async ({ jwt, cookie, request }) => {

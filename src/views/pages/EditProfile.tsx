@@ -111,7 +111,7 @@ export const ProfilePage = ({ user }: { user: any }) => {
                       <div class="flex items-center gap-4">
                         <label for="profile-picture" class="flex-1 cursor-pointer bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-4 text-center hover:bg-slate-100 transition-colors">
                           <span class="text-sm text-slate-500">Klik untuk unggah foto baru</span>
-                          <input type="file" id="profile-picture" name="profile_picture" class="hidden" accept="image/*">
+                          <input type="file" id="profile-picture" name="profile_picture" class="hidden" accept="image/jpeg,image/png,image/webp">
                         </label>
                       </div>
                     </div>
@@ -188,7 +188,8 @@ export const ProfilePage = ({ user }: { user: any }) => {
               alert('Profil berhasil diperbarui!');
               window.location.reload();
             } else {
-              alert('Gagal memperbarui profil.');
+              const data = await response.json().catch(() => ({}));
+              alert(data.error || 'Gagal memperbarui profil.');
             }
           } catch (error) {
             console.error(error);

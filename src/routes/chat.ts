@@ -5,11 +5,27 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import { callGemini } from "./ai";
 
+// Hanya Ketua Tim serta Pembuat dan Pakar yang ditugaskan di proyek yang boleh ikut diskusi
+async function isProjectMember(user: any, projectId: number) {
+  if (user.role === "KETUA_TIM") return true;
+  const [project] = await db.select({ idPembuat: projects.idPembuat, idPakar: projects.idPakar })
+    .from(projects)
+    .where(eq(projects.id, projectId));
+  return !!project && (project.idPembuat === user.id || project.idPakar === user.id);
+}
+
+async function getChatProjectId(chatId: number) {
+  const [chat] = await db.select({ projectId: projectChats.projectId })
+    .from(projectChats)
+    .where(eq(projectChats.id, chatId));
+  return chat?.projectId ?? null;
+}
+
 export const chatRoutes = new Elysia({ prefix: "/api/chats" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .patch("/:chatId/convert-to-task", async ({ params, jwt, cookie, set }) => {
@@ -25,6 +41,16 @@ export const chatRoutes = new Elysia({ prefix: "/api/chats" })
     }
 
     const chatId = Number(params.chatId);
+    const projectId = await getChatProjectId(chatId);
+    if (projectId === null) {
+      set.status = 404;
+      return "Not Found";
+    }
+    if (!["PAKAR", "KETUA_TIM"].includes(payload.role) || !(await isProjectMember(payload, projectId))) {
+      set.status = 403;
+      return "Forbidden";
+    }
+
     await db.update(projectChats)
       .set({ isActionable: true })
       .where(eq(projectChats.id, chatId));
@@ -45,7 +71,16 @@ export const chatRoutes = new Elysia({ prefix: "/api/chats" })
 
     const { isResolved } = body as { isResolved: boolean };
     const chatId = Number(params.chatId);
-    
+    const projectId = await getChatProjectId(chatId);
+    if (projectId === null) {
+      set.status = 404;
+      return "Not Found";
+    }
+    if (!(await isProjectMember(payload, projectId))) {
+      set.status = 403;
+      return "Forbidden";
+    }
+
     await db.update(projectChats)
       .set({ isResolved: isResolved })
       .where(eq(projectChats.id, chatId));
@@ -57,7 +92,7 @@ export const projectChatRoutes = new Elysia({ prefix: "/api/projects" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .get("/:id/chats", async ({ params, query, jwt, cookie, set }) => {
@@ -73,6 +108,11 @@ export const projectChatRoutes = new Elysia({ prefix: "/api/projects" })
     }
 
     const projectId = Number(params.id);
+    if (!(await isProjectMember(payload, projectId))) {
+      set.status = 403;
+      return "Forbidden";
+    }
+
     const contextType = (query.contextType || "GENERAL") as "GENERAL" | "QUESTION";
     const contextTargetId = query.contextTargetId ? Number(query.contextTargetId) : null;
 
@@ -118,6 +158,11 @@ export const projectChatRoutes = new Elysia({ prefix: "/api/projects" })
     }
 
     const projectId = Number(params.id);
+    if (!(await isProjectMember(payload, projectId))) {
+      set.status = 403;
+      return "Forbidden";
+    }
+
     const { message, contextType = "GENERAL", contextTargetId = null } = body as any;
 
     if (!message) {

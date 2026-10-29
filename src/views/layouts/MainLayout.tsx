@@ -20,7 +20,7 @@ export const MainLayout = ({ children, title = "Logos LAB — Edukasi Alkitab da
 </head>
 <body class="bg-[#F8FAFC]">
   ${children}
-  <script src="/public/js/main.js?v=1.4"></script>
+  <script src="/public/js/main.js?v=1.5"></script>
 </body>
 </html>
 `;

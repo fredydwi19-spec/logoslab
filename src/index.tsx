@@ -49,7 +49,7 @@ const app = new Elysia()
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .get("/", async ({ jwt, cookie: { auth } }) => {
@@ -657,7 +657,16 @@ const app = new Elysia()
     let avatarUrl = payload.avatarUrl;
     
     if (profile_picture && profile_picture.size > 0) {
-      const fileName = `avatar-${payload.id}-${Date.now()}-${profile_picture.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+      // Hanya gambar JPG/PNG/WebP maksimal 2 MB; nama file dibuat ulang agar tidak bisa menyisipkan file berbahaya
+      const allowedTypes: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+      const extension = allowedTypes[profile_picture.type];
+      if (!extension) {
+        return new Response(JSON.stringify({ error: "Foto profil harus berformat JPG, PNG, atau WebP." }), { status: 400 });
+      }
+      if (profile_picture.size > 2 * 1024 * 1024) {
+        return new Response(JSON.stringify({ error: "Ukuran foto profil maksimal 2 MB." }), { status: 400 });
+      }
+      const fileName = `avatar-${payload.id}-${Date.now()}.${extension}`;
       const path = `./public/uploads/avatars/${fileName}`;
       await Bun.write(path, profile_picture);
       avatarUrl = `/public/uploads/avatars/${fileName}`;

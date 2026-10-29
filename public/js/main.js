@@ -225,7 +225,7 @@ async function initCounters() {
   
   // 2. Fetch User Count from API
   try {
-    const response = await fetch('/users');
+    const response = await fetch('/users/count');
     if (response.ok) {
       const data = await response.json();
       if (userCountEl && data.count !== undefined) {

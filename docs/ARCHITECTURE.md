@@ -83,7 +83,7 @@ Alur terpenting: proyek konten dari dibuat sampai terbit.
   - Login: `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
   - Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
   - AI: `GEMINI_API_KEY`, `HF_TOKEN`
-  - ⚠️ `JWT_SECRET`, `GEMINI_API_KEY`, dan `HF_TOKEN` belum tercantum di `.env.example`.
+  - `JWT_SECRET` wajib diisi (buat dengan `openssl rand -hex 32`). Tanpa nilai ini server tidak mau berjalan. Server produksi harus memakai nilai yang berbeda dari laptop.
 - **Lokal:** http://localhost:3000
 - **Produksi:** **[perlu diisi]**
 

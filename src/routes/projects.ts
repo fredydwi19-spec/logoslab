@@ -8,7 +8,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .onBeforeHandle(async ({ jwt, cookie, request }) => {

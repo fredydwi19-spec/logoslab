@@ -2,13 +2,13 @@ import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
 import { users, userJournals } from "../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export const journalsRoutes = new Elysia({ prefix: "/api/journals" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET || "super-secret-key",
+      secret: process.env.JWT_SECRET!,
     })
   )
   .derive(async ({ jwt, cookie }) => {
@@ -54,7 +54,8 @@ export const journalsRoutes = new Elysia({ prefix: "/api/journals" })
     return { success: true, data: journals };
   })
   .delete("/:id", async ({ params, user }) => {
+    // Hanya pemilik jurnal yang boleh menghapus
     await db.delete(userJournals)
-      .where(eq(userJournals.id, params.id));
+      .where(and(eq(userJournals.id, params.id), eq(userJournals.userId, user.id as number)));
     return { success: true };
   });
