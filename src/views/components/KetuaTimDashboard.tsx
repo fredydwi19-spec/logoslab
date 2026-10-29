@@ -40,10 +40,13 @@ export const KetuaTimDashboard = () => {
                 if (this._chart) { this._chart.destroy(); this._chart = null; }
                 var labels = sd.labels || ['Content Velocity','Expert Responsiveness','User Engagement','Passing Rate','Category Coverage'];
                 var data   = sd.data   || [0,0,0,0,0];
+                // Di layar HP label panjang dipecah per kata agar tidak terpotong di tepi grafik
+                var isNarrow = window.innerWidth < 640;
+                var chartLabels = isNarrow ? labels.map(function (l) { return String(l).split(' '); }) : labels;
                 this._chart = new Chart(canvas, {
                   type: 'radar',
                   data: {
-                    labels: labels,
+                    labels: chartLabels,
                     datasets: [{
                       label: 'Kinerja Platform',
                       data: data,
@@ -68,7 +71,7 @@ export const KetuaTimDashboard = () => {
                         ticks: { stepSize: 25, color: '#94a3b8', font: { size: 10 }, backdropColor: 'transparent' },
                         grid: { color: 'rgba(148,163,184,0.25)' },
                         angleLines: { color: 'rgba(148,163,184,0.3)' },
-                        pointLabels: { color: '#1A237E', font: { size: 11 } }
+                        pointLabels: { color: '#1A237E', font: { size: isNarrow ? 10 : 11 } }
                       }
                     },
                     plugins: {

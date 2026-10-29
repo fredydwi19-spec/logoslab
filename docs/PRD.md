@@ -58,6 +58,7 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 
 - [x] **Tampilan dashboard di HP — sidebar:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰.
 - [x] **Tampilan dashboard di HP — Semua Proyek:** banner tersusun ke bawah, tabel bisa digeser dengan petunjuk, badge status tidak terpecah.
+- [x] **Tampilan dashboard di HP — halaman lain:** 14 halaman semua role diperiksa di lebar 390px (tanpa scroll ke samping). Petunjuk geser ditambahkan di tabel Bank Soal, proyek Pembuat Game/Materi, dan antrean Pakar; label spider chart Ketua tidak lagi terpotong.
 
 - **Sistem Level dalam game:** satu proyek game bisa berisi beberapa level dengan jenis game yang sama (Quiz, Fill the Blank, Word Search, Teka-Teki Silang, dan nanti Adventure).
   - Ketua mengisi nilai minimal lulus level saat membuat proyek (bawaan 70%). Jumlah level per proyek tidak dibatasi.

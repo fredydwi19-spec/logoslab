@@ -28,6 +28,7 @@ export const BankSoalTtsUI = () => {
 
       <!-- Table -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <p class="md:hidden px-4 pt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geser tabel ke samping <i class="bi bi-arrow-right"></i></p>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>

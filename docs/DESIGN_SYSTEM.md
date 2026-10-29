@@ -60,6 +60,7 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
   - `PUBLISHED` = Success
   - `UNPUBLISHED` = Error
   - ⚠️ Tabel Semua Proyek (`KetuaTimAllProjects.tsx`) masih memakai warna lain: DRAFT kuning, PUBLISHED abu-abu, ACCEPTED_PAKAR hijau. Perlu diseragamkan.
+- **Grafik (Chart.js):** di layar di bawah 640px, label panjang dipecah per kata (array) dan ukuran huruf label 10px agar tidak terpotong di tepi grafik (contoh: spider chart di `KetuaTimDashboard.tsx`).
 - **Modal dan panel samping:** harus berada di atas sidebar. Sidebar memakai `z-[100]`, jadi modal memakai `z-[150]` ke atas (contoh: form proyek `z-[150]`, Diskusi Proyek `z-[210]`/`z-[220]`).
 - **Jawaban Logos AI:** format Markdown sederhana (tebal, miring, poin, judul) ditampilkan rapi; teks di-escape dulu sebelum diubah menjadi HTML.
 - **Notifikasi:** pesan sukses/gagal muncul di atas halaman setelah menyimpan. Lonceng notifikasi di header dengan badge Accent.

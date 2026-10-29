@@ -678,6 +678,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             </div>
 
             <!-- Active Projects Table -->
+            <p class="md:hidden px-4 pt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geser tabel ke samping <i class="bi bi-arrow-right"></i></p>
             <div class="overflow-x-auto bg-white">
             <table class="w-full text-left">
               <thead class="bg-slate-50">
@@ -765,6 +766,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
           </div>
 
           <!-- Published Projects Table -->
+          <p class="md:hidden px-4 pt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geser tabel ke samping <i class="bi bi-arrow-right"></i></p>
           <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
             <table class="w-full text-left">
               <thead class="bg-slate-50">

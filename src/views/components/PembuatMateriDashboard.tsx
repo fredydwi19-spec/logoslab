@@ -506,6 +506,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           </div>
         </div>
 
+        <p class="md:hidden px-4 pt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geser tabel ke samping <i class="bi bi-arrow-right"></i></p>
         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
           <table class="w-full text-left bg-white">
             <thead class="bg-slate-50 border-b-2 border-slate-200">
