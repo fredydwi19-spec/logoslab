@@ -129,7 +129,6 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                      @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
                      class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-6 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
                      :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
-                   <div class="absolute inset-0 bg-[url('/public/assets/pattern-bg.png')] opacity-10"></div>
                    
                    <!-- Locked Overlay -->
                    <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
