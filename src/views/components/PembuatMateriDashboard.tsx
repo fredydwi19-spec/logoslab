@@ -390,35 +390,13 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             </div>
           </div>
 
-          <!-- SECTION 3: POPULARITY & ENGAGEMENT SHOWCASE -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Top Played Games -->
-            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-              <div class="flex items-center gap-3 mb-4">
-                <span class="h-6 w-1.5 bg-[#FFC107] rounded-full"></span>
-                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Game Paling Sering Dimainkan</h3>
-              </div>
-              <div class="space-y-3">
-                <template x-if="analytics.popularityStats.topPlayedGames.length === 0">
-                  <div class="text-xs text-slate-400 italic">Belum ada data permainan.</div>
-                </template>
-                <template x-for="(game, i) in analytics.popularityStats.topPlayedGames" :key="i">
-                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div class="flex items-center gap-3">
-                      <div class="text-lg opacity-50">🎮</div>
-                      <h4 class="text-sm font-semibold text-slate-700" x-text="game.title"></h4>
-                    </div>
-                    <div class="text-xs font-black bg-blue-100 text-blue-800 px-3 py-1 rounded-full"><span x-text="game.playCount"></span>x Dimainkan</div>
-                  </div>
-                </template>
-              </div>
-            </div>
-            
+          <!-- SECTION 3: POPULARITY (materi milik saya) -->
+          <div>
             <!-- Top Accessed Materials -->
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div class="flex items-center gap-3 mb-4">
                 <span class="h-6 w-1.5 bg-[#FF5722] rounded-full"></span>
-                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Materi Paling Sering Diakses</h3>
+                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Materi Saya Paling Sering Diakses</h3>
               </div>
               <div class="space-y-3">
                 <template x-if="analytics.popularityStats.topAccessedMaterials.length === 0">

@@ -395,15 +395,6 @@ const app = new Elysia()
               .orderBy(desc(sql`count(${gamePlayLogs.id})`))
               .limit(5);
 
-            const topAccessedRes = await db.select({ 
-              title: projects.title, 
-              accessCount: sql<number>`count(${materialAccessLogs.id})` 
-            }).from(materialAccessLogs)
-              .innerJoin(projects, eq(materialAccessLogs.projectId, projects.id))
-              .groupBy(projects.id)
-              .orderBy(desc(sql`count(${materialAccessLogs.id})`))
-              .limit(5);
-
             analyticsData = {
               globalStats: {
                 totalPublishedGames: allPublishedGames[0]?.count || 0,
@@ -418,8 +409,7 @@ const app = new Elysia()
                 speedRankedProjects
               },
               popularityStats: {
-                topPlayedGames: topPlayedRes,
-                topAccessedMaterials: topAccessedRes
+                topPlayedGames: topPlayedRes
               }
             };
           } else if (userRole === "PEMBUAT_MATERI") {
@@ -458,15 +448,6 @@ const app = new Elysia()
             const avgRevisionCount = creatorMaterials.length > 0 ? (totalRevisions / creatorMaterials.length).toFixed(1) : 0;
             
             speedRankedMaterials.sort((a, b) => a.durationMins - b.durationMins);
-            
-            const topPlayedRes = await db.select({ 
-              title: projects.title, 
-              playCount: sql<number>`count(${gamePlayLogs.id})` 
-            }).from(gamePlayLogs)
-              .innerJoin(projects, eq(gamePlayLogs.projectId, projects.id))
-              .groupBy(projects.id)
-              .orderBy(desc(sql`count(${gamePlayLogs.id})`))
-              .limit(5);
 
             const topAccessedRes = await db.select({ 
               title: projects.title, 
@@ -492,7 +473,6 @@ const app = new Elysia()
                 speedRankedMaterials
               },
               popularityStats: {
-                topPlayedGames: topPlayedRes,
                 topAccessedMaterials: topAccessedRes
               }
             };
