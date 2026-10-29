@@ -53,8 +53,9 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 - [x] Langkah 2: Ketua mengisi nilai minimal lulus di form proyek game
 - [x] Langkah 3: tab level di editor Quiz dan Fill the Blank (termasuk import CSV dengan kolom `level`, Generate Soal ke level aktif, dan cek level kosong sebelum dikirim)
 - [x] Langkah 4: satu grid per level di editor Word Search dan TTS (tab level di editor, peringatan jika pindah level sebelum disimpan, draf sementara per level di browser, cek level kosong saat dikirim)
-- [ ] Langkah 5: peta level, gembok, dan skor per level untuk pemain
-- [ ] Langkah 6: Preview per level untuk Pakar dan Ketua
+- [ ] Langkah 5: terbit bertahap (tambah level baru pada game yang sudah terbit tanpa menarik game)
+- [ ] Langkah 6: peta level, gembok, skor per level, dan "Segera hadir" untuk pemain
+- [ ] Langkah 7: Preview per level untuk Pakar dan Ketua
 
 - [x] **Tampilan dashboard di HP — sidebar:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰.
 - [x] **Tampilan dashboard di HP — Semua Proyek:** banner tersusun ke bawah, tabel bisa digeser dengan petunjuk, badge status tidak terpecah.
@@ -66,6 +67,11 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
   - Pakar dan Ketua mereview semua level lewat Preview, lalu memakai fitur revisi proyek yang sudah ada.
   - Pemain melihat peta level; level berikutnya terkunci sampai level sebelumnya lulus dengan nilai minimal. Level yang sudah lulus boleh diulang. Skor dicatat per level.
   - Soal dan grid yang sudah ada otomatis menjadi Level 1; proyek dengan satu level dimainkan seperti biasa.
+  - **Terbit bertahap:** game yang sudah terbit bisa ditambah level baru tanpa ditarik dari pemain.
+    - Proyek mencatat **jumlah level terbit** (level yang bisa dimainkan) dan **status level baru** (alur review khusus level tambahan: DRAFT → REVIEW_PAKAR → REVISI_PAKAR/ACCEPTED_PAKAR → REVIEW_KETUA/REVISI_KETUA → diterima). Status proyek tetap PUBLISHED selama proses ini.
+    - **Pembuat Game** pemilik proyek menekan "Tambah Level Baru" pada game terbitnya; Ketua mendapat notifikasi.
+    - Level yang sudah terbit **dikunci** (tidak bisa diedit); Pembuat hanya mengisi level baru, dan Pakar cukup mereview level baru.
+    - Setelah Ketua menerima, jumlah level terbit bertambah dan level baru terbuka untuk pemain. Level yang belum terbit tampil "Segera hadir" dan isinya tidak bisa diambil pemain lewat API.
 - **Game Adventure Studi Kasus:** cerita bercabang tentang situasi nyata anak muda atau kisah Alkitab. Pemain memilih respons, pilihannya menentukan alur, dan di tengah cerita ada tantangan soal dari Bank Soal Quiz. Cerita berakhir dengan ending, skor, ayat, dan ajakan menulis Jurnal Refleksi.
   - Dikerjakan sebagai proyek GAME biasa (`game_type = ADVENTURE`) dengan alur yang sama: Ketua menugaskan PIC Pembuat Game dan Pakar → Pembuat mengerjakan → Pakar (accept/revisi) → Ketua (accept/revisi) → terbit.
   - Isi game terdiri dari scene dengan 3 jenis: **Cerita** (2–4 pilihan menuju scene lain), **Tantangan** (soal Bank Soal; jawaban benar/salah menuju scene berbeda), dan **Akhir** (ending + refleksi + ayat).
