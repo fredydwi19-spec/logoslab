@@ -103,6 +103,20 @@ export const ProjectChatDrawer = () => {
             } catch (err) { console.error(err); }
           },
 
+          // Ubah format Markdown sederhana dari Gemini (tebal, miring, poin, judul) menjadi HTML.
+          // Teks di-escape lebih dulu supaya HTML dari isi pesan tidak ikut dijalankan.
+          formatAiMessage(text) {
+            return (text || '')
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/^#{1,6} (.+)$/gm, '<strong>$1</strong>')
+              .replace(/^[*] /gm, '• ')
+              .replace(/[*]{3}(.+?)[*]{3}/g, '<strong><em>$1</em></strong>')
+              .replace(/[*]{2}(.+?)[*]{2}(?![*])/g, '<strong>$1</strong>')
+              .replace(/[*]([^*]+?)[*]/g, '<em>$1</em>');
+          },
+
           scrollToBottom() {
              setTimeout(() => {
                 const container = this.$refs.chatContainer;
@@ -114,10 +128,10 @@ export const ProjectChatDrawer = () => {
     </script>
     <div x-data="projectChatDrawer()" @open-chat-drawer.window="openDrawer($event.detail.projectId, $event.detail.contextType, $event.detail.contextTargetId, $event.detail.targetName, $event.detail.userRole)">
       <!-- Slide Over Background -->
-      <div x-show="isOpen" style="display: none;" class="fixed inset-0 bg-black/50 z-50 transition-opacity" @click="closeDrawer()"></div>
+      <div x-show="isOpen" style="display: none;" class="fixed inset-0 bg-black/50 z-[210] transition-opacity" @click="closeDrawer()"></div>
       
       <!-- Drawer Panel -->
-      <div class="fixed inset-y-0 right-0 z-[60] w-full max-w-md bg-slate-50 shadow-2xl transform transition-transform duration-300 flex flex-col"
+      <div class="fixed inset-y-0 right-0 z-[220] w-full max-w-md bg-slate-50 shadow-2xl transform transition-transform duration-300 flex flex-col"
            :class="isOpen ? 'translate-x-0' : 'translate-x-full'">
            
            <!-- Header -->
@@ -161,7 +175,12 @@ export const ProjectChatDrawer = () => {
                     <!-- Chat Bubble -->
                     <div class="p-3 rounded-2xl max-w-[85%] text-sm shadow-sm"
                          :class="chat.senderRole === userRole ? 'bg-[#1A237E] text-white rounded-br-sm' : (chat.senderName === 'Logos AI' ? 'bg-purple-50 text-purple-900 border border-purple-200 rounded-bl-sm' : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm')">
-                       <p x-text="chat.message" style="white-space: pre-wrap;"></p>
+                       <template x-if="chat.senderName === 'Logos AI'">
+                          <p x-html="formatAiMessage(chat.message)" style="white-space: pre-wrap;"></p>
+                       </template>
+                       <template x-if="chat.senderName !== 'Logos AI'">
+                          <p x-text="chat.message" style="white-space: pre-wrap;"></p>
+                       </template>
                     </div>
                     
                     <!-- Action Button -->
