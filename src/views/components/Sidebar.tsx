@@ -20,9 +20,11 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
   }
 
   return `
-    <div class="sidebar w-48 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100]">
+    <!-- Di layar kecil sidebar tersembunyi dan dibuka lewat tombol menu di header (mobileNavOpen di Layout) -->
+    <div class="sidebar w-48 bg-[#1A237E] h-screen fixed left-0 top-0 flex flex-col shadow-2xl z-[100] transition-transform duration-300 max-lg:-translate-x-full" :class="{ 'max-lg:!translate-x-0': mobileNavOpen }">
       <!-- Brand Area -->
-      <div class="p-5 border-b border-white/10 flex flex-col items-center">
+      <div class="p-5 border-b border-white/10 flex flex-col items-center relative">
+        <button type="button" @click="mobileNavOpen = false" class="lg:hidden absolute top-2 right-3 text-white/60 hover:text-white text-2xl leading-none" aria-label="Tutup menu">&times;</button>
         <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-10 w-auto mb-3 bg-white p-2 rounded-lg shadow-lg"/>
         <div class="text-center">
           <span class="text-base font-bold text-white tracking-widest uppercase">LOGOS LAB</span>

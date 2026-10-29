@@ -70,7 +70,8 @@ Bootstrap Icons (`<i class="bi bi-..."></i>`). Pakai itu saja; jangan memakai em
 - HP: di bawah 640px
 - Tablet: 640–1024px
 - Desktop: di atas 1024px
-- ⚠️ Sidebar dashboard saat ini selalu tampil dengan lebar tetap, termasuk di HP. Rencana perbaikan: disembunyikan di layar kecil dan dibuka lewat tombol ☰ (lihat PRD 05a).
+- **Sidebar dashboard:** di layar 1024px ke atas selalu tampil di kiri (lebar 192px). Di bawah 1024px tersembunyi dan dibuka lewat tombol ☰ di header, tampil sebagai panel geser dengan latar gelap; ditutup dengan ✕, klik latar, atau tombol Esc. Status buka/tutup disimpan di `mobileNavOpen` pada `<body>` di `Layout.tsx`.
+- ⚠️ Belum responsif di HP: banner dan tabel di halaman Semua Proyek (judul banner tertimpa tombol; kolom Status dan Aksi tabel terpotong).
 
 ## 09 Framework CSS
 Tailwind CSS (lewat CDN) + variabel warna di `public/css/style.css`.

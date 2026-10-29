@@ -28,21 +28,25 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
       <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
       <script>window.USER_ROLE = "${role}";</script>
     </head>
-    <body class="bg-[#F8FAFC] text-slate-900">
+    <body class="bg-[#F8FAFC] text-slate-900" x-data="{ mobileNavOpen: false }" @keydown.escape.window="mobileNavOpen = false">
       <div class="flex">
         ${Sidebar({ username, role })}
-        
-        <div class="flex-1 ml-48 min-h-screen flex flex-col">
+
+        <!-- Latar gelap saat sidebar dibuka di layar kecil -->
+        <div x-show="mobileNavOpen" x-transition.opacity @click="mobileNavOpen = false" class="fixed inset-0 bg-black/50 z-[90] lg:hidden" style="display: none;"></div>
+
+        <div class="flex-1 lg:ml-48 min-w-0 min-h-screen flex flex-col">
           <!-- Main Header -->
-          <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
-            ${(title.toLowerCase() !== 'dashboard' && !title.toLowerCase().startsWith('bank soal')) ? `
-            <div class="flex items-center gap-3">
-               <div class="h-6 w-1 bg-[#FFC107] rounded-full"></div>
-               <h1 class="text-lg md:text-xl font-bold text-[#1A237E] uppercase tracking-widest leading-tight">${title}</h1>
+          <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 flex items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-3 min-w-0">
+               <button type="button" @click="mobileNavOpen = true" class="lg:hidden text-[#1A237E] text-2xl leading-none" aria-label="Buka menu"><i class="bi bi-list"></i></button>
+               ${(title.toLowerCase() !== 'dashboard' && !title.toLowerCase().startsWith('bank soal')) ? `
+               <div class="h-6 w-1 bg-[#FFC107] rounded-full shrink-0"></div>
+               <h1 class="text-lg md:text-xl font-bold text-[#1A237E] uppercase tracking-widest leading-tight truncate">${title}</h1>
+               ` : ''}
             </div>
-            ` : '<div class="flex-1"></div>'}
-            
-            <div class="flex items-center gap-8">
+
+            <div class="flex items-center gap-4 md:gap-8 shrink-0">
               <!-- Notification Center -->
               <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" class="relative text-slate-400 hover:text-[#1A237E] transition-all transform hover:scale-110">
@@ -115,7 +119,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
           </header>
 
           <!-- Main Content View -->
-          <main class="flex-1 p-6 md:p-8 leading-relaxed">
+          <main class="flex-1 p-4 md:p-8 leading-relaxed">
             ${children}
           </main>
 

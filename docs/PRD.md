@@ -56,7 +56,8 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 - [ ] Langkah 5: peta level, gembok, dan skor per level untuk pemain
 - [ ] Langkah 6: Preview per level untuk Pakar dan Ketua
 
-- **Tampilan dashboard di HP:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰. Dikerjakan setelah Sistem Level langkah 3.
+- [x] **Tampilan dashboard di HP — sidebar:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰.
+- [ ] **Tampilan dashboard di HP — isi halaman:** banner dan tabel Semua Proyek masih terpotong di HP.
 
 - **Sistem Level dalam game:** satu proyek game bisa berisi beberapa level dengan jenis game yang sama (Quiz, Fill the Blank, Word Search, Teka-Teki Silang, dan nanti Adventure).
   - Ketua mengisi nilai minimal lulus level saat membuat proyek (bawaan 70%). Jumlah level per proyek tidak dibatasi.
