@@ -52,7 +52,7 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 - [x] Langkah 1: kolom `level` dan nilai minimal lulus di database
 - [x] Langkah 2: Ketua mengisi nilai minimal lulus di form proyek game
 - [x] Langkah 3: tab level di editor Quiz dan Fill the Blank (termasuk import CSV dengan kolom `level`, Generate Soal ke level aktif, dan cek level kosong sebelum dikirim)
-- [ ] Langkah 4: satu grid per level di editor Word Search dan TTS
+- [x] Langkah 4: satu grid per level di editor Word Search dan TTS (tab level di editor, peringatan jika pindah level sebelum disimpan, draf sementara per level di browser, cek level kosong saat dikirim)
 - [ ] Langkah 5: peta level, gembok, dan skor per level untuk pemain
 - [ ] Langkah 6: Preview per level untuk Pakar dan Ketua
 

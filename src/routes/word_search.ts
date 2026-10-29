@@ -3,6 +3,7 @@ import { db } from "../db/db";
 import { projects, gameWordSearch, notifications, reviewsHistory } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
+import { toLevel } from "../utils/level";
 
 export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
   .use(
@@ -32,8 +33,8 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
     return { user: payload as any };
   })
-  // Get Word Search Details
-  .get("/:projectId", async ({ params: { projectId }, user }) => {
+  // Get Word Search Details (?level=N, bawaan Level 1)
+  .get("/:projectId", async ({ params: { projectId }, query, user }) => {
     const pid = Number(projectId);
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
@@ -43,17 +44,23 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const [gameData] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, pid));
-    
-    if (!gameData) return { success: true, data: null };
+    const level = toLevel(query.level);
+    const savedLevels = await db.select({ level: gameWordSearch.level }).from(gameWordSearch).where(eq(gameWordSearch.projectId, pid));
+    const levelCount = Math.max(0, ...savedLevels.map(r => r.level));
 
-    return { 
-      success: true, 
+    const [gameData] = await db.select().from(gameWordSearch)
+      .where(and(eq(gameWordSearch.projectId, pid), eq(gameWordSearch.level, level)));
+
+    if (!gameData) return { success: true, data: null, levelCount };
+
+    return {
+      success: true,
+      levelCount,
       data: {
         ...gameData,
         words: JSON.parse(gameData.words),
         gridData: JSON.parse(gameData.gridData)
-      } 
+      }
     };
   })
   // Save/Update Questions
@@ -78,11 +85,14 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
       return new Response(JSON.stringify({ error: "Project is read-only in current status" }), { status: 403 });
     }
 
-    // Upsert logic
-    const [existing] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, pid));
-    
+    // Upsert per level: satu grid untuk setiap level
+    const level = toLevel((body as any).level);
+    const levelFilter = and(eq(gameWordSearch.projectId, pid), eq(gameWordSearch.level, level));
+    const [existing] = await db.select().from(gameWordSearch).where(levelFilter);
+
     const values = {
         projectId: pid,
+        level,
         words: JSON.stringify(words),
         gridSize,
         difficulty,
@@ -91,7 +101,7 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     };
 
     if (existing) {
-        await db.update(gameWordSearch).set(values).where(eq(gameWordSearch.projectId, pid));
+        await db.update(gameWordSearch).set(values).where(levelFilter);
     } else {
         await db.insert(gameWordSearch).values(values);
     }

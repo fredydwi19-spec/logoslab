@@ -52,6 +52,7 @@ src/routes/                # Satu file per bagian fitur
   ai.ts                    #   Logos AI Assistant
 src/services/              # Logika bisnis yang dipakai bersama (dashboardService.ts)
 src/utils/mailer.ts        # Pengirim email
+src/utils/level.ts         # Fungsi bantu nomor level (toLevel, findMissingLevel)
 src/views/layouts/         # Kerangka halaman (Layout.tsx untuk dashboard, MainLayout.tsx untuk publik)
 src/views/components/      # Bagian tampilan: dashboard per peran, editor & player game, widget chat
 src/views/pages/           # Halaman penuh: Landing, Profil, Duel, Jurnal, Katalog game & materi
@@ -112,7 +113,8 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Upload foto profil:** hanya JPG/PNG/WebP, maksimal 2 MB, nama file dibuat ulang oleh server (`avatar-<id>-<waktu>.<ext>`).
 - **Nilai minimal lulus level:** server hanya menerima angka bulat 1–100.
 - **Simpan soal (`POST /api/projects/:id/questions`) dan Generate Soal (`POST /api/bank-soal/auto-generate`):** hanya Pembuat yang ditugaskan di proyek itu (Generate Soal juga boleh oleh Ketua).
-- **Kirim ke Pakar (Quiz & Fill the Blank):** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah).
+- **Kirim ke Pakar:** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah). Quiz & Fill the Blank: tiap level minimal 1 soal. Word Search & TTS: tiap level punya grid dengan minimal 1 kata/clue.
+- **Grid Word Search & TTS per level:** `GET /api/word-search/:id?level=N` dan `GET /api/crossword/:id?level=N` (tanpa `level` = Level 1) mengembalikan `data` level itu dan `levelCount`. Simpan (`POST .../questions`) menyertakan `level`; satu baris tabel per level. Fungsi bantu nomor level ada di `src/utils/level.ts`.
 
 ## 09 Repositori dan Alur Commit
 - **Repositori:** https://github.com/fredydwi19-spec/logoslab

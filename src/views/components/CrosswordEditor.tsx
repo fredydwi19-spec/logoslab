@@ -14,35 +14,13 @@ export const CrosswordEditorScript = () => `
           difficulty: 'MEDIUM',
           isSaving: false,
           saveStatus: 'SYNCHRONIZED', // SYNCHRONIZED, LOCAL SAVED, UPLOADING, CLOUD SYNCED
-          
+          level: 1,
+          levelCount: 1,
+          savedSnapshot: '',
+
           async init() {
             if (!this.projectId) return;
-            
-            // Load from cloud
-            const res = await fetch('/api/crossword/' + this.projectId);
-            const json = await res.json();
-            if(json.success && json.data) {
-              this.clues = json.data.clues || [];
-              this.grid = json.data.gridData || [];
-              this.gridSize = json.data.gridSize || 15;
-              this.difficulty = json.data.difficulty || 'MEDIUM';
-            } else {
-              this.clues = [{ number: 1, direction: 'ACROSS', clue: '', answer: '', startRow: 0, startCol: 0, explanation: '' }];
-              this.generateGrid();
-            }
-            
-            // LocalStorage recovery
-            const saved = localStorage.getItem('crossword_draft_' + this.projectId);
-            if(saved) {
-              const data = JSON.parse(saved);
-              if(confirm('Ditemukan perubahan yang belum tersimpan di cloud. Ingin memulihkan?')) {
-                this.clues = data.clues;
-                this.difficulty = data.difficulty;
-                this.gridSize = data.gridSize;
-                this.grid = data.grid;
-                this.saveStatus = 'LOCAL SAVED';
-              }
-            }
+            await this.loadLevel(1);
 
             this.$watch('clues', val => {
               this.localSave();
@@ -53,6 +31,64 @@ export const CrosswordEditorScript = () => `
               this.localSave();
               this.generateGrid();
             });
+          },
+
+          // --- Level: satu grid per level ---
+          draftKey() {
+            return 'crossword_draft_' + this.projectId + (this.level > 1 ? '_L' + this.level : '');
+          },
+
+          snapshot() {
+            return JSON.stringify({ clues: this.clues, difficulty: this.difficulty, gridSize: this.gridSize });
+          },
+
+          isDirty() {
+            return this.snapshot() !== this.savedSnapshot;
+          },
+
+          async loadLevel(level) {
+            const res = await fetch('/api/crossword/' + this.projectId + '?level=' + level);
+            const json = await res.json();
+            this.level = level;
+            this.levelCount = Math.max(this.levelCount, json.levelCount || 1, level);
+            if(json.success && json.data) {
+              this.clues = json.data.clues || [];
+              this.grid = json.data.gridData || [];
+              this.gridSize = json.data.gridSize || 15;
+              this.difficulty = json.data.difficulty || 'MEDIUM';
+            } else {
+              this.clues = [{ number: 1, direction: 'ACROSS', clue: '', answer: '', startRow: 0, startCol: 0, explanation: '' }];
+              this.gridSize = 15;
+              this.difficulty = 'MEDIUM';
+              this.generateGrid();
+            }
+            this.savedSnapshot = this.snapshot();
+            this.saveStatus = 'SYNCHRONIZED';
+
+            // LocalStorage recovery
+            const saved = localStorage.getItem(this.draftKey());
+            if(saved) {
+              const data = JSON.parse(saved);
+              if(confirm('Ditemukan perubahan Level ' + level + ' yang belum tersimpan di cloud. Ingin memulihkan?')) {
+                this.clues = data.clues;
+                this.difficulty = data.difficulty;
+                this.gridSize = data.gridSize;
+                this.grid = data.grid;
+                this.saveStatus = 'LOCAL SAVED';
+              } else {
+                localStorage.removeItem(this.draftKey());
+              }
+            }
+          },
+
+          async switchLevel(level) {
+            if (level === this.level) return;
+            if (this.isDirty() && !confirm('Perubahan Level ' + this.level + ' belum disimpan ke cloud (masih tersimpan sementara di browser). Tetap pindah level?')) return;
+            await this.loadLevel(level);
+          },
+
+          addLevel() {
+            this.switchLevel(this.levelCount + 1);
           },
 
           addClue() {
@@ -74,8 +110,8 @@ export const CrosswordEditorScript = () => `
           },
 
           localSave() {
-            if (!this.projectId) return;
-            localStorage.setItem('crossword_draft_' + this.projectId, JSON.stringify({
+            if (!this.projectId || !this.isDirty()) return;
+            localStorage.setItem(this.draftKey(), JSON.stringify({
               clues: this.clues,
               difficulty: this.difficulty,
               gridSize: this.gridSize,
@@ -289,12 +325,14 @@ export const CrosswordEditorScript = () => `
                   gridSize: this.gridSize,
                   difficulty: this.difficulty,
                   score: this.clues.length * (this.difficulty === 'EASY' ? 10 : this.difficulty === 'MEDIUM' ? 20 : 50),
-                  gridData: this.grid
+                  gridData: this.grid,
+                  level: this.level
                 })
               });
 
               if (res.ok) {
-                localStorage.removeItem('crossword_draft_' + this.projectId);
+                localStorage.removeItem(this.draftKey());
+                this.savedSnapshot = this.snapshot();
                 this.saveStatus = 'CLOUD SYNCED';
                 setTimeout(() => { this.saveStatus = 'SYNCHRONIZED'; }, 3000);
               } else {
@@ -329,6 +367,15 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
   return `
     <div x-data="crosswordEditor(${projectVar})" class="space-y-10 animate-in fade-in duration-500">
       <div class="w-full">
+        <!-- Tab Level: satu grid per level -->
+        <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-8">
+          <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
+          <template x-for="l in levelCount" :key="l">
+            <button type="button" @click="switchLevel(l)" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="level === l ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'" x-text="'Level ' + l"></button>
+          </template>
+          <button type="button" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
+          <span class="sm:ml-auto text-[10px] text-slate-400 font-bold">Setiap level punya grid sendiri. Simpan ke cloud sebelum pindah level.</span>
+        </div>
         <!-- Header Section -->
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6">
           <div class="flex items-center gap-4">

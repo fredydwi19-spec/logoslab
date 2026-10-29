@@ -7,6 +7,7 @@ import {
 } from "../db/schema";
 import { eq, sql, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
+import { toLevel } from "../utils/level";
 import * as XLSX from "xlsx";
 
 // ── Native CSV parser (handles quoted fields, CRLF/LF, UTF-8 BOM, semicolon/comma delimiter) ──
@@ -586,8 +587,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     }
 
     // Soal hasil generate masuk ke level yang sedang dibuka di editor (bawaan Level 1)
-    const requestedLevel = Number((body as any).level);
-    const level = Number.isInteger(requestedLevel) && requestedLevel >= 1 ? requestedLevel : 1;
+    const level = toLevel((body as any).level);
 
     try {
       if (gameType === "QUIZ") {

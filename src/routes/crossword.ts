@@ -3,6 +3,7 @@ import { db } from "../db/db";
 import { projects, gameCrossword, notifications, reviewsHistory, userScores } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
+import { toLevel } from "../utils/level";
 
 export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
   .use(
@@ -32,8 +33,8 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
     const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
     return { user: payload as any };
   })
-  // Get Crossword Details
-  .get("/:projectId", async ({ params: { projectId }, user }) => {
+  // Get Crossword Details (?level=N, bawaan Level 1)
+  .get("/:projectId", async ({ params: { projectId }, query, user }) => {
     const pid = Number(projectId);
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
@@ -42,12 +43,18 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const [gameData] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, pid));
-    
-    if (!gameData) return { success: true, data: null };
+    const level = toLevel(query.level);
+    const savedLevels = await db.select({ level: gameCrossword.level }).from(gameCrossword).where(eq(gameCrossword.projectId, pid));
+    const levelCount = Math.max(0, ...savedLevels.map(r => r.level));
 
-    return { 
-      success: true, 
+    const [gameData] = await db.select().from(gameCrossword)
+      .where(and(eq(gameCrossword.projectId, pid), eq(gameCrossword.level, level)));
+
+    if (!gameData) return { success: true, data: null, levelCount };
+
+    return {
+      success: true,
+      levelCount,
       data: {
         ...gameData,
         clues: JSON.parse(gameData.clues),
@@ -77,11 +84,14 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
       return new Response(JSON.stringify({ error: "Project is read-only in current status" }), { status: 403 });
     }
 
-    // Upsert logic
-    const [existing] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, pid));
-    
+    // Upsert per level: satu grid untuk setiap level
+    const level = toLevel((body as any).level);
+    const levelFilter = and(eq(gameCrossword.projectId, pid), eq(gameCrossword.level, level));
+    const [existing] = await db.select().from(gameCrossword).where(levelFilter);
+
     const values = {
         projectId: pid,
+        level,
         clues: JSON.stringify(clues),
         gridSize,
         difficulty,
@@ -90,7 +100,7 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
     };
 
     if (existing) {
-        await db.update(gameCrossword).set(values).where(eq(gameCrossword.projectId, pid));
+        await db.update(gameCrossword).set(values).where(levelFilter);
     } else {
         await db.insert(gameCrossword).values(values);
     }

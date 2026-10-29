@@ -3,27 +3,13 @@ import { db } from "../db/db";
 import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
+import { toLevel, findMissingLevel } from "../utils/level";
 
 // Nilai minimal lulus level: angka bulat 1–100. Kosong = pakai nilai bawaan. Tidak valid = null.
 function parsePassPercentage(value: unknown, fallback: number): number | null {
   if (value === undefined || value === null || value === "") return fallback;
   const n = Number(value);
   return Number.isInteger(n) && n >= 1 && n <= 100 ? n : null;
-}
-
-// Nomor level soal: angka bulat mulai dari 1. Selain itu dianggap Level 1.
-function toLevel(value: unknown): number {
-  const n = Number(value);
-  return Number.isInteger(n) && n >= 1 ? n : 1;
-}
-
-// Level harus berurutan tanpa celah (1, 2, 3, ...). Mengembalikan nomor level pertama yang kosong, atau null jika lengkap.
-function findMissingLevel(levels: number[]): number | null {
-  const max = Math.max(0, ...levels);
-  for (let level = 1; level <= max; level++) {
-    if (!levels.includes(level)) return level;
-  }
-  return null;
 }
 
 export const projectRoutes = new Elysia({ prefix: "/api/projects" })
@@ -172,7 +158,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         answers: JSON.parse(q.answers)
       }));
     } else if (project.gameType === "WORD_SEARCH") {
-      const [wsData] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, Number(id)));
+      const [wsData] = await db.select().from(gameWordSearch).where(eq(gameWordSearch.projectId, Number(id))).orderBy(gameWordSearch.level);
       if (wsData && wsData.words) {
         try {
           questions = JSON.parse(wsData.words);
@@ -181,7 +167,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         }
       }
     } else if (project.gameType === "CROSSWORD") {
-      const [cwData] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, Number(id)));
+      const [cwData] = await db.select().from(gameCrossword).where(eq(gameCrossword.projectId, Number(id))).orderBy(gameCrossword.level);
       if (cwData && cwData.clues) {
         try {
           questions = JSON.parse(cwData.clues);
@@ -279,6 +265,27 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         const missingLevel = findMissingLevel(rows.map(r => r.level));
         if (missingLevel !== null) {
           return new Response(JSON.stringify({ error: `Level ${missingLevel} belum berisi soal.` }), { status: 400 });
+        }
+      }
+
+      // Word Search & TTS: setiap level 1..N wajib punya grid berisi minimal satu kata/clue
+      if (project.gameType === "WORD_SEARCH" || project.gameType === "CROSSWORD") {
+        const isWordSearch = project.gameType === "WORD_SEARCH";
+        const itemName = isWordSearch ? "kata" : "clue";
+        const rows = isWordSearch
+          ? (await db.select({ level: gameWordSearch.level, items: gameWordSearch.words }).from(gameWordSearch).where(eq(gameWordSearch.projectId, projectId)))
+          : (await db.select({ level: gameCrossword.level, items: gameCrossword.clues }).from(gameCrossword).where(eq(gameCrossword.projectId, projectId)));
+        const filledLevels = rows.filter(r => {
+          try { return JSON.parse(r.items).length > 0; } catch { return false; }
+        }).map(r => r.level);
+        if (filledLevels.length === 0) {
+          return new Response(JSON.stringify({ error: `Minimal harus ada 1 ${itemName} yang disimpan sebelum dikirim.` }), { status: 400 });
+        }
+        const highestLevel = Math.max(...rows.map(r => r.level));
+        for (let level = 1; level <= highestLevel; level++) {
+          if (!filledLevels.includes(level)) {
+            return new Response(JSON.stringify({ error: `Level ${level} belum berisi ${itemName}.` }), { status: 400 });
+          }
         }
       }
 
