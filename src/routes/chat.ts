@@ -2,8 +2,16 @@ import { Elysia, t } from "elysia";
 import { db } from "../db/db";
 import { projectChats, users, projects } from "../db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
+import { jwt } from "@elysiajs/jwt";
+import { callGemini } from "./ai";
 
 export const chatRoutes = new Elysia({ prefix: "/api/chats" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET || "super-secret-key",
+    })
+  )
   .patch("/:chatId/convert-to-task", async ({ params, jwt, cookie, set }) => {
     const auth = cookie.auth;
     if (!auth?.value) {
@@ -46,6 +54,12 @@ export const chatRoutes = new Elysia({ prefix: "/api/chats" })
   });
 
 export const projectChatRoutes = new Elysia({ prefix: "/api/projects" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET || "super-secret-key",
+    })
+  )
   .get("/:id/chats", async ({ params, query, jwt, cookie, set }) => {
     const auth = cookie.auth;
     if (!auth?.value) {
@@ -143,26 +157,25 @@ export const projectChatRoutes = new Elysia({ prefix: "/api/projects" })
 
       const prompt = message.replace("@LogosAI", "").trim();
       
-      // Simulate Gemini Response (or call actual API if they have a key)
-      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const aiSender = aiUser[0];
+      if (!aiSender) {
+        set.status = 500;
+        return "Logos AI user could not be created";
+      }
+
       let aiResponseText = "Mohon maaf, saat ini AI sedang tidak tersedia.";
       try {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (apiKey) {
-          const genAI = new GoogleGenerativeAI(apiKey);
-          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          const result = await model.generateContent(`Sebagai asisten asisten Logos AI dalam platform LogosLab yang berfokus pada Theologi, mohon jawab pertanyaan ini dengan bahasa Indonesia yang ramah, ringkas dan membantu. Konteks: Project chat. Pertanyaan: ${prompt}`);
-          aiResponseText = result.response.text();
-        } else {
-            aiResponseText = "API Key Gemini tidak ditemukan.";
-        }
+        aiResponseText = await callGemini(
+          "Sebagai asisten Logos AI dalam platform LogosLab yang berfokus pada Theologi, mohon jawab pertanyaan dengan bahasa Indonesia yang ramah, ringkas dan membantu. Konteks: Project chat.",
+          prompt
+        );
       } catch(e) {
          console.error("Error calling Gemini:", e);
       }
 
       await db.insert(projectChats).values({
         projectId,
-        senderId: aiUser[0].id,
+        senderId: aiSender.id,
         contextType,
         contextTargetId,
         message: aiResponseText,

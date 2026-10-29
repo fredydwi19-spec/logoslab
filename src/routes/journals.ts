@@ -13,9 +13,8 @@ export const journalsRoutes = new Elysia({ prefix: "/api/journals" })
   )
   .derive(async ({ jwt, cookie }) => {
     const auth = cookie.auth;
-    if (!auth?.value) return { user: null };
-    const payload = await jwt.verify(auth.value as string);
-    return { user: payload || null };
+    const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
+    return { user: payload as any };
   })
   .onBeforeHandle(({ user, set }) => {
     if (!user) {

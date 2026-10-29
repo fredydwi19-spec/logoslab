@@ -19,7 +19,7 @@ function sanitizeMessage(text: string): string {
 }
 
 // ── Helper: Call Gemini API ────────────────────────────────────────────
-async function callGemini(systemPrompt: string, userMessage: string): Promise<string> {
+export async function callGemini(systemPrompt: string, userMessage: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
 

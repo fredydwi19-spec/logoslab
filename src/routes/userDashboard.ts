@@ -2,8 +2,15 @@ import { Elysia } from "elysia";
 import { db } from "../db/db";
 import { users, projects, userScores, materiReadProgress, achievements } from "../db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { jwt } from "@elysiajs/jwt";
 
 export const userDashboardRoutes = new Elysia({ prefix: "/api/user" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET || "super-secret-key",
+    })
+  )
   .get("/dashboard", async ({ jwt, cookie }) => {
     const auth = cookie.auth;
     if (!auth?.value) {
@@ -19,11 +26,11 @@ export const userDashboardRoutes = new Elysia({ prefix: "/api/user" })
     // 1. totalPlayed
     const [scoresCount] = await db.select({ count: sql<number>`count(*)` }).from(userScores).where(eq(userScores.userId, userId));
     const [materiCount] = await db.select({ count: sql<number>`count(*)` }).from(materiReadProgress).where(eq(materiReadProgress.userId, userId));
-    const totalPlayed = Number(scoresCount.count) + Number(materiCount.count);
+    const totalPlayed = Number(scoresCount?.count ?? 0) + Number(materiCount?.count ?? 0);
 
     // 2. completedCount
     const [achievementsCount] = await db.select({ count: sql<number>`count(*)` }).from(achievements).where(eq(achievements.userId, userId));
-    const completedCount = Number(achievementsCount.count);
+    const completedCount = Number(achievementsCount?.count ?? 0);
 
     // 3. totalXp & dailyStreak
     const [userData] = await db.select({ totalXp: users.totalXp, currentStreak: users.currentStreak }).from(users).where(eq(users.id, userId));
