@@ -474,21 +474,21 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
         <!-- ANALYTICS WIDGETS -->
         <template x-if="menuTab === 'dashboard' && !activeProject && analytics">
           <div class="space-y-6 mb-8">
-            <!-- SECTION 1: GLOBAL PUBLISHED METRICS -->
+            <!-- SECTION 1: PUBLISHED GAME METRICS (milik saya & seluruh platform) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="bg-gradient-to-r from-[#1A237E] to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
                 <div>
-                  <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Total Proyek Game Dipublish</p>
-                  <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalStats.totalPublishedGames"></h3>
+                  <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Game Saya Dipublish</p>
+                  <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalStats.myPublishedGames"></h3>
                 </div>
                 <div class="text-5xl opacity-80"><i class="bi bi-controller"></i></div>
               </div>
               <div class="bg-gradient-to-r from-[#FF5722] to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
                 <div>
-                  <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Proyek Materi Dipublish</p>
-                  <h3 class="text-4xl font-black" x-text="analytics.globalStats.totalPublishedMaterials"></h3>
+                  <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Game Dipublish di Platform</p>
+                  <h3 class="text-4xl font-black" x-text="analytics.globalStats.totalPublishedGames"></h3>
                 </div>
-                <div class="text-5xl opacity-80"><i class="bi bi-journal-text"></i></div>
+                <div class="text-5xl opacity-80"><i class="bi bi-globe"></i></div>
               </div>
             </div>
 

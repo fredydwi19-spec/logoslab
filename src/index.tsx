@@ -407,7 +407,8 @@ const app = new Elysia()
             analyticsData = {
               globalStats: {
                 totalPublishedGames: allPublishedGames[0]?.count || 0,
-                totalPublishedMaterials: allPublishedMaterials[0]?.count || 0
+                totalPublishedMaterials: allPublishedMaterials[0]?.count || 0,
+                myPublishedGames: creatorGames.filter(g => g.status === "PUBLISHED").length
               },
               creatorKpi: {
                 totalAssignedGames: creatorGames.length,
@@ -480,7 +481,8 @@ const app = new Elysia()
             analyticsData = {
               globalStats: {
                 totalPublishedGames: allPublishedGames[0]?.count || 0,
-                totalPublishedMaterials: allPublishedMaterials[0]?.count || 0
+                totalPublishedMaterials: allPublishedMaterials[0]?.count || 0,
+                myPublishedMaterials: creatorMaterials.filter(m => m.status === "PUBLISHED").length
               },
               creatorKpi: {
                 totalAssignedMaterials: creatorMaterials.length,
