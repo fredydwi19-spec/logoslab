@@ -111,6 +111,8 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Jurnal:** pengguna hanya bisa melihat dan menghapus jurnal miliknya sendiri.
 - **Upload foto profil:** hanya JPG/PNG/WebP, maksimal 2 MB, nama file dibuat ulang oleh server (`avatar-<id>-<waktu>.<ext>`).
 - **Nilai minimal lulus level:** server hanya menerima angka bulat 1–100.
+- **Simpan soal (`POST /api/projects/:id/questions`) dan Generate Soal (`POST /api/bank-soal/auto-generate`):** hanya Pembuat yang ditugaskan di proyek itu (Generate Soal juga boleh oleh Ketua).
+- **Kirim ke Pakar (Quiz & Fill the Blank):** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah).
 
 ## 09 Repositori dan Alur Commit
 - **Repositori:** https://github.com/fredydwi19-spec/logoslab

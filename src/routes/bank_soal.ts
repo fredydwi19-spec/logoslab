@@ -580,6 +580,14 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
       return new Response(JSON.stringify({ error: "Proyek tidak dalam status yang dapat diedit" }), { status: 403 });
     }
+    // Pembuat Game hanya boleh mengisi proyek yang ditugaskan kepadanya
+    if (user.role === "PEMBUAT_GAME" && project.idPembuat !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
+
+    // Soal hasil generate masuk ke level yang sedang dibuka di editor (bawaan Level 1)
+    const requestedLevel = Number((body as any).level);
+    const level = Number.isInteger(requestedLevel) && requestedLevel >= 1 ? requestedLevel : 1;
 
     try {
       if (gameType === "QUIZ") {
@@ -614,7 +622,8 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
           correctAnswer: q.correctAnswer,
           difficulty: q.difficulty as any,
           score: diffToScore[q.difficulty] || 10,
-          explanation: q.explanation || ""
+          explanation: q.explanation || "",
+          level
         }));
 
         await db.insert(questionBank).values(valuesToInsert as any);
@@ -650,6 +659,7 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
           answers: f.answers,
           difficulty: f.difficulty as any,
           score: diffToScore[f.difficulty] || 10,
+          level
         }));
 
         await db.insert(gameFillTheBlank).values(valuesToInsert as any);

@@ -11,6 +11,21 @@ function parsePassPercentage(value: unknown, fallback: number): number | null {
   return Number.isInteger(n) && n >= 1 && n <= 100 ? n : null;
 }
 
+// Nomor level soal: angka bulat mulai dari 1. Selain itu dianggap Level 1.
+function toLevel(value: unknown): number {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 ? n : 1;
+}
+
+// Level harus berurutan tanpa celah (1, 2, 3, ...). Mengembalikan nomor level pertama yang kosong, atau null jika lengkap.
+function findMissingLevel(levels: number[]): number | null {
+  const max = Math.max(0, ...levels);
+  for (let level = 1; level <= max; level++) {
+    if (!levels.includes(level)) return level;
+  }
+  return null;
+}
+
 export const projectRoutes = new Elysia({ prefix: "/api/projects" })
   .use(
     jwt({
@@ -117,6 +132,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       idPakar: projects.idPakar,
       category: projects.category,
       thumbnailUrl: projects.thumbnailUrl,
+      passPercentage: projects.passPercentage,
       pembuatName: users.name,
     })
     .from(projects)
@@ -148,9 +164,9 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     let questions: any[] = [];
     if (project.gameType === "QUIZ") {
-      questions = await db.select().from(questionBank).where(eq(questionBank.projectId, Number(id)));
+      questions = await db.select().from(questionBank).where(eq(questionBank.projectId, Number(id))).orderBy(questionBank.level, questionBank.id);
     } else if (project.gameType === "FILL_THE_BLANK") {
-      const qData = await db.select().from(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, Number(id)));
+      const qData = await db.select().from(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, Number(id))).orderBy(gameFillTheBlank.level, gameFillTheBlank.id);
       questions = qData.map(q => ({
         ...q,
         answers: JSON.parse(q.answers)
@@ -252,7 +268,20 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
         return new Response(JSON.stringify({ error: "Hanya proyek Draft atau Revisi yang bisa dikirim" }), { status: 400 });
       }
-      
+
+      // Quiz & Fill the Blank: setiap level 1..N wajib berisi minimal satu soal
+      if (project.gameType === "QUIZ" || project.gameType === "FILL_THE_BLANK") {
+        const table = project.gameType === "QUIZ" ? questionBank : gameFillTheBlank;
+        const rows = await db.select({ level: table.level }).from(table).where(eq(table.projectId, projectId));
+        if (rows.length === 0) {
+          return new Response(JSON.stringify({ error: "Minimal harus ada 1 soal sebelum dikirim." }), { status: 400 });
+        }
+        const missingLevel = findMissingLevel(rows.map(r => r.level));
+        if (missingLevel !== null) {
+          return new Response(JSON.stringify({ error: `Level ${missingLevel} belum berisi soal.` }), { status: 400 });
+        }
+      }
+
       // Smart Routing: If this is a revision from Chairman, go back to Chairman.
       // Otherwise, go to Expert (Pakar).
       if (project.status === "REVISI_KETUA") {
@@ -301,6 +330,10 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
       return new Response(JSON.stringify({ error: "Project is read-only" }), { status: 403 });
     }
+    // Hanya Pembuat yang ditugaskan di proyek ini yang boleh menyimpan soal
+    if (project.idPembuat !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
 
     if (project.gameType === "QUIZ") {
       // Delete existing and insert new (simple sync strategy for autosave)
@@ -317,7 +350,8 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
           correctAnswer: q.correctAnswer,
           difficulty: q.difficulty,
           score: q.difficulty === "MUDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
-          explanation: q.explanation || ""
+          explanation: q.explanation || "",
+          level: toLevel(q.level)
         }));
         await db.insert(questionBank).values(qValues as any);
       }
@@ -331,6 +365,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
           answers: JSON.stringify(q.answers), // Array of { word, explanation }
           difficulty: q.difficulty,
           score: q.difficulty === "MUDAH" ? 10 : q.difficulty === "SEDANG" ? 20 : q.difficulty === "SULIT" ? 50 : 30,
+          level: toLevel(q.level)
         }));
         await db.insert(gameFillTheBlank).values(qValues as any);
 

@@ -32,6 +32,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             userFTBAnswers: [],
             saveTimeout: null,
             stagingQuestions: [],
+            activeLevel: 1,
+            levelCount: 1,
             menuTab: new URLSearchParams(window.location.search).get('tab') || 'dashboard',
             viewMode: new URLSearchParams(window.location.search).get('view') === 'all' ? 'all' : 'active',
             myProjects: JSON.parse(document.getElementById('pembuatProjectsData').textContent || '[]'),
@@ -62,7 +64,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         totalSoal: Number(totalSoal),
                         jumlahMudah: Number(jumlahMudah),
                         jumlahSedang: Number(jumlahSedang),
-                        jumlahSulit: Number(jumlahSulit)
+                        jumlahSulit: Number(jumlahSulit),
+                        level: this.activeLevel
                      })
                   });
                   const json = await res.json();
@@ -165,8 +168,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 const res = await fetch('/api/projects/' + id);
                 const json = await res.json();
                 if (json.success) {
+                  const sameProject = this.activeProject?.id === json.data.id;
                   this.activeProject = json.data;
                   this.questions = json.data.questions || [];
+                  if (!sameProject) { this.levelCount = 1; this.activeLevel = 1; }
+                  this.syncLevels();
                   this.gameData = null;
                   this.showAuditLog = false;
                   if (this.activeProject.gameType === 'WORD_SEARCH') {
@@ -209,11 +215,43 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               el.className = "text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner transition-all duration-500 " + classes;
             },
 
+            // --- Level soal (Quiz & Fill the Blank) ---
+            levelOf(q) {
+              return Number(q.level) || 1;
+            },
+
+            syncLevels() {
+              const highest = Math.max(1, ...this.questions.map(q => this.levelOf(q)));
+              this.levelCount = Math.max(this.levelCount, highest);
+              if (this.activeLevel > this.levelCount) this.activeLevel = 1;
+            },
+
+            levelQuestionCount(level) {
+              return this.questions.filter(q => this.levelOf(q) === level).length;
+            },
+
+            questionNumberInLevel(idx) {
+              const level = this.levelOf(this.questions[idx]);
+              return this.questions.slice(0, idx + 1).filter(q => this.levelOf(q) === level).length;
+            },
+
+            addLevel() {
+              this.levelCount++;
+              this.activeLevel = this.levelCount;
+            },
+
+            removeLastLevel() {
+              if (this.levelCount > 1 && this.levelQuestionCount(this.levelCount) === 0) {
+                this.levelCount--;
+                this.activeLevel = this.levelCount;
+              }
+            },
+
             addQuestion() {
               if (this.activeProject?.gameType === 'QUIZ') {
-                this.questions.push({ question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'MUDAH', explanation: '' });
+                this.questions.push({ question: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', difficulty: 'MUDAH', explanation: '', level: this.activeLevel });
               } else if (this.activeProject?.gameType === 'FILL_THE_BLANK') {
-                this.questions.push({ fullText: '', answers: [], difficulty: 'MUDAH' });
+                this.questions.push({ fullText: '', answers: [], difficulty: 'MUDAH', level: this.activeLevel });
               }
               this.debouncedSave();
             },
@@ -263,6 +301,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 const parsed = JSON.parse(localData);
                 if (confirm('Ditemukan draf pemulihan lokal (' + new Date(parsed.timestamp).toLocaleTimeString() + '). Ingin memulihkan?')) {
                   this.questions = parsed.questions;
+                  this.syncLevels();
                   this.debouncedSave();
                 } else {
                   localStorage.removeItem('project_draft_' + id);
@@ -273,11 +312,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             downloadTemplate() {
               let header = '', dummy = '';
               if (this.activeProject.gameType === 'QUIZ') {
-                header = "question,optionA,optionB,optionC,optionD,correctAnswer,difficulty,explanation\\n";
-                dummy = "Siapa Presiden pertama RI?,Soekarno,Hatta,Soedirman,Habibie,A,MUDAH,Soekarno adalah proklamator\\n";
+                header = "question,optionA,optionB,optionC,optionD,correctAnswer,difficulty,explanation,level\\n";
+                dummy = "Siapa Presiden pertama RI?,Soekarno,Hatta,Soedirman,Habibie,A,MUDAH,Soekarno adalah proklamator,1\\n";
               } else {
-                header = "fullText,word1,explanation1,word2,explanation2\\n";
-                dummy = "Kalimat dengan [kata] kunci.,kata,Penjelasan kata tersebut,,\\n";
+                header = "fullText,word1,explanation1,word2,explanation2,level\\n";
+                dummy = "Kalimat dengan [kata] kunci.,kata,Penjelasan kata tersebut,,,1\\n";
               }
               const blob = new Blob([header + dummy], { type: 'text/csv' });
               const url = window.URL.createObjectURL(blob);
@@ -298,14 +337,17 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 for (let row of rows) {
                   if (!row.trim()) continue;
                   const cols = row.split(',');
+                  // Kolom level boleh kosong: soal masuk ke level yang sedang dibuka
+                  const levelCol = parseInt(this.activeProject.gameType === 'QUIZ' ? cols[8] : cols[5]);
+                  const level = levelCol >= 1 ? levelCol : this.activeLevel;
                   if (this.activeProject.gameType === 'QUIZ') {
                     if (cols.length < 6) continue;
-                    imported.push({ question: cols[0], optionA: cols[1], optionB: cols[2], optionC: cols[3], optionD: cols[4], correctAnswer: (cols[5] || 'A').trim().toUpperCase(), difficulty: (cols[6] || 'MUDAH').trim().toUpperCase(), explanation: cols[7] || '' });
+                    imported.push({ question: cols[0], optionA: cols[1], optionB: cols[2], optionC: cols[3], optionD: cols[4], correctAnswer: (cols[5] || 'A').trim().toUpperCase(), difficulty: (cols[6] || 'MUDAH').trim().toUpperCase(), explanation: cols[7] || '', level });
                   } else {
                     const answers = [];
                     if (cols[1] && cols[2]) answers.push({ word: cols[1], explanation: cols[2] });
                     if (cols[3] && cols[4]) answers.push({ word: cols[3], explanation: cols[4] });
-                    imported.push({ fullText: cols[0], answers, difficulty: 'MUDAH' });
+                    imported.push({ fullText: cols[0], answers, difficulty: 'MUDAH', level });
                   }
                 }
                 this.stagingQuestions = imported;
@@ -317,6 +359,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             commitStaging() {
               this.questions = [...this.questions, ...this.stagingQuestions];
               this.stagingQuestions = [];
+              this.syncLevels();
               this.debouncedSave();
             },
 
@@ -388,8 +431,14 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 if (!this.gameData || !this.gameData.words || this.gameData.words.length === 0) { alert("Minimal harus ada 1 kata di Word Search sebelum dikirim."); return; }
               } else if (this.activeProject.gameType === 'CROSSWORD') {
                 if (!this.gameData || !this.gameData.clues || this.gameData.clues.length === 0) { alert("Minimal harus ada 1 clue di Crossword sebelum dikirim."); return; }
-              } else if (this.questions.length === 0) {
-                alert("Minimal harus ada 1 soal sebelum dikirim."); return;
+              } else {
+                for (let level = 1; level <= this.levelCount; level++) {
+                  if (this.levelQuestionCount(level) === 0) {
+                    this.activeLevel = level;
+                    alert('Level ' + level + ' belum berisi soal. Isi soalnya atau hapus level tersebut.');
+                    return;
+                  }
+                }
               }
               const target = this.activeProject.status === 'REVISI_KETUA' ? 'Ketua Tim' : 'Pakar';
               if (!confirm('Kirim proyek ke ' + target + ' untuk di-review?')) return;
@@ -399,7 +448,10 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 body: JSON.stringify({ statusGiven: 'SUBMIT', feedback: 'Sent for review' })
               });
               if (res.ok) window.location.reload();
-              else alert("Gagal mengirim untuk review");
+              else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "Gagal mengirim untuk review");
+              }
             }
           }));
       });
@@ -832,6 +884,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         <div class="flex gap-4 opacity-60 font-black uppercase text-[8px]">
                            <span x-text="'TYPE: ' + (sq.question ? 'QUIZ' : 'FTB')"></span>
                            <span x-text="'DIFFICULTY: ' + (sq.difficulty || 'MUDAH')"></span>
+                           <span x-text="'LEVEL: ' + (sq.level || activeLevel)"></span>
                         </div>
                      </div>
                   </template>
@@ -886,9 +939,26 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
           </div>
 
           <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6">
+            <!-- Tab Level -->
+            <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200">
+              <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
+              <template x-for="level in levelCount" :key="level">
+                <button type="button" @click="activeLevel = level" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="activeLevel === level ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
+                  <span x-text="'Level ' + level"></span>
+                  <span class="ml-1 opacity-70" x-text="'(' + levelQuestionCount(level) + ')'"></span>
+                </button>
+              </template>
+              <button type="button" x-show="!isReadOnly()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
+              <button type="button" x-show="!isReadOnly() && levelCount > 1 && activeLevel === levelCount && levelQuestionCount(levelCount) === 0" @click="removeLastLevel()" class="px-3 py-2 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50">Hapus Level Kosong</button>
+              <span class="sm:ml-auto text-[10px] text-slate-400 font-bold" x-text="'Nilai minimal lulus tiap level: ' + (activeProject?.passPercentage ?? 70) + '%'"></span>
+            </div>
+            <div x-show="levelQuestionCount(activeLevel) === 0" class="text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 text-xs font-bold uppercase">
+              <span x-text="'Level ' + activeLevel + ' belum berisi soal.'"></span>
+            </div>
+
             <template x-for="(q, idx) in questions" :key="idx">
-              <div class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
-                <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="idx + 1"></div>
+              <div x-show="levelOf(q) === activeLevel" class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
+                <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="questionNumberInLevel(idx)"></div>
                 <button x-show="!isReadOnly()" @click="removeQuestion(idx)" class="absolute -right-3 -top-3 bg-red-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10">&times;</button>
                 
                 <!-- Quiz Editor -->
@@ -970,7 +1040,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                <div class="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-[#1A237E] group-hover:text-[#FFC107] transition-all transform group-hover:rotate-90">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
                </div>
-               TAMBAH BUTIR SOAL BARU
+               <span x-text="'Tambah butir soal baru ke Level ' + activeLevel"></span>
             </button>
 
             <div x-show="!isReadOnly()" class="pt-10 flex flex-col items-center gap-3">

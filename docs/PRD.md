@@ -51,7 +51,7 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 **Progres Sistem Level:**
 - [x] Langkah 1: kolom `level` dan nilai minimal lulus di database
 - [x] Langkah 2: Ketua mengisi nilai minimal lulus di form proyek game
-- [ ] Langkah 3: tab level di editor Quiz dan Fill the Blank
+- [x] Langkah 3: tab level di editor Quiz dan Fill the Blank (termasuk import CSV dengan kolom `level`, Generate Soal ke level aktif, dan cek level kosong sebelum dikirim)
 - [ ] Langkah 4: satu grid per level di editor Word Search dan TTS
 - [ ] Langkah 5: peta level, gembok, dan skor per level untuk pemain
 - [ ] Langkah 6: Preview per level untuk Pakar dan Ketua
@@ -60,7 +60,7 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 
 - **Sistem Level dalam game:** satu proyek game bisa berisi beberapa level dengan jenis game yang sama (Quiz, Fill the Blank, Word Search, Teka-Teki Silang, dan nanti Adventure).
   - Ketua mengisi nilai minimal lulus level saat membuat proyek (bawaan 70%). Jumlah level per proyek tidak dibatasi.
-  - Pembuat Game mengisi soal/grid per level lewat tab "Level 1 | Level 2 | + Tambah Level". Word Search dan TTS: satu grid per level. Import Excel memakai kolom `level`.
+  - Pembuat Game mengisi soal/grid per level lewat tab "Level 1 | Level 2 | + Tambah Level". Word Search dan TTS: satu grid per level. Import CSV di editor memakai kolom `level` (kosong = level yang sedang dibuka). Level harus berurutan dan tidak boleh kosong saat dikirim ke Pakar.
   - Pakar dan Ketua mereview semua level lewat Preview, lalu memakai fitur revisi proyek yang sudah ada.
   - Pemain melihat peta level; level berikutnya terkunci sampai level sebelumnya lulus dengan nilai minimal. Level yang sudah lulus boleh diulang. Skor dicatat per level.
   - Soal dan grid yang sudah ada otomatis menjadi Level 1; proyek dengan satu level dimainkan seperti biasa.
