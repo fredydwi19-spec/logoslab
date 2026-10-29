@@ -39,7 +39,7 @@
 - **Materi:** artikel bersection, glosarium, dan lampiran PDF/PPT/gambar/video/embed (Pembuat Materi), dengan pelacak progres baca (Pengguna).
 - **Thumbnail otomatis dengan AI:** membuat gambar sampul proyek dari judulnya (Ketua, Pembuat).
 - **Logos AI Assistant:** chat tanya-jawab dengan AI (Google Gemini) (semua peran).
-- **Dashboard per peran:** KPI tim untuk Ketua; daftar proyek untuk Pembuat dan Pakar; progres, pencapaian, dan spider chart kemampuan untuk Pengguna.
+- **Dashboard per peran:** KPI tim untuk Ketua; daftar proyek untuk Pembuat dan Pakar; progres, pencapaian, dan spider chart kemampuan untuk Pengguna. Kartu "Total Proyek Game/Materi Dipublish" di dashboard Pembuat dan Pakar menampilkan total seluruh platform. Leaderboard Top 5 di dashboard Pengguna hanya berisi pemain (role USER), diurutkan dari XP tertinggi.
 - **Onboarding minat:** pengguna memilih minat (Biblical Knowledge, Eksegesis & Hermeneutik, Biblical Theory, Homiletika, Apologetika, Lainnya), lalu game yang disarankan menyesuaikan.
 - **Quiz Duel:** pengguna menantang pengguna lain mengerjakan quiz yang sama; skor dan waktu dibandingkan.
 - **Jurnal Refleksi:** pengguna menulis refleksi pribadi atas quiz atau materi yang sudah diselesaikan.

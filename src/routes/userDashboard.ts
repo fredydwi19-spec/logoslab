@@ -63,13 +63,14 @@ export const userDashboardRoutes = new Elysia({ prefix: "/api/user" })
     .where(eq(projects.status, "PUBLISHED"))
     .limit(4);
 
-    // 6. leaderboard
+    // 6. leaderboard (hanya pemain, bukan akun tim)
     const leaderboard = await db.select({
       name: users.name,
       avatarUrl: users.avatarUrl,
       totalXp: users.totalXp
     })
     .from(users)
+    .where(eq(users.role, "USER"))
     .orderBy(desc(users.totalXp))
     .limit(5);
 
