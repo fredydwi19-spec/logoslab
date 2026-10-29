@@ -48,6 +48,7 @@ src/routes/                # Satu file per bagian fitur
   chat.ts                  #   Diskusi Proyek
   quizDuels.ts             #   Quiz Duel
   journals.ts              #   Jurnal Refleksi
+  levels.ts                #   Peta level pemain & penilaian skor per level
   userDashboard.ts         #   data dashboard pengguna
   ai.ts                    #   Logos AI Assistant
 src/services/              # Logika bisnis yang dipakai bersama (dashboardService.ts)
@@ -122,6 +123,10 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Isi game yang belum terbit:** detail proyek, Word Search, dan TTS hanya bisa dibuka anggota tim proyek jika belum terbit; pemain hanya menerima level yang sudah terbit.
 - **Level terbit dikunci:** simpan soal, simpan grid, dan Generate Soal menolak level ≤ `published_level_count` ("Level N sudah terbit dan dikunci").
 - **Tambah Level Baru:** hanya Pembuat Game pemilik proyek, hanya pada game `PUBLISHED`, dan tidak bisa dimulai dua kali.
+- **Skor level dihitung di server:** `POST /api/projects/:id/levels/:level/finish` menerima jawaban (Quiz: `answers {idSoal: "A"}`, FTB: `answers {idSoal: ["kata"]}`, Word Search: `foundWords`, TTS: `answers {indeksClue: "JAWABAN"}`), menilai di server, lalu menyimpan ke `user_scores` (kolom `level`). Angka skor dari browser diabaikan. Perlu login; level hanya bisa disimpan jika sudah terbit dan terbuka (Level 1, atau level sebelumnya lulus dengan nilai ≥ `pass_percentage`).
+- **Peta level:** `GET /api/projects/:id/progress` (publik) mengembalikan tiap level terbit: `maxScore`, `bestScore`, `percent`, `passed`, `unlocked`, ditambah `upcoming` (ada level baru sedang direview). Tanpa login hanya Level 1 yang terbuka.
+- **Hapus proyek** ikut menghapus skor pemain (`user_scores`) proyek itu.
+- ⚠️ Hapus proyek belum ikut menghapus `achievements`, `materi_read_progress`, `quiz_duels`, dan `user_journals` yang merujuk proyek; jika data itu ada, penghapusan gagal karena relasi database.
 - **Simpan soal (`POST /api/projects/:id/questions`) dan Generate Soal (`POST /api/bank-soal/auto-generate`):** hanya Pembuat yang ditugaskan di proyek itu (Generate Soal juga boleh oleh Ketua).
 - **Kirim ke Pakar:** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah). Quiz & Fill the Blank: tiap level minimal 1 soal. Word Search & TTS: tiap level punya grid dengan minimal 1 kata/clue.
 - **Grid Word Search & TTS per level:** `GET /api/word-search/:id?level=N` dan `GET /api/crossword/:id?level=N` (tanpa `level` = Level 1) mengembalikan `data` level itu dan `levelCount`. Simpan (`POST .../questions`) menyertakan `level`; satu baris tabel per level. Fungsi bantu nomor level ada di `src/utils/level.ts`.

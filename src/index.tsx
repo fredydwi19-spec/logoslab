@@ -15,6 +15,7 @@ import { chatRoutes, projectChatRoutes } from "./routes/chat";
 import { userDashboardRoutes } from "./routes/userDashboard";
 import { quizDuelsRoutes } from "./routes/quizDuels";
 import { journalsRoutes } from "./routes/journals";
+import { levelRoutes } from "./routes/levels";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
@@ -108,6 +109,7 @@ const app = new Elysia()
   .use(userDashboardRoutes)
   .use(quizDuelsRoutes)
   .use(journalsRoutes)
+  .use(levelRoutes)
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {

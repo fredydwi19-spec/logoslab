@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
 import { eq, and, desc, inArray, gte } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
@@ -618,6 +618,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     // Delete dependent records first to avoid foreign key constraints
     await db.delete(notifications).where(eq(notifications.projectId, projectId));
     await db.delete(reviewsHistory).where(eq(reviewsHistory.projectId, projectId));
+    await db.delete(userScores).where(eq(userScores.projectId, projectId));
     await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
     await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
     await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));

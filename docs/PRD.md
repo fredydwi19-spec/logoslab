@@ -59,6 +59,9 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
   - [x] 5c: tampilan (tombol "+ Tambah Level" di tabel proyek Pembuat Game, level terbit bergembok di editor Quiz/FTB/Word Search/TTS, badge "LEVEL BARU: …" dan tombol Review di antrean Pakar & tabel Ketua)
   - Menu sidebar **"Proyek Terbit"** untuk Pembuat Game (`/dashboard/pembuat?tab=projects&view=all`) dan Pakar (`/dashboard/pakar?tab=projects&view=all`) membuka tabel "Proyek Telah Dipublikasikan"; tombol "+ Tambah Level" juga ada di sana.
 - [ ] Langkah 6: peta level, gembok, skor per level, dan "Segera hadir" untuk pemain
+  - [x] 6a: server menghitung dan menyimpan skor per level (Quiz, FTB, Word Search, TTS), gembok dicek di server
+  - [ ] 6b: halaman `/play` menampilkan peta level, hasil per level, dan TTS bisa dimainkan
+  - Pengunjung tanpa login hanya bisa memainkan Level 1; menyimpan skor dan membuka level berikutnya perlu login.
 - [ ] Langkah 7: Preview per level untuk Pakar dan Ketua
 
 - [x] **Tampilan dashboard di HP — sidebar:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰.
