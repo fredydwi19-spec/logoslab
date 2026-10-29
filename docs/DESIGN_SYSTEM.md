@@ -59,6 +59,8 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
   - `ACCEPTED_PAKAR` = Highlight (teks Primary)
   - `PUBLISHED` = Success
   - `UNPUBLISHED` = Error
+- **Modal dan panel samping:** harus berada di atas sidebar. Sidebar memakai `z-[100]`, jadi modal memakai `z-[150]` ke atas (contoh: form proyek `z-[150]`, Diskusi Proyek `z-[210]`/`z-[220]`).
+- **Jawaban Logos AI:** format Markdown sederhana (tebal, miring, poin, judul) ditampilkan rapi; teks di-escape dulu sebelum diubah menjadi HTML.
 - **Notifikasi:** pesan sukses/gagal muncul di atas halaman setelah menyimpan. Lonceng notifikasi di header dengan badge Accent.
 
 ## 07 Ikon
@@ -68,6 +70,7 @@ Bootstrap Icons (`<i class="bi bi-..."></i>`). Pakai itu saja; jangan memakai em
 - HP: di bawah 640px
 - Tablet: 640–1024px
 - Desktop: di atas 1024px
+- ⚠️ Sidebar dashboard saat ini selalu tampil dengan lebar tetap, termasuk di HP. Rencana perbaikan: disembunyikan di layar kecil dan dibuka lewat tombol ☰ (lihat PRD 05a).
 
 ## 09 Framework CSS
 Tailwind CSS (lewat CDN) + variabel warna di `public/css/style.css`.

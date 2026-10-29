@@ -26,6 +26,8 @@ File ini berisi aturan bagi AI coding agent (Claude Code, Cursor, Codex) yang be
 - Tangani semua keadaan: sedang memuat, berhasil, gagal, dan data kosong.
 - Semua halaman wajib responsif (bisa dipakai di HP).
 - Perubahan struktur database lewat migration, bukan diubah langsung.
+- Tampilkan `name` (nama tampilan) kepada pengguna, bukan `username`. `username` hanya dipakai untuk login (huruf kecil tanpa spasi). Tampilkan email asli dari database, jangan dikarang.
+- Setiap pekerjaan yang selesai wajib dicatat di dokumen `docs/` yang relevan pada commit yang sama: fitur dan progres di `PRD.md`, struktur/keamanan di `ARCHITECTURE.md`, tampilan di `DESIGN_SYSTEM.md`, aturan kerja di file ini.
 
 ## 06 Keamanan (berdasarkan OWASP Top 10:2025)
 - **Hak akses:** setiap halaman dan aksi wajib dicek di server, bukan hanya disembunyikan tombolnya. Pengguna tidak boleh melihat atau mengubah data milik unit/pengguna lain.

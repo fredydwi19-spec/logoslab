@@ -56,7 +56,7 @@ src/views/layouts/         # Kerangka halaman (Layout.tsx untuk dashboard, MainL
 src/views/components/      # Bagian tampilan: dashboard per peran, editor & player game, widget chat
 src/views/pages/           # Halaman penuh: Landing, Profil, Duel, Jurnal, Katalog game & materi
 src/__tests__/             # Tes (bun test)
-drizzle/                   # File migrasi database (dibuat otomatis oleh drizzle-kit)
+drizzle/                   # File migrasi database (dibuat otomatis oleh drizzle-kit), dimulai dari 0000_baseline.sql
 public/assets/             # Logo dan gambar resmi
 public/css/, public/js/    # CSS dan JS global
 public/uploads/            # File yang diunggah pengguna (foto profil)
@@ -98,11 +98,21 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 ## 07 Pertumbuhan Aplikasi
 - Satu fitur = satu file di `src/routes/` (API) + komponen di `src/views/`. Jangan menumpuk semua fitur di `src/index.tsx`.
 - Ubah struktur database hanya lewat `src/db/schema.ts` → `bun run db:generate` → `bun run db:migrate`. Jangan membuat tabel lewat skrip SQL manual atau langsung di phpMyAdmin.
+- Riwayat migrasi dimulai ulang pada 29 Okt 2026 dengan `drizzle/0000_baseline.sql` (seluruh struktur database saat itu). Database baru (misalnya di server) cukup dibuat kosong lalu jalankan `bun run db:migrate`.
+- Jangan memakai `drizzle-kit push`: perintah itu akan menghapus tabel yang tidak ada di `schema.ts`. Database laptop masih menyimpan 8 tabel sisa versi Agustus (`tags`, `user_badges`, dll.) yang sengaja dibiarkan.
 - Jangan mengubah kode lewat skrip tambal (`fix_*.cjs`) yang menimpa baris tertentu. Ubah file sumbernya langsung.
 - Data yang akan dihitung (skor, durasi, benar/salah) disimpan di kolom biasa, bukan sebagai teks JSON.
 - Jangan menambah library, framework, atau layanan baru tanpa memperbarui file ini.
 
-## 08 Repositori dan Alur Commit
+## 08 Aturan Keamanan yang Sudah Diterapkan
+- **Login:** JWT di cookie `auth`, ditandatangani dengan `JWT_SECRET` dari `.env` (wajib; tidak ada nilai cadangan di kode). Isi sesi: `id`, `role`, `username`, `name`, `email`, `avatarUrl`.
+- **`/users`:** hanya Ketua Tim (login + role dicek di server). Hash password tidak pernah dikirim. `/users/count` publik, hanya berisi jumlah pengguna.
+- **Diskusi Proyek (`/api/projects/:id/chats`, `/api/chats/*`):** hanya Ketua serta Pembuat/Pakar yang ditugaskan di proyek. Ubah komentar menjadi catatan revisi hanya Pakar dan Ketua.
+- **Jurnal:** pengguna hanya bisa melihat dan menghapus jurnal miliknya sendiri.
+- **Upload foto profil:** hanya JPG/PNG/WebP, maksimal 2 MB, nama file dibuat ulang oleh server (`avatar-<id>-<waktu>.<ext>`).
+- **Nilai minimal lulus level:** server hanya menerima angka bulat 1–100.
+
+## 09 Repositori dan Alur Commit
 - **Repositori:** https://github.com/fredydwi19-spec/logoslab
 - **Branch kerja:** `main` (satu-satunya branch aktif). Branch `arsip/main-agustus` adalah cadangan versi Agustus 2026.
 - **Alur:** kerjakan fitur → cek di browser → commit dengan judul fitur → push ke `main`. Tanpa issue dan pull request. Aturan lengkap ada di `AGENTS.md` bagian 10.

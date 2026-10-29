@@ -32,7 +32,8 @@
 ## 05 Fitur Inti (Versi 1 — sudah dibuat)
 - **Login & pendaftaran:** daftar dengan email + verifikasi lewat email, atau login dengan Google (semua peran).
 - **Manajemen proyek berstatus:** proyek game/materi bergerak dari DRAFT → review Pakar → review Ketua → PUBLISHED, dengan riwayat review dan notifikasi otomatis (Ketua, Pembuat, Pakar).
-- **Diskusi Proyek:** komentar per proyek atau per soal, bisa diubah menjadi tugas lalu ditandai selesai (Ketua, Pembuat, Pakar).
+- **Diskusi Proyek:** komentar per proyek atau per soal, bisa diubah menjadi tugas lalu ditandai selesai. Hanya Ketua serta Pembuat dan Pakar yang ditugaskan di proyek itu yang bisa membuka dan menulis. "Jadikan Catatan Revisi" hanya untuk Pakar dan Ketua. Ketik `@LogosAI` di awal pesan untuk jawaban AI.
+- **Kelola data akun (API `/users`):** hanya Ketua Tim. Halaman publik hanya bisa melihat jumlah pengguna.
 - **Game Quiz, Fill the Blank, Word Search, Teka-Teki Silang:** editor untuk Pembuat Game, player untuk Pengguna.
 - **Bank Soal:** kumpulan soal Quiz/FTB/TTS, impor dari Excel, dan isi otomatis ke proyek game (Ketua, Pembuat Game).
 - **Materi:** artikel bersection, glosarium, dan lampiran PDF/PPT/gambar/video/embed (Pembuat Materi), dengan pelacak progres baca (Pengguna).
@@ -45,7 +46,17 @@
 - **Pencapaian (achievement):** diberikan saat menyelesaikan materi teks, materi video, atau game.
 
 ## 05a Fitur Berikutnya (sedang dikembangkan)
-Urutan pengerjaan: Sistem Level lebih dulu, lalu Adventure Studi Kasus.
+Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu Adventure Studi Kasus.
+
+**Progres Sistem Level:**
+- [x] Langkah 1: kolom `level` dan nilai minimal lulus di database
+- [x] Langkah 2: Ketua mengisi nilai minimal lulus di form proyek game
+- [ ] Langkah 3: tab level di editor Quiz dan Fill the Blank
+- [ ] Langkah 4: satu grid per level di editor Word Search dan TTS
+- [ ] Langkah 5: peta level, gembok, dan skor per level untuk pemain
+- [ ] Langkah 6: Preview per level untuk Pakar dan Ketua
+
+- **Tampilan dashboard di HP:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰. Dikerjakan setelah Sistem Level langkah 3.
 
 - **Sistem Level dalam game:** satu proyek game bisa berisi beberapa level dengan jenis game yang sama (Quiz, Fill the Blank, Word Search, Teka-Teki Silang, dan nanti Adventure).
   - Ketua mengisi nilai minimal lulus level saat membuat proyek (bawaan 70%). Jumlah level per proyek tidak dibatasi.
