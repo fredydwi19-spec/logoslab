@@ -60,6 +60,9 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
   - `PUBLISHED` = Success
   - `UNPUBLISHED` = Error
   - ⚠️ Tabel Semua Proyek (`KetuaTimAllProjects.tsx`) masih memakai warna lain: DRAFT kuning, PUBLISHED abu-abu, ACCEPTED_PAKAR hijau. Perlu diseragamkan.
+  - Game terbit yang sedang menambah level tampil dengan label "LEVEL BARU: <status>" dan warna mengikuti status level baru tersebut (fungsi `statusLabel` dan `workflowStatus` di tiap dashboard).
+- **Level terkunci (sudah terbit):** tab level diberi ikon gembok (`bi-lock-fill`) atau tulisan "· terbit", dan di atas editor tampil kotak hijau "Level N sudah terbit dan sedang dimainkan, jadi tidak bisa diubah." Tombol simpan dan tambah soal disembunyikan di level itu.
+- **Tombol "+ Tambah Level":** tombol garis oranye (latar putih, border dan teks Accent) di kolom Aksi tabel proyek Pembuat Game.
 - **Grafik (Chart.js):** di layar di bawah 640px, label panjang dipecah per kata (array) dan ukuran huruf label 10px agar tidak terpotong di tepi grafik (contoh: spider chart di `KetuaTimDashboard.tsx`).
 - **Modal dan panel samping:** harus berada di atas sidebar. Sidebar memakai `z-[100]`, jadi modal memakai `z-[150]` ke atas (contoh: form proyek `z-[150]`, Diskusi Proyek `z-[210]`/`z-[220]`).
 - **Jawaban Logos AI:** format Markdown sederhana (tebal, miring, poin, judul) ditampilkan rapi; teks di-escape dulu sebelum diubah menjadi HTML.

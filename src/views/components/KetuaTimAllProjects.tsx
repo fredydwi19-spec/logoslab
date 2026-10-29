@@ -74,7 +74,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                 return (p.type === 'MATERI' ? p.materiType : p.gameType) === value;
               }
               if (key === 'status') {
-                return p.status === value;
+                return this.workflowStatus(p) === value;
               }
               if (key === 'deadline') {
                 if (!p.deadline) return false;
@@ -87,6 +87,16 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               }
               return false;
             });
+          },
+
+          // Status kerja: untuk game terbit yang sedang menambah level, yang dipakai adalah status level baru
+          workflowStatus(p) {
+            return p && p.status === 'PUBLISHED' && p.levelReviewStatus ? p.levelReviewStatus : p?.status;
+          },
+
+          statusLabel(p) {
+            if (p.status === 'PUBLISHED' && p.levelReviewStatus) return 'LEVEL BARU: ' + p.levelReviewStatus.replace(/_/g, ' ');
+            return p.status.replace(/_/g, ' ');
           },
 
           getUserName(id) {
@@ -481,15 +491,15 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   <td class="px-6 py-5">
                     <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
                       :class="{
-                        'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
-                        'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',
-                        'bg-orange-100 text-orange-800 border border-orange-200': p.status === 'REVISI_PAKAR',
-                        'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR',
-                        'bg-indigo-100 text-indigo-800 border border-indigo-200': p.status === 'REVIEW_KETUA',
-                        'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_KETUA',
-                        'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'UNPUBLISHED' || p.status === 'PUBLISHED',
+                        'bg-yellow-100 text-yellow-800 border border-yellow-200': workflowStatus(p) === 'DRAFT',
+                        'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR',
+                        'bg-orange-100 text-orange-800 border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR',
+                        'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                        'bg-indigo-100 text-indigo-800 border border-indigo-200': workflowStatus(p) === 'REVIEW_KETUA',
+                        'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'REVISI_KETUA',
+                        'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'UNPUBLISHED' || workflowStatus(p) === 'PUBLISHED',
                       }"
-                      x-text="p.status.replace(/_/g, ' ')">
+                      x-text="statusLabel(p)">
                     </span>
                   </td>
                   <td class="px-6 py-5 align-middle">

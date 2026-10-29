@@ -105,7 +105,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 }
                 if (key === 'status') {
                   if (!value) return false;
-                  return p.status === value;
+                  return this.workflowStatus(p) === value;
                 }
                 if (key === 'deadline') {
                   if (!p.deadline) return false;
@@ -120,6 +120,16 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
               });
             },
           allProjects: JSON.parse(document.getElementById('pakarProjectsData').textContent || '[]'),
+          // Status kerja: untuk game terbit yang sedang menambah level, yang dipakai adalah status level baru
+          workflowStatus(p) {
+            return p && p.status === 'PUBLISHED' && p.levelReviewStatus ? p.levelReviewStatus : p?.status;
+          },
+
+          statusLabel(p) {
+            if (p.status === 'PUBLISHED' && p.levelReviewStatus) return 'LEVEL BARU: ' + p.levelReviewStatus.replace(/_/g, ' ');
+            return p.status.replace(/_/g, ' ');
+          },
+
           getUserName(id) {
             const u = this.allUsers.find(u => u.id === id);
             return u ? u.name : '-';
@@ -655,15 +665,15 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                       <span class="text-sm md:text-base font-medium text-slate-700" x-text="getUserName(p.idPembuat)"></span>
                     </td>
                     <td class="px-6 py-2.5">
-                      <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                      <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
                         :class="{
-                          'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',
-                          'bg-orange-100 text-orange-800 border border-orange-200': p.status === 'REVISI_PAKAR',
-                          'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR',
-                          'bg-indigo-100 text-indigo-800 border border-indigo-200': p.status === 'REVIEW_KETUA',
-                          'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_KETUA',
+                          'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR',
+                          'bg-orange-100 text-orange-800 border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR',
+                          'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                          'bg-indigo-100 text-indigo-800 border border-indigo-200': workflowStatus(p) === 'REVIEW_KETUA',
+                          'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'REVISI_KETUA',
                         }"
-                        x-text="p.status.replace(/_/g, ' ')">
+                        x-text="statusLabel(p)">
                       </span>
                     </td>
                     <td class="px-6 py-2.5 align-middle">
@@ -671,9 +681,9 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                         <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                         </button>
-                        <button x-show="!['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(p.status)" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
-                        <button x-show="p.status === 'REVIEW_PAKAR'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">REVIEW</button>
-                        <button x-show="p.status === 'REVISI_PAKAR'" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">LIHAT REVISI</button>
+                        <button x-show="!['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(workflowStatus(p))" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
+                        <button x-show="workflowStatus(p) === 'REVIEW_PAKAR'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">REVIEW</button>
+                        <button x-show="workflowStatus(p) === 'REVISI_PAKAR'" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">LIHAT REVISI</button>
                       </div>
                     </td>
                   </tr>
@@ -857,7 +867,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
 
           ${ProjectHeader()}
 
-          <template x-if="activeProject && ['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(activeProject.status)">
+          <template x-if="activeProject && ['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(workflowStatus(activeProject))">
             <div class="bg-white p-5 border-2 border-slate-100 rounded-2xl shadow-xl">
               <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
                 <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
@@ -871,9 +881,9 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             </div>
           </template>
 
-          <template x-if="activeProject && !['REVIEW_PAKAR','DRAFT','REVISI_PAKAR'].includes(activeProject.status)">
+          <template x-if="activeProject && !['REVIEW_PAKAR','DRAFT','REVISI_PAKAR'].includes(workflowStatus(activeProject))">
             <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center">
-              <p class="text-slate-500 font-bold text-sm">Proyek ini berstatus <span class="font-black text-[#1A237E] uppercase" x-text="activeProject?.status.replace(/_/g,' ')"></span> dan tidak memerlukan tindakan.</p>
+              <p class="text-slate-500 font-bold text-sm">Proyek ini berstatus <span class="font-black text-[#1A237E] uppercase" x-text="statusLabel(activeProject)"></span> dan tidak memerlukan tindakan.</p>
             </div>
           </template>
         </div><!-- /Detail View -->

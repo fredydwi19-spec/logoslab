@@ -16,15 +16,28 @@ export const WordSearchEditorScript = () => `
         level: 1,
         levelCount: 1,
         savedSnapshot: '',
+        // Terbit bertahap: level <= publishedLevelCount dikunci saat game sudah terbit
+        projectStatus: project ? project.status : null,
+        levelReviewStatus: project ? project.levelReviewStatus : null,
+        publishedLevelCount: project && project.status === 'PUBLISHED' ? (project.publishedLevelCount || 0) : 0,
 
         async init() {
           if (!this.projectId) return;
-          await this.loadLevel(1);
+          await this.loadLevel(this.canEdit() && this.publishedLevelCount > 0 ? this.publishedLevelCount + 1 : 1);
           this.$watch('words', val => this.localSave());
           this.$watch('difficulty', val => this.localSave());
         },
 
         // --- Level: satu grid per level ---
+        canEdit() {
+          const editable = ['DRAFT', 'REVISI_PAKAR', 'REVISI_KETUA'];
+          return editable.includes(this.projectStatus) || (this.projectStatus === 'PUBLISHED' && editable.includes(this.levelReviewStatus));
+        },
+
+        isLocked() {
+          return !this.canEdit() || this.level <= this.publishedLevelCount;
+        },
+
         draftKey() {
           return 'ws_editor_' + this.projectId + (this.level > 1 ? '_L' + this.level : '');
         },
@@ -175,6 +188,7 @@ export const WordSearchEditorScript = () => `
         },
 
         async saveToServer() {
+            if (this.isLocked()) { alert('Level ini tidak bisa diubah.'); return; }
           if (this.grid.length === 0) {
             alert('Silakan generate grid terlebih dahulu!');
             return;
@@ -224,10 +238,14 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
         <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-8">
           <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
           <template x-for="l in levelCount" :key="l">
-            <button type="button" @click="switchLevel(l)" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="level === l ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'" x-text="'Level ' + l"></button>
+            <button type="button" @click="switchLevel(l)" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="level === l ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'" x-text="'Level ' + l + (l <= publishedLevelCount ? ' · terbit' : '')"></button>
           </template>
-          <button type="button" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
+          <button type="button" x-show="canEdit()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
           <span class="sm:ml-auto text-[10px] text-slate-400 font-bold">Setiap level punya grid sendiri. Simpan ke cloud sebelum pindah level.</span>
+        </div>
+        <div x-show="isLocked()" class="flex items-center gap-3 bg-green-50 border-2 border-green-200 text-green-800 p-4 rounded-2xl text-xs font-bold mb-8">
+          <i class="bi bi-lock-fill text-lg"></i>
+          <span x-text="level <= publishedLevelCount ? 'Level ' + level + ' sudah terbit dan sedang dimainkan, jadi tidak bisa diubah.' : 'Proyek sedang direview atau sudah terbit, jadi grid tidak bisa diubah.'"></span>
         </div>
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6">
           <div class="flex items-center gap-4">
@@ -244,7 +262,7 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                GENERATE GRID
             </button>
-            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
+            <button x-show="!isLocked()" @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
                <span x-text="isSaving ? 'SAVING...' : 'SIMPAN KE CLOUD'"></span>
             </button>
           </div>

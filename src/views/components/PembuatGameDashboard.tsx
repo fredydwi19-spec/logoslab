@@ -133,7 +133,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 }
                 if (key === 'status') {
                   if (!value) return false;
-                  return p.status === value;
+                  return this.workflowStatus(p) === value;
                 }
                 if (key === 'deadline') {
                   if (!p.deadline) return false;
@@ -146,6 +146,16 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 }
                 return false;
               });
+            },
+
+            // Status kerja: untuk game terbit yang sedang menambah level, yang dipakai adalah status level baru
+            workflowStatus(p) {
+              return p && p.status === 'PUBLISHED' && p.levelReviewStatus ? p.levelReviewStatus : p?.status;
+            },
+
+            statusLabel(p) {
+              if (p.status === 'PUBLISHED' && p.levelReviewStatus) return 'LEVEL BARU: ' + p.levelReviewStatus.replace(/_/g, ' ');
+              return p.status.replace(/_/g, ' ');
             },
 
             getUserName(id) {
@@ -173,6 +183,12 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                   this.questions = json.data.questions || [];
                   if (!sameProject) { this.levelCount = 1; this.activeLevel = 1; }
                   this.syncLevels();
+                  // Sedang menambah level: langsung buka level pertama yang boleh diisi
+                  if (!this.isReadOnly() && this.isLevelLocked(this.activeLevel)) {
+                    const firstNewLevel = (this.activeProject.publishedLevelCount || 0) + 1;
+                    this.levelCount = Math.max(this.levelCount, firstNewLevel);
+                    this.activeLevel = firstNewLevel;
+                  }
                   this.gameData = null;
                   this.showAuditLog = false;
                   if (this.activeProject.gameType === 'WORD_SEARCH') {
@@ -205,7 +221,25 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
 
             isReadOnly() {
               if (!this.activeProject) return true;
-              return !["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(this.activeProject.status);
+              return !["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(this.workflowStatus(this.activeProject));
+            },
+
+            // Level yang sudah terbit tidak bisa diubah (terbit bertahap)
+            isLevelLocked(level) {
+              return this.activeProject?.status === 'PUBLISHED' && level <= (this.activeProject.publishedLevelCount || 0);
+            },
+
+            isQuestionLocked(q) {
+              return this.isReadOnly() || this.isLevelLocked(this.levelOf(q));
+            },
+
+            async startNewLevel(p) {
+              if (!confirm('Tambah level baru untuk game "' + p.title + '"? Level yang sudah terbit tetap bisa dimainkan dan dikunci; level baru harus direview Pakar dan Ketua sebelum terbit.')) return;
+              const res = await fetch('/api/projects/' + p.id + '/new-level', { method: 'POST' });
+              const json = await res.json().catch(() => ({}));
+              if (!res.ok) { alert(json.error || 'Gagal memulai level baru.'); return; }
+              p.levelReviewStatus = 'DRAFT';
+              await this.openProject(p.id);
             },
 
             updateSaveIndicator(text, classes) {
@@ -440,7 +474,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                   }
                 }
               }
-              const target = this.activeProject.status === 'REVISI_KETUA' ? 'Ketua Tim' : 'Pakar';
+              const target = this.workflowStatus(this.activeProject) === 'REVISI_KETUA' ? 'Ketua Tim' : 'Pakar';
               if (!confirm('Kirim proyek ke ' + target + ' untuk di-review?')) return;
               const res = await fetch('/api/projects/' + this.activeProject.id + '/review', {
                 method: 'POST',
@@ -686,17 +720,17 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                       <span class="text-sm md:text-base font-medium text-slate-700" x-text="p.idPakar ? getUserName(p.idPakar) : 'Belum Ditentukan'"></span>
                     </td>
                     <td class="px-6 py-5">
-                      <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                      <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
                         :class="{
-                          'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
-                          'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',
-                          'bg-orange-100 text-orange-800 border border-orange-200': p.status === 'REVISI_PAKAR',
-                          'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR',
-                          'bg-indigo-100 text-indigo-800 border border-indigo-200': p.status === 'REVIEW_KETUA',
-                          'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_KETUA',
-                          'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'UNPUBLISHED',
+                          'bg-yellow-100 text-yellow-800 border border-yellow-200': workflowStatus(p) === 'DRAFT',
+                          'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR',
+                          'bg-orange-100 text-orange-800 border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR',
+                          'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                          'bg-indigo-100 text-indigo-800 border border-indigo-200': workflowStatus(p) === 'REVIEW_KETUA',
+                          'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'REVISI_KETUA',
+                          'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'UNPUBLISHED',
                         }"
-                        x-text="p.status.replace(/_/g, ' ')">
+                        x-text="statusLabel(p)">
                       </span>
                     </td>
                     <td class="px-6 py-5 align-middle">
@@ -704,9 +738,10 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                         </button>
-                        <button x-show="p.status === 'DRAFT' || p.status === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
-                        <button x-show="['REVISI_PAKAR', 'REVISI_KETUA'].includes(p.status)" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">PERBAIKI</button>
-                        <button x-show="['REVIEW_PAKAR', 'REVIEW_KETUA', 'ACCEPTED_PAKAR', 'PUBLISHED'].includes(p.status)" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
+                        <button x-show="workflowStatus(p) === 'DRAFT' || workflowStatus(p) === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
+                        <button x-show="['REVISI_PAKAR', 'REVISI_KETUA'].includes(workflowStatus(p))" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">PERBAIKI</button>
+                        <button x-show="p.type === 'GAME' && p.status === 'PUBLISHED' && !p.levelReviewStatus" @click="startNewLevel(p)" class="bg-white text-[#FF5722] border-2 border-[#FF5722] px-4 py-2 rounded-xl text-xs font-black hover:bg-[#FF5722] hover:text-white transition-all shadow-sm uppercase tracking-widest whitespace-nowrap">+ Tambah Level</button>
+                        <button x-show="['REVIEW_PAKAR', 'REVIEW_KETUA', 'ACCEPTED_PAKAR', 'PUBLISHED'].includes(workflowStatus(p))" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
                       </div>
                     </td>
                   </tr>
@@ -780,6 +815,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                         </button>
+                        <button x-show="p.type === 'GAME' && !p.levelReviewStatus" @click="startNewLevel(p)" class="bg-white text-[#FF5722] border-2 border-[#FF5722] px-4 py-2 rounded-xl text-xs font-black hover:bg-[#FF5722] hover:text-white transition-all shadow-sm uppercase tracking-widest whitespace-nowrap">+ Tambah Level</button>
+                        <span x-show="p.levelReviewStatus" class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded-lg font-black uppercase whitespace-nowrap" x-text="statusLabel(p)"></span>
                         <button @click="openProject(p.id)" class="bg-green-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">LIHAT DETAIL</button>
                       </div>
                     </td>
@@ -874,7 +911,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
 
           <template x-if="isReadOnly()">
             <div class="bg-red-50 text-red-600 p-3 rounded text-sm mb-4 font-bold border border-red-200">
-               Proyek dalam status <span x-text="activeProject?.status"></span> dan bersifat Read-Only.
+               Proyek dalam status <span x-text="statusLabel(activeProject)"></span> dan bersifat Read-Only.
             </div>
           </template>
 
@@ -926,11 +963,16 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 <button type="button" @click="activeLevel = level" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="activeLevel === level ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
                   <span x-text="'Level ' + level"></span>
                   <span class="ml-1 opacity-70" x-text="'(' + levelQuestionCount(level) + ')'"></span>
+                  <i class="bi bi-lock-fill ml-1" x-show="isLevelLocked(level)" title="Sudah terbit"></i>
                 </button>
               </template>
               <button type="button" x-show="!isReadOnly()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
               <button type="button" x-show="!isReadOnly() && levelCount > 1 && activeLevel === levelCount && levelQuestionCount(levelCount) === 0" @click="removeLastLevel()" class="px-3 py-2 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50">Hapus Level Kosong</button>
               <span class="sm:ml-auto text-[10px] text-slate-400 font-bold" x-text="'Nilai minimal lulus tiap level: ' + (activeProject?.passPercentage ?? 70) + '%'"></span>
+            </div>
+            <div x-show="isLevelLocked(activeLevel)" class="flex items-center gap-3 bg-green-50 border-2 border-green-200 text-green-800 p-4 rounded-2xl text-xs font-bold">
+              <i class="bi bi-lock-fill text-lg"></i>
+              <span x-text="'Level ' + activeLevel + ' sudah terbit dan sedang dimainkan, jadi tidak bisa diubah.' + (isReadOnly() ? '' : ' Isi soal di level baru.')"></span>
             </div>
             <div x-show="levelQuestionCount(activeLevel) === 0" class="text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 text-xs font-bold uppercase">
               <span x-text="'Level ' + activeLevel + ' belum berisi soal.'"></span>
@@ -939,20 +981,20 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             <template x-for="(q, idx) in questions" :key="idx">
               <div x-show="levelOf(q) === activeLevel" class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
                 <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="questionNumberInLevel(idx)"></div>
-                <button x-show="!isReadOnly()" @click="removeQuestion(idx)" class="absolute -right-3 -top-3 bg-red-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10">&times;</button>
+                <button x-show="!isQuestionLocked(q)" @click="removeQuestion(idx)" class="absolute -right-3 -top-3 bg-red-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10">&times;</button>
                 
                 <!-- Quiz Editor -->
                 <template x-if="activeProject?.gameType === 'QUIZ'">
                   <div class="space-y-8 pl-4">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Butir Pertanyaan</label>
-                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
+                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <template x-for="opt in ['A', 'B', 'C', 'D']">
                         <div class="relative">
                           <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" x-text="'Pilihan ' + opt"></label>
-                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white transition-all pl-12 shadow-sm" :placeholder="'Opsi ' + opt">
+                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white transition-all pl-12 shadow-sm" :placeholder="'Opsi ' + opt">
                           <div class="absolute left-4 top-10 font-black text-[#1A237E]" x-text="opt + '.'"></div>
                         </div>
                       </template>
@@ -960,13 +1002,13 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Jawaban Benar</label>
-                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
+                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
                           <option value="A">Opsi A</option><option value="B">Opsi B</option><option value="C">Opsi C</option><option value="D">Opsi D</option>
                         </select>
                       </div>
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Kesulitan</label>
-                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
+                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
                           <option value="MUDAH">MUDAH (10 Poin)</option>
                           <option value="SEDANG">SEDANG (20 Poin)</option>
                           <option value="SULIT">SULIT (50 Poin)</option>
@@ -975,7 +1017,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                     </div>
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Penjelasan Edukatif</label>
-                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 italic bg-white transition-all shadow-sm" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
+                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 italic bg-white transition-all shadow-sm" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
                     </div>
                   </div>
                 </template>
@@ -986,11 +1028,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                      <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex justify-between">
                            Teks Lengkap (Blok teks lalu klik 'Jadikan Blank')
-                           <button x-show="!isReadOnly()" @click="makeBlank(idx)" class="bg-[#FFC107] text-[#1A237E] px-4 py-1 rounded-full hover:bg-yellow-400 transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase">
+                           <button x-show="!isQuestionLocked(q)" @click="makeBlank(idx)" class="bg-[#FFC107] text-[#1A237E] px-4 py-1 rounded-full hover:bg-yellow-400 transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase">
                              Jadikan Blank
                            </button>
                         </label>
-                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-40 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan kalimat di sini..."></textarea>
+                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-40 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan kalimat di sini..."></textarea>
                      </div>
                      <div class="space-y-3">
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Daftar Kata Rumpang</label>
@@ -1002,9 +1044,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                               </div>
                               <div class="flex-1 w-full">
                                  <div class="text-[8px] font-black text-blue-400 uppercase mb-1">PENJELASAN</div>
-                                 <input type="text" x-model="ans.explanation" @input="debouncedSave()" :disabled="isReadOnly()" class="w-full bg-white border-2 border-slate-100 rounded-lg p-2 text-xs font-bold focus:border-[#1A237E] outline-none transition-all" placeholder="Mengapa kata ini penting?">
+                                 <input type="text" x-model="ans.explanation" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full bg-white border-2 border-slate-100 rounded-lg p-2 text-xs font-bold focus:border-[#1A237E] outline-none transition-all" placeholder="Mengapa kata ini penting?">
                               </div>
-                              <button x-show="!isReadOnly()" @click="q.answers.splice(aidx, 1); debouncedSave()" class="text-red-400 hover:text-red-600 pt-5 font-black">&times;</button>
+                              <button x-show="!isQuestionLocked(q)" @click="q.answers.splice(aidx, 1); debouncedSave()" class="text-red-400 hover:text-red-600 pt-5 font-black">&times;</button>
                            </div>
                         </template>
                         <template x-if="!q.answers?.length">
@@ -1016,7 +1058,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               </div>
             </template>
 
-            <button x-show="!isReadOnly()" @click="addQuestion()" class="w-full border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-slate-400 font-black uppercase tracking-[0.3em] hover:border-[#1A237E] hover:text-[#1A237E] transition-all flex flex-col items-center gap-4 group">
+            <button x-show="!isReadOnly() && !isLevelLocked(activeLevel)" @click="addQuestion()" class="w-full border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-slate-400 font-black uppercase tracking-[0.3em] hover:border-[#1A237E] hover:text-[#1A237E] transition-all flex flex-col items-center gap-4 group">
                <div class="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-[#1A237E] group-hover:text-[#FFC107] transition-all transform group-hover:rotate-90">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
                </div>
@@ -1025,11 +1067,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
 
             <div x-show="!isReadOnly()" class="pt-10 flex flex-col items-center gap-3">
                <button @click="submitForReview()" class="bg-[#FF5722] text-white px-12 py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#E64A19] transition-all transform hover:scale-110 active:scale-95 flex items-center gap-4">
-                  <span x-text="activeProject?.status === 'REVISI_KETUA' ? 'KIRIM KE KETUA TIM' : 'KIRIM KE PAKAR'"></span>
+                  <span x-text="workflowStatus(activeProject) === 'REVISI_KETUA' ? 'KIRIM KE KETUA TIM' : 'KIRIM KE PAKAR'"></span>
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                </button>
                <p class="text-xs text-slate-400 font-bold"
-                  x-text="activeProject?.status === 'REVISI_KETUA' ? '→ Proyek akan dikirim ke Ketua Tim untuk review akhir' : '→ Proyek akan dikirim ke Pakar yang ditugaskan untuk review konten'">
+                  x-text="workflowStatus(activeProject) === 'REVISI_KETUA' ? '→ Proyek akan dikirim ke Ketua Tim untuk review akhir' : '→ Proyek akan dikirim ke Pakar yang ditugaskan untuk review konten'">
                </p>
             </div>
           </div>

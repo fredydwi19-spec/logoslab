@@ -10,7 +10,7 @@ export const ProjectHeader = ({ projectVar = 'activeProject', showAuditLogVar = 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div class="flex flex-wrap gap-2">
             <span class="bg-[#FFC107] text-[#1A237E] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] shadow-sm" x-text="${projectVar}?.type === 'MATERI' ? ${projectVar}?.materiType : ${projectVar}?.gameType"></span>
-            <span class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em]" x-text="${projectVar}?.status.replace(/_/g, ' ')"></span>
+            <span class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em]" x-text="(${projectVar}?.status === 'PUBLISHED' && ${projectVar}?.levelReviewStatus) ? 'PUBLISHED · LEVEL BARU: ' + ${projectVar}.levelReviewStatus.replace(/_/g, ' ') : ${projectVar}?.status.replace(/_/g, ' ')"></span>
           </div>
           <div class="flex gap-2">
             <button @click="$dispatch('open-chat-drawer', { projectId: ${projectVar}?.id, contextType: 'GENERAL', contextTargetId: null, targetName: 'Diskusi Proyek Utama', userRole: window.USER_ROLE })" class="bg-indigo-600 text-white p-2 text-sm.5 text-sm rounded-lg rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500 transition-all shadow-[0_4px_0_rgb(67,56,202)] active:shadow-none active:translate-y-1 flex items-center gap-2 group">
