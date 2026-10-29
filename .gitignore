@@ -35,3 +35,20 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Environment variables
 .env
+
+# File upload pengguna (data pribadi, tidak masuk GitHub)
+public/uploads/
+
+# Skrip bantu sementara & database kosong
+fix*.cjs
+inject_*.cjs
+refactor_filter.cjs
+restore_pakar.cjs
+scale_down.cjs
+migrate-*.ts
+migrate_*.ts
+add-columns.ts
+describe-table.ts
+show-tables.ts
+sqlite.db
+scratch/
