@@ -349,16 +349,16 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
     </script>
 
     <div class="space-y-8" x-data="ketuaDashboard()">
-      <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#1A237E] p-4 md:p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
         <div class="flex items-center gap-4">
           <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
           <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Manajemen Proyek Game</h2>
         </div>
-        <div class="flex flex-wrap items-center gap-4">
-          <button @click="openCreateModal('GAME')" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+        <div class="flex flex-wrap items-center gap-3 md:gap-4">
+          <button @click="openCreateModal('GAME')" class="flex-1 md:flex-none bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
             + TAMBAH PROYEK GAME
           </button>
-          <button @click="openCreateModal('MATERI')" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+          <button @click="openCreateModal('MATERI')" class="flex-1 md:flex-none bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
             + TUGASKAN MATERI
           </button>
         </div>
@@ -449,6 +449,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           </div>
 
           <!-- Active Projects Table -->
+          <p class="md:hidden bg-white px-4 pt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geser tabel ke samping <i class="bi bi-arrow-right"></i></p>
           <div class="overflow-x-auto bg-white">
           <table class="w-full text-left">
             <thead class="bg-slate-50">
@@ -478,7 +479,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                     <span class="text-sm md:text-base font-medium text-slate-700" x-text="p.idPakar ? getUserName(p.idPakar) : 'Belum Ditentukan'"></span>
                   </td>
                   <td class="px-6 py-5">
-                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                    <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
                       :class="{
                         'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
                         'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',

@@ -50,7 +50,7 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
 - **Tombol sekunder:** latar putih, border 1px abu-abu, teks Primary
 - **Tombol hapus:** latar Error, wajib ada konfirmasi sebelum menghapus
 - **Input:** border 1px abu-abu, border Primary saat fokus, label di atas input, pesan error merah di bawah input
-- **Tabel:** header tebal, baris bergaris tipis, bisa digeser ke samping di layar HP
+- **Tabel:** header tebal, baris bergaris tipis, bisa digeser ke samping di layar HP (`overflow-x-auto`). Di HP tampilkan petunjuk "Geser tabel ke samping →" di atas tabel (`md:hidden`). Badge di dalam tabel memakai `whitespace-nowrap` agar tidak terpecah dua baris.
 - **Judul halaman dashboard:** teks Primary, huruf besar, dengan garis vertikal Highlight #FFC107 di kirinya
 - **Badge status proyek:**
   - `DRAFT` = abu-abu
@@ -59,6 +59,7 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
   - `ACCEPTED_PAKAR` = Highlight (teks Primary)
   - `PUBLISHED` = Success
   - `UNPUBLISHED` = Error
+  - ⚠️ Tabel Semua Proyek (`KetuaTimAllProjects.tsx`) masih memakai warna lain: DRAFT kuning, PUBLISHED abu-abu, ACCEPTED_PAKAR hijau. Perlu diseragamkan.
 - **Modal dan panel samping:** harus berada di atas sidebar. Sidebar memakai `z-[100]`, jadi modal memakai `z-[150]` ke atas (contoh: form proyek `z-[150]`, Diskusi Proyek `z-[210]`/`z-[220]`).
 - **Jawaban Logos AI:** format Markdown sederhana (tebal, miring, poin, judul) ditampilkan rapi; teks di-escape dulu sebelum diubah menjadi HTML.
 - **Notifikasi:** pesan sukses/gagal muncul di atas halaman setelah menyimpan. Lonceng notifikasi di header dengan badge Accent.
@@ -71,7 +72,7 @@ Bootstrap Icons (`<i class="bi bi-..."></i>`). Pakai itu saja; jangan memakai em
 - Tablet: 640–1024px
 - Desktop: di atas 1024px
 - **Sidebar dashboard:** di layar 1024px ke atas selalu tampil di kiri (lebar 192px). Di bawah 1024px tersembunyi dan dibuka lewat tombol ☰ di header, tampil sebagai panel geser dengan latar gelap; ditutup dengan ✕, klik latar, atau tombol Esc. Status buka/tutup disimpan di `mobileNavOpen` pada `<body>` di `Layout.tsx`.
-- ⚠️ Belum responsif di HP: banner dan tabel di halaman Semua Proyek (judul banner tertimpa tombol; kolom Status dan Aksi tabel terpotong).
+- **Banner halaman di HP:** judul di atas, tombol di bawahnya dengan lebar sama (`flex-col md:flex-row`, tombol `flex-1 md:flex-none`).
 
 ## 09 Framework CSS
 Tailwind CSS (lewat CDN) + variabel warna di `public/css/style.css`.
