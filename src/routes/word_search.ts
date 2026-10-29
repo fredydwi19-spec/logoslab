@@ -3,7 +3,7 @@ import { db } from "../db/db";
 import { projects, gameWordSearch, notifications, reviewsHistory } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
-import { toLevel } from "../utils/level";
+import { toLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
 
 export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
   .use(
@@ -40,13 +40,16 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
 
     // removed invalid arguments[0] usage
-    if (!user && project.status !== "PUBLISHED") {
+    // Selain anggota tim proyek, hanya game terbit dan level yang sudah terbit yang bisa diambil
+    const isTeam = isProjectTeam(user, project);
+    if (!isTeam && project.status !== "PUBLISHED") {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
     const level = toLevel(query.level);
     const savedLevels = await db.select({ level: gameWordSearch.level }).from(gameWordSearch).where(eq(gameWordSearch.projectId, pid));
-    const levelCount = Math.max(0, ...savedLevels.map(r => r.level));
+    const levelCount = isTeam ? Math.max(0, ...savedLevels.map(r => r.level)) : project.publishedLevelCount;
+    if (!isTeam && level > project.publishedLevelCount) return { success: true, data: null, levelCount };
 
     const [gameData] = await db.select().from(gameWordSearch)
       .where(and(eq(gameWordSearch.projectId, pid), eq(gameWordSearch.level, level)));
@@ -81,12 +84,16 @@ export const wordSearchRoutes = new Elysia({ prefix: "/api/word-search" })
         return new Response(JSON.stringify({ error: "Forbidden: Not your project" }), { status: 403 });
     }
 
-    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+    const minLevel = firstEditableLevel(project);
+    if (minLevel === null) {
       return new Response(JSON.stringify({ error: "Project is read-only in current status" }), { status: 403 });
     }
 
     // Upsert per level: satu grid untuk setiap level
     const level = toLevel((body as any).level);
+    if (level < minLevel) {
+        return new Response(JSON.stringify({ error: `Level ${level} sudah terbit dan dikunci.` }), { status: 403 });
+    }
     const levelFilter = and(eq(gameWordSearch.projectId, pid), eq(gameWordSearch.level, level));
     const [existing] = await db.select().from(gameWordSearch).where(levelFilter);
 

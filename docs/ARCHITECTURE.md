@@ -76,6 +76,13 @@ Alur terpenting: proyek konten dari dibuat sampai terbit.
 5. Setiap keputusan dicatat di tabel `reviews_history` dan notifikasinya di tabel `notifications`. Semua perubahan status lewat satu pintu: `POST /api/projects/:id/review`.
 6. Ketua bisa menarik konten yang sudah terbit → `UNPUBLISHED`.
 
+**Terbit bertahap (menambah level pada game yang sudah terbit):**
+1. Saat proyek terbit, `published_level_count` diisi level tertinggi yang ada.
+2. Pembuat Game pemilik proyek memanggil `POST /api/projects/:id/new-level` → `level_review_status = DRAFT`; status proyek tetap `PUBLISHED` (game tetap bisa dimainkan).
+3. Pembuat hanya bisa mengubah level di atas `published_level_count` (fungsi `firstEditableLevel` di `src/utils/level.ts`).
+4. `POST /api/projects/:id/review` memakai alur yang sama, tetapi yang berubah adalah `level_review_status`. Saat Ketua menerima: `published_level_count` = level tertinggi, `level_review_status` = null.
+5. Selain anggota tim proyek (Ketua, Pembuat, Pakar yang ditugaskan), API hanya mengembalikan level ≤ `published_level_count` (fungsi `isProjectTeam`).
+
 ## 05 Lingkungan dan Data Rahasia
 - Semua password, kunci API, dan pengaturan database disimpan di file `.env`, bukan ditulis langsung di kode.
 - File `.env` tidak boleh ikut diunggah ke Git atau dibagikan (sudah tercantum di `.gitignore`).
@@ -112,6 +119,9 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Jurnal:** pengguna hanya bisa melihat dan menghapus jurnal miliknya sendiri.
 - **Upload foto profil:** hanya JPG/PNG/WebP, maksimal 2 MB, nama file dibuat ulang oleh server (`avatar-<id>-<waktu>.<ext>`).
 - **Nilai minimal lulus level:** server hanya menerima angka bulat 1–100.
+- **Isi game yang belum terbit:** detail proyek, Word Search, dan TTS hanya bisa dibuka anggota tim proyek jika belum terbit; pemain hanya menerima level yang sudah terbit.
+- **Level terbit dikunci:** simpan soal, simpan grid, dan Generate Soal menolak level ≤ `published_level_count` ("Level N sudah terbit dan dikunci").
+- **Tambah Level Baru:** hanya Pembuat Game pemilik proyek, hanya pada game `PUBLISHED`, dan tidak bisa dimulai dua kali.
 - **Simpan soal (`POST /api/projects/:id/questions`) dan Generate Soal (`POST /api/bank-soal/auto-generate`):** hanya Pembuat yang ditugaskan di proyek itu (Generate Soal juga boleh oleh Ketua).
 - **Kirim ke Pakar:** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah). Quiz & Fill the Blank: tiap level minimal 1 soal. Word Search & TTS: tiap level punya grid dengan minimal 1 kata/clue.
 - **Grid Word Search & TTS per level:** `GET /api/word-search/:id?level=N` dan `GET /api/crossword/:id?level=N` (tanpa `level` = Level 1) mengembalikan `data` level itu dan `levelCount`. Simpan (`POST .../questions`) menyertakan `level`; satu baris tabel per level. Fungsi bantu nomor level ada di `src/utils/level.ts`.

@@ -3,7 +3,7 @@ import { db } from "../db/db";
 import { projects, gameCrossword, notifications, reviewsHistory, userScores } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
-import { toLevel } from "../utils/level";
+import { toLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
 
 export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
   .use(
@@ -39,13 +39,16 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
 
-    if (!user && project.status !== "PUBLISHED") {
+    // Selain anggota tim proyek, hanya game terbit dan level yang sudah terbit yang bisa diambil
+    const isTeam = isProjectTeam(user, project);
+    if (!isTeam && project.status !== "PUBLISHED") {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
     const level = toLevel(query.level);
     const savedLevels = await db.select({ level: gameCrossword.level }).from(gameCrossword).where(eq(gameCrossword.projectId, pid));
-    const levelCount = Math.max(0, ...savedLevels.map(r => r.level));
+    const levelCount = isTeam ? Math.max(0, ...savedLevels.map(r => r.level)) : project.publishedLevelCount;
+    if (!isTeam && level > project.publishedLevelCount) return { success: true, data: null, levelCount };
 
     const [gameData] = await db.select().from(gameCrossword)
       .where(and(eq(gameCrossword.projectId, pid), eq(gameCrossword.level, level)));
@@ -80,12 +83,16 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
         return new Response(JSON.stringify({ error: "Forbidden: Not your project" }), { status: 403 });
     }
 
-    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+    const minLevel = firstEditableLevel(project);
+    if (minLevel === null) {
       return new Response(JSON.stringify({ error: "Project is read-only in current status" }), { status: 403 });
     }
 
     // Upsert per level: satu grid untuk setiap level
     const level = toLevel((body as any).level);
+    if (level < minLevel) {
+        return new Response(JSON.stringify({ error: `Level ${level} sudah terbit dan dikunci.` }), { status: 403 });
+    }
     const levelFilter = and(eq(gameCrossword.projectId, pid), eq(gameCrossword.level, level));
     const [existing] = await db.select().from(gameCrossword).where(levelFilter);
 

@@ -1,15 +1,27 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
 import { projects, questionBank, reviewsHistory, notifications, users, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, gte } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
-import { toLevel, findMissingLevel } from "../utils/level";
+import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
 
 // Nilai minimal lulus level: angka bulat 1–100. Kosong = pakai nilai bawaan. Tidak valid = null.
 function parsePassPercentage(value: unknown, fallback: number): number | null {
   if (value === undefined || value === null || value === "") return fallback;
   const n = Number(value);
   return Number.isInteger(n) && n >= 1 && n <= 100 ? n : null;
+}
+
+// Level tertinggi yang berisi konten game (minimal 1)
+async function getHighestContentLevel(projectId: number, gameType: string | null): Promise<number> {
+  const table = gameType === "QUIZ" ? questionBank
+    : gameType === "FILL_THE_BLANK" ? gameFillTheBlank
+    : gameType === "WORD_SEARCH" ? gameWordSearch
+    : gameType === "CROSSWORD" ? gameCrossword
+    : null;
+  if (!table) return 1;
+  const rows: { level: number }[] = await db.select({ level: table.level }).from(table as any).where(eq(table.projectId, projectId));
+  return Math.max(1, ...rows.map(r => r.level));
 }
 
 export const projectRoutes = new Elysia({ prefix: "/api/projects" })
@@ -119,6 +131,8 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       category: projects.category,
       thumbnailUrl: projects.thumbnailUrl,
       passPercentage: projects.passPercentage,
+      publishedLevelCount: projects.publishedLevelCount,
+      levelReviewStatus: projects.levelReviewStatus,
       pembuatName: users.name,
     })
     .from(projects)
@@ -144,7 +158,9 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
     }
 
-    if (!user && project.status !== "PUBLISHED") {
+    // Selain anggota tim proyek, hanya game terbit yang boleh dibuka, dan hanya level yang sudah terbit
+    const isTeam = isProjectTeam(user, project);
+    if (!isTeam && project.status !== "PUBLISHED") {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
@@ -176,7 +192,11 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         }
       }
     }
-    
+
+    if (!isTeam && (project.gameType === "QUIZ" || project.gameType === "FILL_THE_BLANK")) {
+      questions = questions.filter(q => q.level <= project.publishedLevelCount);
+    }
+
     let materiContentsData: any[] = [];
     let materialSectionsData: any[] = [];
     let materialGlossaryData: any[] = [];
@@ -212,23 +232,31 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
     if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
 
-    let newStatus = project.status;
+    // Game terbit yang sedang menambah level: alur review berjalan di levelReviewStatus, status proyek tetap PUBLISHED
+    const isNewLevelReview = project.status === "PUBLISHED";
+    const currentStatus = isNewLevelReview ? project.levelReviewStatus : project.status;
+    if (!currentStatus) {
+      return new Response(JSON.stringify({ error: "Tidak ada level baru yang sedang dikerjakan pada game ini." }), { status: 400 });
+    }
+    const subject = isNewLevelReview ? `level baru proyek "${project.title}"` : `proyek "${project.title}"`;
+
+    let newStatus: string = currentStatus;
     let targetUserId = project.idPembuat;
     let notificationMsg = "";
 
     if (user.role === "PAKAR") {
-      if (!["REVIEW_PAKAR", "REVISI_PAKAR"].includes(project.status)) {
+      if (!["REVIEW_PAKAR", "REVISI_PAKAR"].includes(currentStatus)) {
         return new Response(JSON.stringify({ error: "Proyek tidak dalam antrean review Pakar" }), { status: 400 });
       }
-      
+
       if (statusGiven === "ACCEPT") {
         newStatus = "ACCEPTED_PAKAR";
         targetUserId = 0; // Notify Ketua Tim (fetched below)
-        notificationMsg = `Pakar telah menyetujui proyek "${project.title}". Silakan lakukan review akhir.`;
+        notificationMsg = `Pakar telah menyetujui ${subject}. Silakan lakukan review akhir.`;
       } else if (statusGiven === "REVISI") {
         newStatus = "REVISI_PAKAR";
         targetUserId = project.idPembuat;
-        notificationMsg = `Pakar membutuhkan revisi pada proyek "${project.title}". Mohon cek feedback dari Pakar.`;
+        notificationMsg = `Pakar membutuhkan revisi pada ${subject}. Mohon cek feedback dari Pakar.`;
       }
 
       // If ACCEPT, notify Ketua Tim
@@ -237,21 +265,21 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         targetUserId = ketuaTim?.id || 0;
       }
     } else if (user.role === "KETUA_TIM") {
-      if (!["ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA"].includes(project.status)) {
+      if (!["ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA"].includes(currentStatus)) {
         return new Response(JSON.stringify({ error: "Proyek belum disetujui Pakar atau tidak dalam antrean Ketua" }), { status: 400 });
       }
 
       if (statusGiven === "ACCEPT") {
         newStatus = "PUBLISHED";
         targetUserId = project.idPembuat;
-        notificationMsg = `Selamat! Proyek "${project.title}" telah di-publish oleh Ketua Tim.`;
+        notificationMsg = `Selamat! ${isNewLevelReview ? "Level baru proyek" : "Proyek"} "${project.title}" telah di-publish oleh Ketua Tim.`;
       } else if (statusGiven === "REVISI") {
         newStatus = "REVISI_KETUA";
         targetUserId = project.idPembuat;
-        notificationMsg = `Ketua Tim membutuhkan revisi pada proyek "${project.title}". Mohon cek feedback.`;
+        notificationMsg = `Ketua Tim membutuhkan revisi pada ${subject}. Mohon cek feedback.`;
       }
     } else if (user.role === "PEMBUAT_GAME" || user.role === "PEMBUAT_MATERI") {
-      if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+      if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(currentStatus)) {
         return new Response(JSON.stringify({ error: "Hanya proyek Draft atau Revisi yang bisa dikirim" }), { status: 400 });
       }
 
@@ -289,24 +317,40 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         }
       }
 
+      // Level baru wajib benar-benar ada di atas level yang sudah terbit
+      if (isNewLevelReview) {
+        const highestLevel = await getHighestContentLevel(projectId, project.gameType);
+        if (highestLevel <= project.publishedLevelCount) {
+          return new Response(JSON.stringify({ error: `Belum ada level baru. Tambahkan minimal satu level di atas Level ${project.publishedLevelCount}.` }), { status: 400 });
+        }
+      }
+
       // Smart Routing: If this is a revision from Chairman, go back to Chairman.
       // Otherwise, go to Expert (Pakar).
-      if (project.status === "REVISI_KETUA") {
+      if (currentStatus === "REVISI_KETUA") {
         newStatus = "REVIEW_KETUA";
         const [ketuaTim] = await db.select().from(users).where(eq(users.role, "KETUA_TIM")).limit(1);
         targetUserId = ketuaTim?.id || 0;
-        notificationMsg = `Pembuat Konten telah menyelesaikan revisi proyek "${project.title}". Silakan lakukan review akhir.`;
+        notificationMsg = `Pembuat Konten telah menyelesaikan revisi ${subject}. Silakan lakukan review akhir.`;
       } else {
         newStatus = "REVIEW_PAKAR";
         targetUserId = project.idPakar || 0;
-        notificationMsg = `Proyek "${project.title}" siap untuk di-review oleh Pakar.`;
+        notificationMsg = `${isNewLevelReview ? "Level baru proyek" : "Proyek"} "${project.title}" siap untuk di-review oleh Pakar.`;
       }
     } else {
       return new Response(JSON.stringify({ error: "Akses Ditolak" }), { status: 403 });
     }
 
-    if (newStatus !== project.status) {
-      await db.update(projects).set({ status: newStatus as any }).where(eq(projects.id, projectId));
+    if (newStatus !== currentStatus) {
+      if (newStatus === "PUBLISHED") {
+        // Terbit: semua level yang ada saat ini menjadi bisa dimainkan
+        const publishedLevelCount = project.type === "GAME" ? await getHighestContentLevel(projectId, project.gameType) : 0;
+        await db.update(projects).set({ status: "PUBLISHED", levelReviewStatus: null, publishedLevelCount }).where(eq(projects.id, projectId));
+      } else if (isNewLevelReview) {
+        await db.update(projects).set({ levelReviewStatus: newStatus as any }).where(eq(projects.id, projectId));
+      } else {
+        await db.update(projects).set({ status: newStatus as any }).where(eq(projects.id, projectId));
+      }
     }
     
     if (targetUserId) {
@@ -326,6 +370,42 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     return { success: true, message: "Status updated and review recorded" };
   })
+  // Mulai menambah level baru pada game yang sudah terbit (Pembuat Game pemilik proyek)
+  .post("/:id/new-level", async ({ params: { id }, user }) => {
+    const projectId = Number(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
+
+    if (user.role !== "PEMBUAT_GAME" || project.idPembuat !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+    }
+    if (project.type !== "GAME" || project.status !== "PUBLISHED") {
+      return new Response(JSON.stringify({ error: "Level baru hanya bisa ditambahkan pada game yang sudah terbit." }), { status: 400 });
+    }
+    if (project.levelReviewStatus) {
+      return new Response(JSON.stringify({ error: "Level baru untuk game ini sedang dikerjakan." }), { status: 400 });
+    }
+
+    await db.update(projects).set({ levelReviewStatus: "DRAFT" }).where(eq(projects.id, projectId));
+
+    const [ketuaTim] = await db.select().from(users).where(eq(users.role, "KETUA_TIM")).limit(1);
+    if (ketuaTim) {
+      await db.insert(notifications).values({
+        userId: ketuaTim.id,
+        message: `Pembuat Game mulai menambah level baru pada game "${project.title}" (saat ini ${project.publishedLevelCount} level terbit).`,
+        projectId
+      });
+    }
+
+    await db.insert(reviewsHistory).values({
+      projectId,
+      reviewerId: user.id,
+      feedback: `Mulai menambah level baru (level terbit: ${project.publishedLevelCount})`,
+      statusGiven: "NEW_LEVEL"
+    });
+
+    return { success: true, message: "Silakan tambahkan level baru. Level yang sudah terbit dikunci." };
+  })
   // Save Question
   .post("/:id/questions", async ({ params: { id }, body, user }) => {
     const projectId = Number(id);
@@ -334,20 +414,23 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     // Check project status
     const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
     if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
-    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+    // Level yang sudah terbit dikunci: hanya level mulai minLevel yang diganti
+    const minLevel = firstEditableLevel(project);
+    if (minLevel === null) {
       return new Response(JSON.stringify({ error: "Project is read-only" }), { status: 403 });
     }
     // Hanya Pembuat yang ditugaskan di proyek ini yang boleh menyimpan soal
     if (project.idPembuat !== user.id) {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
     }
+    const editableQuestions = (questions || []).filter(q => toLevel(q.level) >= minLevel);
 
     if (project.gameType === "QUIZ") {
       // Delete existing and insert new (simple sync strategy for autosave)
-      await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
-      
-      if (questions && questions.length > 0) {
-        const qValues = questions.map(q => ({
+      await db.delete(questionBank).where(and(eq(questionBank.projectId, projectId), gte(questionBank.level, minLevel)));
+
+      if (editableQuestions.length > 0) {
+        const qValues = editableQuestions.map(q => ({
           projectId,
           question: q.question,
           optionA: q.optionA,
@@ -363,10 +446,10 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         await db.insert(questionBank).values(qValues as any);
       }
     } else if (project.gameType === "FILL_THE_BLANK") {
-      await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
+      await db.delete(gameFillTheBlank).where(and(eq(gameFillTheBlank.projectId, projectId), gte(gameFillTheBlank.level, minLevel)));
 
-      if (questions && questions.length > 0) {
-        const qValues = questions.map(q => ({
+      if (editableQuestions.length > 0) {
+        const qValues = editableQuestions.map(q => ({
           projectId,
           fullText: q.fullText,
           answers: JSON.stringify(q.answers), // Array of { word, explanation }
@@ -377,7 +460,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         await db.insert(gameFillTheBlank).values(qValues as any);
 
         // Logic for Bank Soal: Insert into gameQuestionsBank if not already there
-        for (const q of questions) {
+        for (const q of editableQuestions) {
            await db.insert(gameQuestionsBank).values({
              content: q.fullText,
              category: project.category || "General",
@@ -558,7 +641,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       return new Response(JSON.stringify({ error: "Proyek sudah dalam status DRAFT atau UNPUBLISHED" }), { status: 400 });
     }
 
-    await db.update(projects).set({ status: "UNPUBLISHED" }).where(eq(projects.id, projectId));
+    await db.update(projects).set({ status: "UNPUBLISHED", levelReviewStatus: null }).where(eq(projects.id, projectId));
     
     // Send notification to Pembuat Game
     await db.insert(notifications).values({

@@ -54,6 +54,9 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
 - [x] Langkah 3: tab level di editor Quiz dan Fill the Blank (termasuk import CSV dengan kolom `level`, Generate Soal ke level aktif, dan cek level kosong sebelum dikirim)
 - [x] Langkah 4: satu grid per level di editor Word Search dan TTS (tab level di editor, peringatan jika pindah level sebelum disimpan, draf sementara per level di browser, cek level kosong saat dikirim)
 - [ ] Langkah 5: terbit bertahap (tambah level baru pada game yang sudah terbit tanpa menarik game)
+  - [x] 5a: kolom jumlah level terbit dan status review level baru di database
+  - [x] 5b: alur di server (Tambah Level Baru, review level baru, kunci level terbit, sembunyikan level belum terbit)
+  - [ ] 5c: tampilan (tombol Tambah Level Baru, level terkunci di editor, antrean Pakar & Ketua)
 - [ ] Langkah 6: peta level, gembok, skor per level, dan "Segera hadir" untuk pemain
 - [ ] Langkah 7: Preview per level untuk Pakar dan Ketua
 

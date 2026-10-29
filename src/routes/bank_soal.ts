@@ -7,7 +7,7 @@ import {
 } from "../db/schema";
 import { eq, sql, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
-import { toLevel } from "../utils/level";
+import { toLevel, firstEditableLevel } from "../utils/level";
 import * as XLSX from "xlsx";
 
 // ── Native CSV parser (handles quoted fields, CRLF/LF, UTF-8 BOM, semicolon/comma delimiter) ──
@@ -578,7 +578,8 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
     // Cek proyek ada
     const [project] = await db.select().from(projects).where(eq(projects.id, Number(projectId)));
     if (!project) return new Response(JSON.stringify({ error: "Proyek tidak ditemukan" }), { status: 404 });
-    if (!["DRAFT", "REVISI_PAKAR", "REVISI_KETUA"].includes(project.status)) {
+    const minLevel = firstEditableLevel(project);
+    if (minLevel === null) {
       return new Response(JSON.stringify({ error: "Proyek tidak dalam status yang dapat diedit" }), { status: 403 });
     }
     // Pembuat Game hanya boleh mengisi proyek yang ditugaskan kepadanya
@@ -588,6 +589,9 @@ export const bankSoalRoutes = new Elysia({ prefix: "/api/bank-soal" })
 
     // Soal hasil generate masuk ke level yang sedang dibuka di editor (bawaan Level 1)
     const level = toLevel((body as any).level);
+    if (level < minLevel) {
+      return new Response(JSON.stringify({ error: `Level ${level} sudah terbit dan dikunci.` }), { status: 403 });
+    }
 
     try {
       if (gameType === "QUIZ") {
