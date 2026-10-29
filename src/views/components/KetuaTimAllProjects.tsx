@@ -6,9 +6,9 @@ import { ProjectHeader } from "./ProjectHeader";
 export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris = [], pakars = [] }: { allProjects: any[], pembuatGames: any[], pembuatMateris?: any[], pakars?: any[] }) => {
   const allProjectsJson = JSON.stringify(allProjects).replace(/</g, '\\u003c');
   const pakarsJson = JSON.stringify(pakars).replace(/</g, '\\u003c');
-  const pembuatOptions = pembuatGames.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
-  const pembuatMateriOptions = pembuatMateris.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
-  const pakarOptions = pakars.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+  const pembuatOptions = pembuatGames.map(u => `<option value="${u.id}">${u.name || u.username}</option>`).join('');
+  const pembuatMateriOptions = pembuatMateris.map(u => `<option value="${u.id}">${u.name || u.username}</option>`).join('');
+  const pakarOptions = pakars.map(u => `<option value="${u.id}">${u.name || u.username}</option>`).join('');
 
   return `
     <script id="ketuaProjectsData" type="application/json">${allProjectsJson}</script>
@@ -91,7 +91,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
 
           getUserName(id) {
             const u = this.pakars.find(u => u.id === id);
-            return u ? u.username || u.name : '-';
+            return u ? u.name || u.username : '-';
           },
 
           filteredActiveProjects() {

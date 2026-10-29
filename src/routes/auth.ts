@@ -47,6 +47,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
         id: user.id,
         role: user.role,
         username: user.username,
+        name: user.name,
         avatarUrl: user.avatarUrl
       });
 
@@ -167,6 +168,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
         id: user.id,
         role: user.role,
         username: user.username,
+        name: user.name,
         avatarUrl: user.avatarUrl
       });
 

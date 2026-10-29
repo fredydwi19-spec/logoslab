@@ -27,7 +27,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
     return { user: payload as any };
   })
   .get("/quiz", async ({ user }) => {
-    const username = user.username;
+    const username = user.name || user.username;
     const userId = Number(user.id);
     const userRole = user.role;
     const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
@@ -43,7 +43,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   })
   .get("/ftb", async ({ user }) => {
-    const username = user.username;
+    const username = user.name || user.username;
     const userId = Number(user.id);
     const userRole = user.role;
     const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
@@ -59,7 +59,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   })
   .get("/tts", async ({ user }) => {
-    const username = user.username;
+    const username = user.name || user.username;
     const userId = Number(user.id);
     const userRole = user.role;
     const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));

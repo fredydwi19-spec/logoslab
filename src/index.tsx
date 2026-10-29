@@ -146,7 +146,7 @@ const app = new Elysia()
       .get("/duels", async ({ user }) => {
         if (!user) return Response.redirect("/", 302);
         
-        const username = (user as any).username as string;
+        const username = ((user as any).name || (user as any).username) as string;
         const userRole = (user as any).role as string;
         const userId = Number((user as any).id);
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
@@ -171,7 +171,7 @@ const app = new Elysia()
       .get("/journal", async ({ user }) => {
         if (!user) return Response.redirect("/", 302);
         
-        const username = (user as any).username as string;
+        const username = ((user as any).name || (user as any).username) as string;
         const userRole = (user as any).role as string;
         const userId = Number((user as any).id);
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
@@ -193,7 +193,7 @@ const app = new Elysia()
       .get("/games", async ({ user }) => {
         if (!user) return Response.redirect("/", 302);
         
-        const username = (user as any).username as string;
+        const username = ((user as any).name || (user as any).username) as string;
         const userRole = (user as any).role as string;
         const userId = Number((user as any).id);
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
@@ -217,7 +217,7 @@ const app = new Elysia()
       .get("/materials", async ({ user }) => {
         if (!user) return Response.redirect("/", 302);
         
-        const username = (user as any).username as string;
+        const username = ((user as any).name || (user as any).username) as string;
         const userRole = (user as any).role as string;
         const userId = Number((user as any).id);
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
@@ -243,7 +243,7 @@ const app = new Elysia()
           return Response.redirect("/", 302);
         }
         
-        const username = (user as any).username as string;
+        const username = ((user as any).name || (user as any).username) as string;
         const projectSelectFields = {
           id: projects.id,
           title: projects.title,
@@ -293,7 +293,7 @@ const app = new Elysia()
         if (!user || !(user as any).role) return "Unauthorized";
 
         const userRole = (user as any).role as string;
-        const username = (user as any).username as string;
+        const username = ((user as any).name || (user as any).username) as string;
         const userId = Number((user as any).id);
         const rolePath = userRole.toLowerCase().split('_')[0];
 
