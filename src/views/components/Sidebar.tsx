@@ -7,10 +7,12 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
     menuItems.push({ label: "Semua Proyek", icon: "<i class='bi bi-bar-chart'></i>", link: "/dashboard/projects" });
   } else if (role === "PEMBUAT_GAME") {
     menuItems.push({ label: "Proyek Dikerjakan", icon: "<i class='bi bi-controller'></i>", link: "/dashboard/pembuat?tab=projects" });
+    menuItems.push({ label: "Proyek Terbit", icon: "<i class='bi bi-patch-check'></i>", link: "/dashboard/pembuat?tab=projects&view=all" });
   } else if (role === "PEMBUAT_MATERI") {
     menuItems.push({ label: "Proyek Saya", icon: "<i class='bi bi-book'></i>", link: "/dashboard/pembuat?tab=projects" });
   } else if (role === "PAKAR") {
     menuItems.push({ label: "Proyek Dikerjakan", icon: "<i class='bi bi-clipboard-check'></i>", link: "/dashboard/pakar?tab=projects" });
+    menuItems.push({ label: "Proyek Terbit", icon: "<i class='bi bi-patch-check'></i>", link: "/dashboard/pakar?tab=projects&view=all" });
   } else if (role === "USER") {
     menuItems.push({ label: "Pencapaian Saya", icon: "<i class='bi bi-trophy'></i>", link: "/dashboard/user" });
     menuItems.push({ label: "Jurnal Saya", icon: "📖", link: "/dashboard/journal" });

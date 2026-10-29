@@ -57,7 +57,7 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
   - [x] 5a: kolom jumlah level terbit dan status review level baru di database
   - [x] 5b: alur di server (Tambah Level Baru, review level baru, kunci level terbit, sembunyikan level belum terbit)
   - [x] 5c: tampilan (tombol "+ Tambah Level" di tabel proyek Pembuat Game, level terbit bergembok di editor Quiz/FTB/Word Search/TTS, badge "LEVEL BARU: …" dan tombol Review di antrean Pakar & tabel Ketua)
-  - ⚠️ Tabel "Proyek Telah Dipublikasikan" milik Pembuat Game hanya bisa dibuka lewat alamat `/dashboard/pembuat?tab=projects&view=all`; belum ada menu yang menuju ke sana.
+  - Menu sidebar **"Proyek Terbit"** untuk Pembuat Game (`/dashboard/pembuat?tab=projects&view=all`) dan Pakar (`/dashboard/pakar?tab=projects&view=all`) membuka tabel "Proyek Telah Dipublikasikan"; tombol "+ Tambah Level" juga ada di sana.
 - [ ] Langkah 6: peta level, gembok, skor per level, dan "Segera hadir" untuk pemain
 - [ ] Langkah 7: Preview per level untuk Pakar dan Ketua
 
