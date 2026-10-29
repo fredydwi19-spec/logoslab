@@ -135,7 +135,14 @@ export const WordSearchGameScript = () => `
           if (this.foundWords.length === this.totalWords) {
             this.showSummary = true;
             clearInterval(this.timerInterval);
+            this.finishLevel();
           }
+        },
+
+        // Kirim kata yang sudah ditemukan ke pemutar level (/play); server yang menilai
+        finishLevel() {
+          clearInterval(this.timerInterval);
+          this.$dispatch('game-level-finish', { foundWords: [...this.foundWords] });
         },
 
         getSelectedCells() {
@@ -186,7 +193,7 @@ export const WordSearchGameScript = () => `
 
 export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'gameData' }: { projectVar?: string, gameDataVar?: string }) => {
   return `
-    <div x-data="wordSearchGame(\${projectVar}, \${gameDataVar})" 
+    <div x-data="wordSearchGame(${projectVar}, ${gameDataVar})" 
          class="max-w-4xl mx-auto space-y-8 p-4 animate-in fade-in duration-700">
       
       <!-- Header -->
@@ -204,6 +211,7 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
            </div>
         </div>
         
+        <button type="button" x-show="window.location.pathname.startsWith('/play/')" @click="finishLevel()" class="w-full md:w-auto bg-[#FF5722] text-white px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#E64A19] transition-all">Selesai &amp; Lihat Hasil</button>
         <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
           <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
             <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">WAKTU</div>

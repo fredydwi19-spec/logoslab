@@ -126,16 +126,11 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
     const [project] = await db.select().from(projects).where(eq(projects.id, pid));
     if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
 
-    // Save score to user_scores
-    await db.insert(userScores).values({
-        userId: user.id,
-        projectId: pid,
-        score: scoreEarned
-    });
-
-    return { 
-      success: true, 
+    // Skor tidak lagi disimpan di sini (angka dari browser bisa diakali).
+    // Skor resmi per level dinilai & disimpan oleh POST /api/projects/:id/levels/:level/finish (routes/levels.ts).
+    return {
+      success: true,
       scoreEarned,
-      message: `Selamat! Skor Anda (${scoreEarned}) telah dicatat.`
+      message: `Selamat! Skor Anda: ${scoreEarned}.`
     };
   });

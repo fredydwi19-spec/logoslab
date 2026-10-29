@@ -1,14 +1,15 @@
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
+import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 
 export const PublicGamePlayer = () => {
   return `
-    <div x-data="publicGamePlayerData()">
+    <div x-data="publicGamePlayerData()" @game-level-finish="finishLevel($event.detail)">
       <!-- Game Modal Player -->
       <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-6">
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
-            <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
+            <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
                   <div class="bg-[#1A237E] px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
@@ -16,7 +17,7 @@ export const PublicGamePlayer = () => {
                         <img src="/public/assets/Logo-LogosLAB.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
                            <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
-                           <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
+                           <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="(levelCount() > 1 ? 'Level ' + currentLevel + ' · ' : '') + 'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
                         </div>
                      </div>
                      <div class="flex items-center gap-4 md:gap-6">
@@ -117,14 +118,67 @@ export const PublicGamePlayer = () => {
             </template>
 
             <!-- Word Search Gameplay -->
-            <template x-if="isPlaying && !gameFinished && activeGame?.gameType === 'WORD_SEARCH' && gameData">
+            <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType === 'WORD_SEARCH' && gameData">
                <div class="flex-1 overflow-y-auto bg-slate-50">
                    ${WordSearchGame({ projectVar: 'activeGame', gameDataVar: 'gameData' })}
                </div>
             </template>
 
+            <!-- Crossword (TTS) Gameplay -->
+            <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType === 'CROSSWORD' && gameData">
+               <div class="flex-1 overflow-y-auto bg-slate-50">
+                   ${CrosswordGame({ projectVar: 'activeGame', gameDataVar: 'gameData' })}
+               </div>
+            </template>
+
+            <!-- Peta Level -->
+            <template x-if="showLevelMap">
+               <div class="flex flex-col h-full">
+                  <div class="bg-[#1A237E] px-6 md:px-10 py-4 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                     <div class="flex items-center gap-3 min-w-0">
+                        <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
+                        <div class="min-w-0">
+                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-[#FFC107] truncate" x-text="activeGame?.title"></h3>
+                           <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="'Peta Level · Lulus dengan nilai minimal ' + progress.passPercentage + '%'"></p>
+                        </div>
+                     </div>
+                     <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white px-3 py-2 rounded-full transition-all" aria-label="Tutup"><i class="bi bi-x-lg"></i></button>
+                  </div>
+                  <div class="flex-1 overflow-y-auto p-6 md:p-10 bg-slate-50">
+                     <template x-if="!progress.loggedIn">
+                        <div class="mb-6 bg-amber-50 border-2 border-amber-200 text-amber-800 p-4 rounded-2xl text-sm font-bold flex items-center gap-3">
+                           <i class="bi bi-person-lock text-xl"></i>
+                           <span>Kamu bisa mencoba Level 1. Login untuk menyimpan skor dan membuka level berikutnya.</span>
+                        </div>
+                     </template>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <template x-for="lv in progress.levels" :key="lv.level">
+                           <div class="bg-white rounded-2xl p-5 border-2 shadow-sm flex flex-col gap-3" :class="lv.passed ? 'border-green-300' : (lv.unlocked ? 'border-[#FFC107]' : 'border-slate-200 opacity-70')">
+                              <div class="flex items-center justify-between">
+                                 <span class="text-sm font-black text-[#1A237E] uppercase tracking-widest" x-text="'Level ' + lv.level"></span>
+                                 <span class="text-xl" :class="lv.passed ? 'text-green-600' : (lv.unlocked ? 'text-[#FF5722]' : 'text-slate-400')">
+                                    <i class="bi" :class="lv.passed ? 'bi-patch-check-fill' : (lv.unlocked ? 'bi-unlock-fill' : 'bi-lock-fill')"></i>
+                                 </span>
+                              </div>
+                              <div class="text-xs font-bold text-slate-500" x-show="lv.bestScore > 0" x-text="'Nilai terbaik: ' + lv.percent + '%'"></div>
+                              <div class="text-xs font-bold text-slate-400" x-show="!lv.unlocked" x-text="progress.loggedIn ? 'Lulus Level ' + (lv.level - 1) + ' dengan nilai ≥ ' + progress.passPercentage + '% untuk membuka' : 'Login untuk membuka level ini'"></div>
+                              <button x-show="lv.unlocked" @click="startLevel(lv.level)" class="mt-auto w-full py-2.5 rounded-xl font-black uppercase tracking-widest text-xs transition-all" :class="lv.passed ? 'bg-white border-2 border-[#1A237E] text-[#1A237E] hover:bg-slate-50' : 'bg-[#FF5722] text-white hover:bg-[#E64A19] shadow-md'" x-text="lv.passed ? 'Main Lagi' : 'Mainkan'"></button>
+                           </div>
+                        </template>
+                        <template x-if="progress.upcoming">
+                           <div class="bg-white/60 rounded-2xl p-5 border-2 border-dashed border-slate-300 flex flex-col gap-2 items-center justify-center text-center">
+                              <i class="bi bi-hourglass-split text-2xl text-slate-400"></i>
+                              <span class="text-sm font-black text-slate-500 uppercase tracking-widest" x-text="'Level ' + (progress.levels.length + 1)"></span>
+                              <span class="text-xs font-bold text-slate-400">Segera hadir</span>
+                           </div>
+                        </template>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
             <!-- Result Screen -->
-            <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
+            <template x-if="gameFinished && !showLevelMap">
                <div class="h-full flex flex-col items-center justify-center p-6 md:p-6 bg-gradient-to-br from-white to-blue-50 text-center">
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
@@ -134,9 +188,32 @@ export const PublicGamePlayer = () => {
                      
                      <h2 class="text-base md:text-base font-bold text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
                      <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
-                     
+
+                     <!-- Hasil Level -->
+                     <template x-if="levelResult">
+                        <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 shadow-lg" :class="levelResult.passed ? 'border-green-300' : 'border-[#FFC107]'">
+                           <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1" x-text="levelCount() > 1 ? 'Hasil Level ' + currentLevel : 'Hasil Permainan'"></div>
+                           <div class="text-4xl font-black" :class="levelResult.passed ? 'text-green-600' : 'text-[#FF5722]'" x-text="levelResult.percent + '%'"></div>
+                           <div class="text-xs font-bold text-slate-500 mt-1" x-text="'Nilai minimal lulus: ' + levelResult.passPercentage + '%'"></div>
+                           <template x-if="levelResult.needLogin">
+                              <p class="mt-3 text-sm font-bold text-amber-700">Skor belum tersimpan. Login untuk menyimpan skor dan membuka level berikutnya.</p>
+                           </template>
+                           <template x-if="levelResult.error">
+                              <p class="mt-3 text-sm font-bold text-red-600" x-text="levelResult.error"></p>
+                           </template>
+                           <template x-if="!levelResult.needLogin && !levelResult.error">
+                              <p class="mt-3 text-sm font-black" :class="levelResult.passed ? 'text-green-700' : 'text-slate-600'" x-text="levelResult.passed ? (levelResult.nextLevel ? 'Lulus! Level ' + levelResult.nextLevel + ' sekarang terbuka.' : (levelResult.upcoming ? 'Lulus! Level berikutnya segera hadir.' : 'Lulus! Semua level selesai.')) : 'Belum lulus. Coba lagi untuk mencapai nilai minimal.'"></p>
+                           </template>
+                           <div class="mt-5 flex flex-col sm:flex-row gap-3">
+                              <button x-show="levelResult.nextLevel" @click="startLevel(levelResult.nextLevel)" class="flex-1 bg-[#FF5722] text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-[#E64A19] shadow-md">Level Berikutnya</button>
+                              <button @click="startLevel(currentLevel)" class="flex-1 bg-white border-2 border-[#1A237E] text-[#1A237E] py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-50">Ulangi Level</button>
+                              <button x-show="levelCount() > 1" @click="openLevelMap()" class="flex-1 bg-[#1A237E] text-[#FFC107] py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-indigo-900">Peta Level</button>
+                           </div>
+                        </div>
+                     </template>
+
                      <!-- Stats Grid -->
-                     <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+                     <div x-show="activeGame?.gameType === 'QUIZ' || activeGame?.gameType === 'FILL_THE_BLANK'" class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
                            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
                            <div class="text-base md:text-lg font-bold text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
@@ -206,7 +283,100 @@ export const PublicGamePlayer = () => {
           duelId: null,
           reflectionText: '',
           isJournalSaved: false,
-          
+          // --- Level ---
+          allQuestions: [],
+          progress: { passPercentage: 70, levels: [], upcoming: false, loggedIn: false },
+          currentLevel: 1,
+          showLevelMap: false,
+          levelResult: null,
+          quizAnswers: {},
+          ftbAnswers: {},
+
+          levelCount() {
+            return this.progress.levels.length;
+          },
+
+          async loadProgress() {
+            try {
+              const res = await fetch('/api/projects/' + this.activeGame.id + '/progress');
+              const json = await res.json();
+              if (json.success) { this.progress = json.data; return; }
+            } catch (e) { console.error('Gagal memuat peta level:', e); }
+            this.progress = { passPercentage: 70, levels: [{ level: 1, unlocked: true, passed: false, bestScore: 0, percent: 0, maxScore: 0 }], upcoming: false, loggedIn: false };
+          },
+
+          async openLevelMap() {
+            await this.loadProgress();
+            this.gameFinished = false;
+            this.levelResult = null;
+            this.showLevelMap = true;
+          },
+
+          async startLevel(level) {
+            const lv = this.progress.levels.find(l => l.level === level);
+            if (!lv || !lv.unlocked) { alert('Level ' + level + ' masih terkunci.'); return; }
+
+            this.currentLevel = level;
+            this.currentIndex = 0;
+            this.currentScore = 0;
+            this.correctCount = 0;
+            this.wrongCount = 0;
+            this.selectedAnswer = null;
+            this.showFeedback = false;
+            this.userFTBAnswers = [];
+            this.submissionResults = [];
+            this.quizAnswers = {};
+            this.ftbAnswers = {};
+            this.levelResult = null;
+            this.gameData = null;
+
+            const type = this.activeGame.gameType;
+            if (type === 'WORD_SEARCH' || type === 'CROSSWORD') {
+              const base = type === 'WORD_SEARCH' ? '/api/word-search/' : '/api/crossword/';
+              const gRes = await fetch(base + this.activeGame.id + '?level=' + level);
+              const gJson = await gRes.json();
+              if (!gJson.success || !gJson.data) { alert('Data level ini tidak ditemukan.'); return; }
+              this.gameData = gJson.data;
+              this.maxScore = gJson.data.score || 0;
+            } else {
+              this.questions = this.allQuestions.filter(q => (q.level || 1) === level);
+              if (this.questions.length === 0) { alert('Level ini belum memiliki soal.'); return; }
+              this.maxScore = this.questions.reduce((acc, q) => acc + (q.score || this.getPoints(q.difficulty)), 0);
+            }
+
+            this.showLevelMap = false;
+            this.gameFinished = false;
+            this.isPlaying = true;
+          },
+
+          // Akhir level: jawaban dikirim ke server untuk dinilai & disimpan (perlu login)
+          async finishLevel(payload) {
+            this.gameFinished = true;
+            const localPercent = this.maxScore > 0 ? Math.round(this.currentScore * 100 / this.maxScore) : 0;
+            if (!this.progress.loggedIn) {
+              this.levelResult = { needLogin: true, percent: localPercent, passPercentage: this.progress.passPercentage };
+              return;
+            }
+            try {
+              const res = await fetch('/api/projects/' + this.activeGame.id + '/levels/' + this.currentLevel + '/finish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload || {})
+              });
+              const json = await res.json();
+              if (!res.ok) {
+                this.levelResult = { error: json.error || 'Skor gagal disimpan.', percent: localPercent, passPercentage: this.progress.passPercentage };
+                return;
+              }
+              this.levelResult = json;
+              this.currentScore = json.score;
+              this.maxScore = json.maxScore;
+              await this.loadProgress();
+            } catch (e) {
+              this.levelResult = { error: 'Terjadi kesalahan jaringan. Skor belum tersimpan.', percent: localPercent, passPercentage: this.progress.passPercentage };
+            }
+          },
+
           async playGame(id) {
             console.log('Playing public game:', id);
             try {
@@ -221,40 +391,25 @@ export const PublicGamePlayer = () => {
               const json = await res.json();
               if(json.success) {
                 this.activeGame = json.data;
-                this.questions = json.data.questions || [];
-                if(this.questions.length === 0) {
-                   alert('Game ini belum memiliki soal.');
-                   return;
-                }
-                this.maxScore = this.questions.reduce((acc, q) => acc + (q.score || this.getPoints(q.difficulty)), 0);
-                this.currentIndex = 0;
-                this.currentScore = 0;
-                this.correctCount = 0;
-                this.wrongCount = 0;
-                this.selectedAnswer = null;
-                this.showFeedback = false;
-                this.gameFinished = false;
-                this.userFTBAnswers = [];
-                this.submissionResults = [];
-                this.gameData = null;
+                this.allQuestions = json.data.questions || [];
                 this.reflectionText = '';
                 this.isJournalSaved = false;
-                
+
                 const urlParams = new URLSearchParams(window.location.search);
                 this.duelId = urlParams.get('duel');
 
-                if (this.activeGame.gameType === 'WORD_SEARCH') {
-                  const wsRes = await fetch('/api/word-search/' + id);
-                  const wsJson = await wsRes.json();
-                  if (wsJson.success && wsJson.data) {
-                    this.gameData = wsJson.data;
-                  } else {
-                    alert('Data Word Search tidak ditemukan.');
-                    return;
-                  }
+                await this.loadProgress();
+                if (this.progress.levels.length === 0) {
+                   alert('Game ini belum memiliki soal.');
+                   return;
                 }
-
-                this.isPlaying = true;
+                // Game bertingkat: tampilkan peta level; game satu level langsung dimainkan
+                if (this.levelCount() > 1 || this.progress.upcoming) {
+                  this.openLevelMap();
+                  this.isPlaying = true;
+                } else {
+                  await this.startLevel(1);
+                }
               } else {
                  alert('Gagal memuat game dari server.');
               }
@@ -272,6 +427,7 @@ export const PublicGamePlayer = () => {
           selectAnswer(opt) {
             if(this.showFeedback) return;
             this.selectedAnswer = opt;
+            this.quizAnswers[this.questions[this.currentIndex].id] = opt;
             
             if(opt === this.questions[this.currentIndex].correctAnswer) {
                this.currentScore += (this.questions[this.currentIndex].score || this.getPoints(this.questions[this.currentIndex].difficulty));
@@ -305,6 +461,7 @@ export const PublicGamePlayer = () => {
 
           async checkAnswerFTB() {
             const question = this.questions[this.currentIndex];
+            this.ftbAnswers[question.id] = [...this.userFTBAnswers];
             const res = await fetch('/api/projects/' + this.activeGame.id + '/submit', {
               method: 'POST',
               headers: {'Content-Type': 'application/json'},
@@ -331,7 +488,7 @@ export const PublicGamePlayer = () => {
               this.userFTBAnswers = [];
               this.submissionResults = [];
             } else {
-              this.gameFinished = true;
+              this.finishLevel({ answers: this.activeGame.gameType === 'QUIZ' ? this.quizAnswers : this.ftbAnswers });
             }
           },
 
@@ -441,5 +598,6 @@ export const PublicGamePlayer = () => {
       };
     </script>
     ${WordSearchGameScript()}
+    ${CrosswordGameScript()}
   `;
 };

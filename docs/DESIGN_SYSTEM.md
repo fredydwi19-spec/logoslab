@@ -62,6 +62,9 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
   - ⚠️ Tabel Semua Proyek (`KetuaTimAllProjects.tsx`) masih memakai warna lain: DRAFT kuning, PUBLISHED abu-abu, ACCEPTED_PAKAR hijau. Perlu diseragamkan.
   - Game terbit yang sedang menambah level tampil dengan label "LEVEL BARU: <status>" dan warna mengikuti status level baru tersebut (fungsi `statusLabel` dan `workflowStatus` di tiap dashboard).
 - **Level terkunci (sudah terbit):** tab level diberi ikon gembok (`bi-lock-fill`) atau tulisan "· terbit", dan di atas editor tampil kotak hijau "Level N sudah terbit dan sedang dimainkan, jadi tidak bisa diubah." Tombol simpan dan tambah soal disembunyikan di level itu.
+- **Peta level pemain (`/play`):** kartu per level dalam grid (1 kolom HP, 2 tablet, 3 desktop). Lulus = border hijau + ikon `bi-patch-check-fill` + tombol garis "Main Lagi"; terbuka = border Highlight + ikon `bi-unlock-fill` + tombol Accent "Mainkan"; terkunci = abu-abu transparan + ikon `bi-lock-fill` + syarat membuka; "Segera hadir" = kartu garis putus-putus dengan ikon `bi-hourglass-split`.
+- **Hasil level:** kotak putih dengan persentase besar (hijau jika lulus, Accent jika belum), nilai minimal lulus, dan tombol Level Berikutnya (Accent) / Ulangi Level (garis Primary) / Peta Level (Primary).
+- Halaman di luar dashboard yang memakai ikon (`/play`, `/materi`, `/duel`) wajib memuat CSS Bootstrap Icons sendiri.
 - **Tombol "+ Tambah Level":** tombol garis oranye (latar putih, border dan teks Accent) di kolom Aksi tabel proyek Pembuat Game.
 - **Grafik (Chart.js):** di layar di bawah 640px, label panjang dipecah per kata (array) dan ukuran huruf label 10px agar tidak terpotong di tepi grafik (contoh: spider chart di `KetuaTimDashboard.tsx`).
 - **Modal dan panel samping:** harus berada di atas sidebar. Sidebar memakai `z-[100]`, jadi modal memakai `z-[150]` ke atas (contoh: form proyek `z-[150]`, Diskusi Proyek `z-[210]`/`z-[220]`).

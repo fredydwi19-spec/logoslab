@@ -218,7 +218,16 @@ export const CrosswordGameScript = () => `
             if (this.clues.every(c => c.alreadyFound)) {
               this.showSummary = true;
               clearInterval(this.timerInterval);
+              this.finishLevel();
             }
+          },
+
+          // Kirim jawaban clue yang sudah ditemukan ke pemutar level (/play); server yang menilai
+          finishLevel() {
+            clearInterval(this.timerInterval);
+            const answers = {};
+            this.clues.forEach((c, i) => { if (c.alreadyFound) answers[i] = c.answer; });
+            this.$dispatch('game-level-finish', { answers });
           },
 
           getCellStatus(r, c) {
@@ -260,7 +269,7 @@ export const CrosswordGameScript = () => `
 
 export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gameData', isReadOnly = 'false' }: { projectVar?: string, gameDataVar?: string, isReadOnly?: string }) => {
   return `
-    <div x-data="crosswordGame(\${projectVar}, \${gameDataVar}, \${isReadOnly})" 
+    <div x-data="crosswordGame(${projectVar}, ${gameDataVar}, ${isReadOnly})" 
          class="max-w-6xl mx-auto space-y-8 p-4 animate-in fade-in duration-700">
       
       <!-- Header Stats -->
@@ -278,6 +287,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
            </div>
         </div>
         
+        <button type="button" x-show="window.location.pathname.startsWith('/play/')" @click="finishLevel()" class="w-full md:w-auto bg-[#FF5722] text-white px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#E64A19] transition-all">Selesai &amp; Lihat Hasil</button>
         <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
           <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
             <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest">WAKTU</div>
