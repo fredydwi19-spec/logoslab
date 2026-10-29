@@ -3,6 +3,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
   const safePage = currentPage.replace(/'/g, "\\'").replace(/\n/g, " ");
 
   return `
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- ===== LOGOS AI ASSISTANT FLOATING WIDGET ===== -->
     <div
       id="logosAIWidget"
@@ -21,11 +22,11 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-        class="mb-4 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden"
+        class="mb-4 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden"
         style="box-shadow: 0 25px 60px rgba(26,35,126,0.25);"
       >
         <!-- Header -->
-        <div class="bg-[#1A237E] px-5 py-4 flex items-center justify-between border-b-4 border-[#FFC107] shrink-0">
+        <div class="bg-[#1A237E] px-5 py-2.5 flex items-center justify-between border-b-4 border-[#FFC107] shrink-0">
           <div class="flex items-center gap-3">
             <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-8 w-auto bg-white rounded-lg p-1 shadow-sm" onerror="this.style.display='none'"/>
             <div>
@@ -35,7 +36,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
           </div>
           <button
             @click="isOpen = false"
-            class="text-white/50 hover:text-white text-2xl font-black transition-colors leading-none"
+            class="text-white/50 hover:text-white text-lg font-black transition-colors leading-none"
             aria-label="Tutup chat"
           >&times;</button>
         </div>
@@ -56,7 +57,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
           <template x-if="messages.length === 0">
             <div class="flex items-start gap-3">
               <div class="h-8 w-8 rounded-full bg-[#1A237E] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
-              <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 max-w-[80%] shadow-sm">
+              <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-2 text-sm max-w-[80%] shadow-sm">
                 <p class="text-[#1A237E] text-sm font-medium">Halo! Saya Logos AI Assistant 👋</p>
                 <p class="text-slate-500 text-xs mt-1">Saya siap membantu Anda di halaman <strong x-text="currentPage"></strong>. Apa yang ingin Anda tanyakan?</p>
               </div>
@@ -69,7 +70,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
               <!-- User Bubble -->
               <template x-if="msg.role === 'user'">
                 <div class="flex justify-end">
-                  <div class="bg-[#1A237E] text-white rounded-2xl rounded-tr-none px-4 py-3 max-w-[80%] shadow-md">
+                  <div class="bg-[#1A237E] text-white rounded-2xl rounded-tr-none p-2 text-sm max-w-[80%] shadow-md">
                     <p class="text-sm font-medium" x-text="msg.text"></p>
                   </div>
                 </div>
@@ -80,8 +81,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
                 <div class="flex items-start gap-3">
                   <div class="h-8 w-8 rounded-full bg-[#1A237E] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
                   <div class="flex flex-col gap-1 max-w-[80%]">
-                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
-                      <p class="text-[#1A237E] text-sm font-medium leading-relaxed" x-text="msg.text"></p>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3 shadow-sm prose prose-sm max-w-none text-justify text-[#1A237E] leading-relaxed [&>ol]:list-decimal [&>ol]:pl-5 [&>ul]:list-disc [&>ul]:pl-5 [&>p]:mb-2" x-html="parseMarkdown(msg.text)">
                     </div>
                     <!-- Feedback Row: "Was this helpful?" -->
                     <div class="flex items-center gap-2 px-1" x-show="msg.feedback === null || msg.feedback !== null">
@@ -112,7 +112,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
           <!-- Loading / Typing Indicator -->
           <div x-show="isLoading" style="display:none;" class="flex items-start gap-3">
             <div class="h-8 w-8 rounded-full bg-[#1A237E] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
-            <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+            <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-2 text-sm shadow-sm">
               <div class="flex gap-1 items-center h-4">
                 <span class="h-2 w-2 bg-[#1A237E] rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
                 <span class="h-2 w-2 bg-[#1A237E] rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
@@ -161,17 +161,17 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
         </div>
         <button
           @click="toggleWidget()"
-          class="h-16 w-16 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95"
+          class="h-12 w-12 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95"
           style="box-shadow: 0 8px 30px rgba(255,87,34,0.5);"
           :title="isOpen ? 'Tutup AI Assistant' : 'Buka AI Assistant'"
           aria-label="Toggle Logos AI Assistant"
         >
           <!-- Chat icon when closed -->
-          <svg x-show="!isOpen" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg x-show="!isOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           <!-- X icon when open -->
-          <svg x-show="isOpen" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <svg x-show="isOpen" style="display:none;" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -191,6 +191,12 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
 
           init() {
             this.loadFromStorage();
+          },
+
+          parseMarkdown(text) {
+            if (!text) return '';
+            // If marked library is loaded, use it. Otherwise return text as is.
+            return window.marked ? window.marked.parse(text) : text;
           },
 
           toggleWidget() {

@@ -1,10 +1,10 @@
 export const BankSoalTtsUI = () => {
   return `
-    <div class="p-6 md:p-10 space-y-8" x-data="bankSoalTtsData()">
+    <div class="p-6 md:p-6 space-y-8" x-data="bankSoalTtsData()">
       <!-- Header -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="text-xl md:text-2xl font-bold text-[#1A237E] font-poppins">Bank Soal TTS</h1>
+          <h1 class="text-base md:text-lg font-bold text-[#1A237E] font-poppins">Bank Soal TTS</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola petunjuk dan jawaban Teka-Teki Silang.</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -13,13 +13,13 @@ export const BankSoalTtsUI = () => {
             <input type="text" x-model="searchQuery" placeholder="Cari clue..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#1A237E] outline-none">
           </div>
           <div class="flex gap-2">
-            <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
+            <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="p-2 text-sm bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
               <i class="bi bi-trash"></i> <span x-text="'Hapus (' + selectedIds.length + ')'"></span>
             </button>
-            <button @click="openImportModal = true" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2 flex-1 justify-center sm:flex-none">
+            <button @click="openImportModal = true" class="p-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2 flex-1 justify-center sm:flex-none">
               <i class="bi bi-file-earmark-excel"></i> Import Excel
             </button>
-            <button @click="openFormModal()" class="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md flex-1 justify-center sm:flex-none">
+            <button @click="openFormModal()" class="p-2 text-sm bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md flex-1 justify-center sm:flex-none">
               <i class="bi bi-plus-lg"></i> Tambah Soal
             </button>
           </div>
@@ -45,10 +45,10 @@ export const BankSoalTtsUI = () => {
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template x-if="loading">
-                <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+                <tr><td colspan="5" class="p-5 text-center text-slate-500">Memuat data...</td></tr>
               </template>
               <template x-if="!loading && soalList.length === 0">
-                <tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal TTS.</td></tr>
+                <tr><td colspan="5" class="p-5 text-center text-slate-500">Belum ada soal di Bank Soal TTS.</td></tr>
               </template>
               <template x-for="soal in filteredSoalList()" :key="soal.id">
                 <tr class="hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50': selectedIds.includes(soal.id)}">
@@ -112,8 +112,8 @@ export const BankSoalTtsUI = () => {
             </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-            <button @click="showForm = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitForm()" class="px-4 py-2 text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
+            <button @click="showForm = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
+            <button @click="submitForm()" class="p-2 text-sm text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
           </div>
         </div>
       </div>
@@ -133,15 +133,15 @@ export const BankSoalTtsUI = () => {
             <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition-colors">
               <input type="file" id="fileImportTTS" accept=".xlsx,.xls" class="hidden" @change="handleFileChange">
               <label for="fileImportTTS" class="cursor-pointer flex flex-col items-center">
-                <i class="bi bi-file-earmark-excel text-3xl mb-2 text-green-500"></i>
+                <i class="bi bi-file-earmark-excel text-base mb-2 text-green-500"></i>
                 <span class="text-sm font-semibold text-slate-700" x-text="selectedFileName || 'Klik untuk memilih file Excel (.xlsx)'"></span>
                 <span class="text-xs text-slate-400 mt-1">Hanya file .xlsx / .xls yang diterima</span>
               </label>
             </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-            <button @click="openImportModal = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="px-4 py-2 text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
+            <button @click="openImportModal = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
+            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="p-2 text-sm text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
               <span x-text="isImporting ? 'Mengimpor...' : 'Import'"></span>
             </button>
           </div>

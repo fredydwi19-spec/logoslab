@@ -338,7 +338,7 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
               </svg>
             </div>
             <div>
-              <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-tighter leading-none">Editor Teka-Teki Silang</h2>
+              <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-tighter leading-none">Editor Teka-Teki Silang</h2>
               <div class="flex items-center gap-2 mt-2">
                 <span class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">Penyusun Crossword Edukatif</span>
                 <span class="h-1 w-1 bg-slate-300 rounded-full"></span>
@@ -352,15 +352,15 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
           </div>
           
           <div class="flex flex-wrap gap-3 w-full xl:w-auto">
-            <button @click="autoGenerateLayout()" class="flex-1 xl:flex-none bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-700 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-emerald-950 active:border-b-0 active:translate-y-1">
+            <button @click="autoGenerateLayout()" class="flex-1 xl:flex-none bg-emerald-600 text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-700 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-emerald-950 active:border-b-0 active:translate-y-1">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                GENERATE GRID OTOMATIS
             </button>
-            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
+            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
                <svg x-show="!isSaving" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                <span x-text="isSaving ? 'UPLOADING...' : 'SIMPAN KE CLOUD'"></span>
             </button>
-            <button @click="previewGame()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
+            <button @click="previewGame()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                PREVIEW GAME
             </button>
@@ -370,7 +370,7 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-10">
           <!-- Left Panel: Form Input (7 cols) -->
           <div class="xl:col-span-7 space-y-8">
-            <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl space-y-6">
+            <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-xl space-y-6">
               <div class="flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                   <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Tingkat Kesulitan</label>
@@ -378,14 +378,14 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
                     <template x-for="diff in ['EASY', 'MEDIUM', 'HARD']">
                       <button @click="difficulty = diff" 
                               :class="difficulty === diff ? 'bg-[#1A237E] text-[#FFC107] border-[#1A237E] shadow-lg scale-105' : 'bg-slate-50 text-slate-400 border-slate-100'"
-                              class="py-3 rounded-xl border-2 font-black text-[10px] transition-all uppercase tracking-widest"
+                              class="py-2 rounded-xl border-2 font-black text-[10px] transition-all uppercase tracking-widest"
                               x-text="diff"></button>
                     </template>
                   </div>
                 </div>
                 <div class="md:w-1/3">
                   <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Ukuran Grid</label>
-                  <select x-model="gridSize" class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all cursor-pointer">
+                  <select x-model="gridSize" class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all cursor-pointer">
                     <option value="10">10 x 10</option>
                     <option value="12">12 x 12</option>
                     <option value="15">15 x 15</option>
@@ -399,7 +399,7 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
                   Daftar Clue & Jawaban
                   <span class="bg-[#1A237E] text-[#FFC107] text-[10px] px-2 py-0.5 rounded-full" x-text="clues.length"></span>
                 </h3>
-                <button @click="addClue()" class="bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
+                <button @click="addClue()" class="bg-[#FFC107] text-[#1A237E] p-2 text-sm rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                   Tambah Clue
                 </button>
@@ -424,38 +424,38 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
                             <span class="text-[8px] font-black text-orange-500 animate-pulse">! CONFLICT</span>
                           </template>
                         </div>
-                        <input type="number" x-model="clue.number" class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all" :class="clue.status === 'UNPLACED' ? 'border-red-200' : (clue.status === 'CONFLICT' ? 'border-orange-200' : '')">
+                        <input type="number" x-model="clue.number" class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all" :class="clue.status === 'UNPLACED' ? 'border-red-200' : (clue.status === 'CONFLICT' ? 'border-orange-200' : '')">
                       </div>
                       <div class="md:col-span-4">
                         <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Arah</label>
-                        <select x-model="clue.direction" class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all appearance-none cursor-pointer">
+                        <select x-model="clue.direction" class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all appearance-none cursor-pointer">
                           <option value="ACROSS">Mendatar (Across)</option>
                           <option value="DOWN">Menurun (Down)</option>
                         </select>
                       </div>
                       <div class="md:col-span-6">
                         <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Jawaban (A-Z)</label>
-                        <input type="text" x-model="clue.answer" @input="clue.answer = clue.answer.toUpperCase().replace(/[^A-Z]/g, '')" placeholder="CONTOH: IMAN" class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-black text-[#FF5722] placeholder:text-slate-300 outline-none focus:border-[#FFC107] transition-all">
+                        <input type="text" x-model="clue.answer" @input="clue.answer = clue.answer.toUpperCase().replace(/[^A-Z]/g, '')" placeholder="CONTOH: IMAN" class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-black text-[#FF5722] placeholder:text-slate-300 outline-none focus:border-[#FFC107] transition-all">
                       </div>
 
                       <!-- Position -->
                       <div class="md:col-span-3">
                         <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Baris (Row)</label>
-                        <input type="number" x-model="clue.startRow" class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all">
+                        <input type="number" x-model="clue.startRow" class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all">
                       </div>
                       <div class="md:col-span-3">
                         <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Kolom (Col)</label>
-                        <input type="number" x-model="clue.startCol" class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all">
+                        <input type="number" x-model="clue.startCol" class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-black text-[#1A237E] outline-none focus:border-[#FFC107] transition-all">
                       </div>
                       <div class="md:col-span-6">
                         <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Pertanyaan / Clue</label>
-                        <input type="text" x-model="clue.clue" placeholder="Pertanyaan untuk jawaban ini..." class="w-full bg-white border-2 border-slate-100 rounded-xl py-3 px-4 font-bold text-slate-700 placeholder:text-slate-300 outline-none focus:border-[#FFC107] transition-all">
+                        <input type="text" x-model="clue.clue" placeholder="Pertanyaan untuk jawaban ini..." class="w-full bg-white border-2 border-slate-100 rounded-xl py-2 px-4 font-bold text-slate-700 placeholder:text-slate-300 outline-none focus:border-[#FFC107] transition-all">
                       </div>
 
                       <!-- Explanation -->
                       <div class="md:col-span-12">
                         <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Penjelasan Edukatif</label>
-                        <textarea x-model="clue.explanation" placeholder="Penjelasan yang tampil setelah kata terjawab..." class="w-full bg-white border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium text-slate-600 placeholder:text-slate-300 outline-none focus:border-[#FFC107] transition-all h-24 resize-none"></textarea>
+                        <textarea x-model="clue.explanation" placeholder="Penjelasan yang tampil setelah kata terjawab..." class="w-full bg-white border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium text-slate-600 placeholder:text-slate-300 outline-none focus:border-[#FFC107] transition-all h-24 resize-none" rows="3"></textarea>
                       </div>
                     </div>
                   </div>
@@ -466,7 +466,7 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
 
           <!-- Right Panel: Preview (5 cols) -->
           <div class="xl:col-span-5 space-y-8">
-             <div class="bg-[#1A237E] p-6 sm:p-10 rounded-[3rem] shadow-2xl border-8 border-white/10 relative overflow-hidden flex items-center justify-center min-h-[500px]">
+             <div class="bg-[#1A237E] p-6 sm:p-6 rounded-[3rem] shadow-2xl border-8 border-white/10 relative overflow-hidden flex items-center justify-center min-h-[500px]">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                 
                 <div class="relative z-10 w-full overflow-auto max-h-[450px] p-2 flex justify-center custom-scrollbar">
@@ -500,7 +500,7 @@ export const CrosswordEditor = ({ projectVar = 'activeProject' }: { projectVar?:
              </div>
 
              <!-- Guidelines -->
-             <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl space-y-4">
+             <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-xl space-y-4">
                 <h4 class="text-xs font-black text-[#1A237E] uppercase tracking-widest flex items-center gap-2">
                   <div class="h-2 w-2 bg-[#FF5722] rounded-full animate-pulse"></div>
                   Panduan Penyusunan

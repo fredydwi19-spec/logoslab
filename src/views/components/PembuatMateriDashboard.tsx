@@ -1,17 +1,20 @@
 import { ProjectHeader } from "./ProjectHeader";
 
-export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers }: { myProjects: any[], publishedProjects: any[], allUsers: any[] }) => {
+export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers, analytics }: { myProjects: any[], publishedProjects: any[], allUsers: any[], analytics?: any }) => {
   const myProjectsJson = JSON.stringify(myProjects).replace(/</g, '\\u003c');
   const publishedProjectsJson = JSON.stringify(publishedProjects).replace(/</g, '\\u003c');
   const allUsersJson = JSON.stringify(allUsers).replace(/</g, '\\u003c');
+  const analyticsJson = analytics ? JSON.stringify(analytics).replace(/</g, '\\u003c') : 'null';
 
   return `
     <script id="pembuatMateriProjectsData" type="application/json">${myProjectsJson}</script>
     <script id="pembuatMateriPublishedData" type="application/json">${publishedProjectsJson}</script>
     <script id="pembuatMateriUsersData" type="application/json">${allUsersJson}</script>
+    <script id="pembuatMateriAnalyticsData" type="application/json">${analyticsJson}</script>
     <script>
       document.addEventListener('alpine:init', () => {
         Alpine.data('pembuatMateriDashboard', () => ({
+          analytics: JSON.parse(document.getElementById('pembuatMateriAnalyticsData').textContent),
           activeProject: null,
           materiContents: [],
           sections: [],
@@ -24,9 +27,73 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           publishedProjects: JSON.parse(document.getElementById('pembuatMateriPublishedData').textContent || '[]'),
           allUsers: JSON.parse(document.getElementById('pembuatMateriUsersData').textContent || '[]'),
           activeTab: 'DRAFT',
+          menuTab: new URLSearchParams(window.location.search).get('tab') || 'dashboard',
           searchActive: '',
           searchPublished: '',
           uploading: false,
+
+          filterKey: '',
+          filterValue: '',
+          filterStart: '',
+          filterEnd: '',
+          appliedFilter: { key: '', value: '', start: '', end: '' },
+
+          applyFilter() {
+            this.appliedFilter = {
+              key: this.filterKey,
+              value: this.filterValue,
+              start: this.filterStart,
+              end: this.filterEnd
+            };
+          },
+
+          resetFilter() {
+            this.filterKey = '';
+            this.filterValue = '';
+            this.filterStart = '';
+            this.filterEnd = '';
+            this.appliedFilter = { key: '', value: '', start: '', end: '' };
+          },
+
+          applyDynamicFilter(list) {
+            if (!list || !Array.isArray(list)) return [];
+            if (!this.appliedFilter.key) {
+              if (this.searchActive) {
+                return list.filter(p => p.title.toLowerCase().includes(this.searchActive.toLowerCase()));
+              }
+              return list;
+            }
+            return list.filter(p => {
+              const { key, value, start, end } = this.appliedFilter;
+              
+              if (this.searchActive && !p.title.toLowerCase().includes(this.searchActive.toLowerCase())) {
+                return false;
+              }
+              
+              if (key === 'title_materi') {
+                if (!value) return false;
+                return p.title?.toLowerCase().includes(value.toLowerCase());
+              }
+              if (key === 'type_materi') {
+                if (!value) return false;
+                return p.materiType === value;
+              }
+              if (key === 'status') {
+                if (!value) return false;
+                return p.status === value;
+              }
+              if (key === 'deadline') {
+                if (!p.deadline) return false;
+                const d = new Date(p.deadline);
+                const sd = start ? new Date(start) : null;
+                const ed = end ? new Date(end) : null;
+                if (sd && d < sd) return false;
+                if (ed && d > ed) return false;
+                return true;
+              }
+              return false;
+            });
+          },
 
           getUserName(id) {
             const u = this.allUsers.find(u => u.id === id);
@@ -34,19 +101,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           },
 
           filteredActiveProjects() {
-            const statusMap = {
-              'DRAFT':          ['DRAFT'],
-              'REVIEW_PAKAR':   ['REVIEW_PAKAR'],
-              'REVISI_PAKAR':   ['REVISI_PAKAR', 'ACCEPTED_PAKAR'],
-              'REVIEW_KETUA':   ['REVIEW_KETUA'],
-              'REVISI_KETUA':   ['REVISI_KETUA', 'UNPUBLISHED'],
-            };
-            const allowed = statusMap[this.activeTab] || [];
-            return this.myProjects.filter(p => {
-              const matchTab = allowed.includes(p.status);
-              const matchSearch = !this.searchActive || p.title.toLowerCase().includes(this.searchActive.toLowerCase());
-              return matchTab && matchSearch;
-            });
+            return this.applyDynamicFilter(this.myProjects);
           },
 
           filteredPublishedProjects() {
@@ -251,22 +306,204 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
       <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
         <div class="flex items-center gap-4">
           <img src="/public/assets/logo-logoslab.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
-          <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Workspace Konten</h2>
+          <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight" x-text="activeProject ? 'Workspace Produksi Materi' : (menuTab === 'dashboard' ? 'Dashboard Analitik' : 'Manajemen Proyek')">Workspace Konten</h2>
+        </div>
+        <div class="flex items-center gap-4">
+           <div class="flex gap-2" x-show="!activeProject && menuTab === 'projects'">
+             <a href="/dashboard/pembuat?tab=projects" class="bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Proyek Saya</a>
+           </div>
         </div>
       </div>
 
-      <!-- Tab Panel & Project List -->
-      <div x-show="!activeProject" class="bg-white p-8 rounded-xl border border-slate-200 shadow-xl overflow-hidden">
-        <!-- Filter Tabs -->
-        <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-slate-100 p-2 rounded-2xl border border-slate-200">
-          <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-            <button @click="activeTab = 'DRAFT'" :class="activeTab === 'DRAFT' ? 'bg-[#1A237E] text-white shadow-md' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap">📝 DRAFT</button>
-            <button @click="activeTab = 'REVIEW_PAKAR'" :class="activeTab === 'REVIEW_PAKAR' ? 'bg-[#1A237E] text-white shadow-md' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap">⌛ REVIEW PAKAR</button>
-            <button @click="activeTab = 'REVISI_PAKAR'" :class="activeTab === 'REVISI_PAKAR' ? 'bg-[#1A237E] text-white shadow-md' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap"><i class="bi bi-exclamation-triangle"></i> REVISI PAKAR</button>
-            <button @click="activeTab = 'REVIEW_KETUA'" :class="activeTab === 'REVIEW_KETUA' ? 'bg-[#1A237E] text-white shadow-md' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap">⌛ REVIEW KETUA</button>
-            <button @click="activeTab = 'REVISI_KETUA'" :class="activeTab === 'REVISI_KETUA' ? 'bg-[#1A237E] text-white shadow-md' : 'text-slate-500 hover:text-slate-700'" class="px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap"><i class="bi bi-exclamation-triangle"></i> REVISI KETUA</button>
+      <!-- ANALYTICS WIDGETS -->
+      <template x-if="menuTab === 'dashboard' && !activeProject && analytics">
+        <div class="space-y-6">
+          <!-- SECTION 1: GLOBAL PUBLISHED METRICS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gradient-to-r from-[#1A237E] to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Total Proyek Game Dipublish</p>
+                <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalStats.totalPublishedGames"></h3>
+              </div>
+              <div class="text-5xl opacity-80"><i class="bi bi-controller"></i></div>
+            </div>
+            <div class="bg-gradient-to-r from-[#FF5722] to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Proyek Materi Dipublish</p>
+                <h3 class="text-4xl font-black" x-text="analytics.globalStats.totalPublishedMaterials"></h3>
+              </div>
+              <div class="text-5xl opacity-80"><i class="bi bi-journal-text"></i></div>
+            </div>
           </div>
-          <input type="text" x-model="searchActive" placeholder="Cari Materi..." class="w-full md:w-64 border-2 border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-[#1A237E] outline-none font-bold">
+
+          <!-- SECTION 2: KEY PERFORMANCE INDEX (KPI Creator) -->
+          <div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="h-6 w-1.5 bg-[#1A237E] rounded-full"></span>
+              <h3 class="text-lg font-bold text-[#1A237E] uppercase tracking-widest">KPI Pembuat Materi</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Materi Dikerjakan</p>
+                <p class="text-2xl font-black text-[#1A237E]" x-text="analytics.creatorKpi.totalAssignedMaterials"></p>
+              </div>
+              <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Materi Sedang Dikerjakan</p>
+                <p class="text-2xl font-black text-[#FF5722]" x-text="analytics.creatorKpi.activeMaterialsCount"></p>
+              </div>
+              <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Waktu Penyelesaian</p>
+                <p class="text-sm font-black text-green-600 mt-2" x-text="analytics.creatorKpi.avgCompletionTimeFormatted"></p>
+              </div>
+              <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Revisi per Proyek</p>
+                <p class="text-2xl font-black text-purple-600" x-text="analytics.creatorKpi.avgRevisionCount"></p>
+              </div>
+            </div>
+            <!-- Tabel Peringkat Kecepatan Pengerjaan -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" x-data="{ sortAsc: true }">
+              <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
+                <h4 class="text-xs font-bold text-[#1A237E] uppercase tracking-widest">Peringkat Kecepatan Pengerjaan Materi</h4>
+                <button @click="sortAsc = !sortAsc; analytics.creatorKpi.speedRankedMaterials.reverse()" class="text-[10px] bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-black uppercase tracking-tighter text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                  <i class="bi" :class="sortAsc ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up'"></i>
+                  <span x-text="sortAsc ? 'Tercepat -> Terlambat' : 'Terlambat -> Tercepat'"></span>
+                </button>
+              </div>
+              <div class="max-h-48 overflow-y-auto">
+                <template x-if="analytics.creatorKpi.speedRankedMaterials.length === 0">
+                  <div class="p-6 text-center text-xs text-slate-400 font-bold italic">Belum ada proyek yang diselesaikan.</div>
+                </template>
+                <table class="w-full text-left border-collapse" x-show="analytics.creatorKpi.speedRankedMaterials.length > 0">
+                  <tbody>
+                    <template x-for="(proj, idx) in analytics.creatorKpi.speedRankedMaterials" :key="proj.id">
+                      <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                        <td class="p-3 pl-4">
+                          <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
+                        </td>
+                        <td class="p-3 text-sm font-semibold text-[#1A237E]" x-text="proj.title"></td>
+                        <td class="p-3 text-xs font-bold text-slate-500 text-right pr-4" x-text="proj.durationFormatted"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: POPULARITY & ENGAGEMENT SHOWCASE -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Top Played Games -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="h-6 w-1.5 bg-[#FFC107] rounded-full"></span>
+                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Game Paling Sering Dimainkan</h3>
+              </div>
+              <div class="space-y-3">
+                <template x-if="analytics.popularityStats.topPlayedGames.length === 0">
+                  <div class="text-xs text-slate-400 italic">Belum ada data permainan.</div>
+                </template>
+                <template x-for="(game, i) in analytics.popularityStats.topPlayedGames" :key="i">
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-3">
+                      <div class="text-lg opacity-50">🎮</div>
+                      <h4 class="text-sm font-semibold text-slate-700" x-text="game.title"></h4>
+                    </div>
+                    <div class="text-xs font-black bg-blue-100 text-blue-800 px-3 py-1 rounded-full"><span x-text="game.playCount"></span>x Dimainkan</div>
+                  </div>
+                </template>
+              </div>
+            </div>
+            
+            <!-- Top Accessed Materials -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="h-6 w-1.5 bg-[#FF5722] rounded-full"></span>
+                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Materi Paling Sering Diakses</h3>
+              </div>
+              <div class="space-y-3">
+                <template x-if="analytics.popularityStats.topAccessedMaterials.length === 0">
+                  <div class="text-xs text-slate-400 italic">Belum ada data materi.</div>
+                </template>
+                <template x-for="(mat, i) in analytics.popularityStats.topAccessedMaterials" :key="i">
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-3">
+                      <div class="text-lg opacity-50">📖</div>
+                      <h4 class="text-sm font-semibold text-slate-700" x-text="mat.title"></h4>
+                    </div>
+                    <div class="text-xs font-black bg-orange-100 text-orange-800 px-3 py-1 rounded-full"><span x-text="mat.accessCount"></span>x Diakses</div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Tab Panel & Project List -->
+      <div x-show="menuTab === 'projects' && !activeProject" class="bg-white p-8 rounded-xl border border-slate-200 shadow-xl overflow-hidden">
+        <!-- Dynamic Filter -->
+        <div class="flex flex-wrap items-center gap-3 w-full mb-6 p-4 bg-slate-50/80 rounded-xl border border-slate-200">
+          <div class="flex flex-col gap-1 w-48 shrink-0">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
+            <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              <option value="">-- Pilih Kriteria --</option>
+              <option value="title_materi">Judul Materi</option>
+              <option value="type_materi">Jenis Materi</option>
+              <option value="status">Status</option>
+              <option value="deadline">Tanggal Deadline</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
+            
+            <template x-if="filterKey === 'title_materi'">
+              <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+            </template>
+
+            <template x-if="filterKey === 'type_materi'">
+              <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <option value="">-- Pilih Jenis Materi --</option>
+                <option value="TEKS">TEKS</option>
+                <option value="VIDEO">VIDEO</option>
+                <option value="MANUAL">MANUAL</option>
+              </select>
+            </template>
+
+            <template x-if="filterKey === 'status'">
+              <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <option value="">-- Pilih Status --</option>
+                <option value="DRAFT">DRAFT</option>
+                <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
+                <option value="REVISI_PAKAR">REVISI PAKAR</option>
+                <option value="ACCEPTED_PAKAR">ACCEPTED PAKAR</option>
+                <option value="REVIEW_KETUA">REVIEW KETUA</option>
+                <option value="REVISI_KETUA">REVISI KETUA</option>
+                <option value="PUBLISHED">PUBLISHED</option>
+                <option value="UNPUBLISHED">UNPUBLISHED</option>
+              </select>
+            </template>
+
+            <template x-if="filterKey === 'deadline'">
+              <div class="flex gap-2">
+                <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <span class="self-center font-bold text-slate-400">-</span>
+                <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              </div>
+            </template>
+
+            <template x-if="!filterKey">
+              <div class="w-full border-2 border-slate-200 border-dashed rounded-lg py-2 px-3 text-sm text-slate-400 italic bg-white text-center shadow-sm">Pilih kriteria terlebih dahulu</div>
+            </template>
+          </div>
+          
+          <div class="flex gap-2 ml-auto shrink-0 self-end">
+            <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+              TERAPKAN
+            </button>
+            <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
+              RESET
+            </button>
+          </div>
         </div>
 
         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
@@ -292,10 +529,15 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                   <td class="px-6 py-4">
                     <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black tracking-widest border border-slate-200" x-text="p.status.replace(/_/g, ' ')"></span>
                   </td>
-                  <td class="px-6 py-4 text-right">
-                    <button @click="openProject(p.id)" class="bg-[#FF5722] text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-[#E64A19] shadow-md transition-all uppercase tracking-widest">
-                      <span x-text="p.status === 'DRAFT' || p.status.includes('REVISI') ? 'Kerjakan' : 'Lihat'"></span>
-                    </button>
+                  <td class="px-6 py-4 align-middle">
+                    <div class="flex items-center justify-end gap-2">
+                      <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
+                      </button>
+                      <button x-show="p.status === 'DRAFT' || p.status === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
+                      <button x-show="['REVISI_PAKAR', 'REVISI_KETUA'].includes(p.status)" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">PERBAIKI</button>
+                      <button x-show="['REVIEW_PAKAR', 'REVIEW_KETUA', 'ACCEPTED_PAKAR', 'PUBLISHED'].includes(p.status)" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
+                    </div>
                   </td>
                 </tr>
               </template>

@@ -5,44 +5,48 @@ export const Navbar = ({ user }: { user: any }) => {
   return `
     <nav class="header__nav">
       ${isLoggedIn ? `
-        <div class="user-dropdown" id="user-dropdown">
-          <button class="user-dropdown__trigger" id="user-dropdown-trigger">
-            <div class="user-dropdown__info">
-              <span class="user-dropdown__name">${user.name || user.username}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            <div class="user-dropdown__avatar">
-              ${user.profilePicture ? `<img src="${user.profilePicture}" alt="${user.username}">` : user.username.charAt(0).toUpperCase()}
-            </div>
+        <div x-data="{ openProfile: false }" class="relative">
+          <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-[#1A237E] to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-[#FFC107]">
+            ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
           </button>
-          <div class="user-dropdown__menu" id="user-dropdown-menu">
-            <a href="/dashboard/${rolePath}" class="user-dropdown__item">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
-              Dashboard
-            </a>
-            <a href="/profile" class="user-dropdown__item">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              Profil
-            </a>
-            <div class="user-dropdown__divider"></div>
-            <a href="/api/auth/logout" class="user-dropdown__item user-dropdown__item--logout">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              Keluar
-            </a>
+
+          <div x-show="openProfile" style="display:none;" 
+               x-transition:enter="transition ease-out duration-200"
+               x-transition:enter-start="opacity-0 scale-95"
+               x-transition:enter-end="opacity-100 scale-100"
+               class="absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+            
+            <div class="p-3">
+              <div class="bg-slate-50 p-3 rounded-xl flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-[#1A237E] text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
+                  ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                  <span class="font-bold text-slate-800 text-sm truncate">${user.name || user.username}</span>
+                  <span class="text-slate-500 text-xs truncate">${user.email || (user.username.toLowerCase().replace(/\s+/g, '') + '@logoslab.com')}</span>
+                  <span class="text-[9px] font-black text-[#FF5722] mt-1 tracking-widest uppercase">${user.role ? user.role.replace('_', ' ') : 'MEMBER'}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="border-t border-slate-100 my-1"></div>
+            
+            <div class="p-2 space-y-1">
+              <a href="/dashboard/${rolePath}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                <i class="bi bi-grid-1x2 text-lg"></i> Dashboard Utama
+              </a>
+              <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                <i class="bi bi-person-gear text-lg"></i> Pengaturan Profil
+              </a>
+            </div>
+            
+            <div class="border-t border-slate-100 my-1"></div>
+            
+            <div class="p-2">
+              <a href="/api/auth/logout" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-bold">
+                <i class="bi bi-box-arrow-right text-lg"></i> Keluar
+              </a>
+            </div>
           </div>
         </div>
       ` : `

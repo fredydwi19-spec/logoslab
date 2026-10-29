@@ -71,6 +71,13 @@
       "when": 1779365082299,
       "tag": "0009_silly_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1787624183925,
+      "tag": "0010_chemical_patch",
+      "breakpoints": true
     }
   ]
 }

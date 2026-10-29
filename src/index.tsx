@@ -8,9 +8,17 @@ import { wordSearchRoutes } from "./routes/word_search";
 import { crosswordRoutes } from "./routes/crossword";
 import { materiRoutes } from "./routes/materi";
 import { aiRoutes } from "./routes/ai";
+import { wordSearchRoutes } from "./routes/word_search";
+import { crosswordRoutes } from "./routes/crossword";
+import { materiRoutes } from "./routes/materi";
+import { aiRoutes } from "./routes/ai";
 import { dashboardRoutes } from "./routes/dashboard";
 import { bankSoalRoutes } from "./routes/bank_soal";
 import { bankSoalUiRoutes } from "./routes/bank_soal_ui";
+import { chatRoutes, projectChatRoutes } from "./routes/chat";
+import { userDashboardRoutes } from "./routes/userDashboard";
+import { quizDuelsRoutes } from "./routes/quizDuels";
+import { journalsRoutes } from "./routes/journals";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
 import { Navbar } from "./views/components/Navbar";
@@ -19,17 +27,23 @@ import { PersonalizedGames } from "./views/components/PersonalizedGames";
 import { GamesSection } from "./views/components/GamesSection";
 import { PublicGamePlayer } from "./views/components/PublicGamePlayer";
 import { ProfilePage } from "./views/pages/EditProfile";
+import { LandingPage } from "./views/pages/LandingPage";
 import { db } from "./db/db";
-import { users, projects, notifications, materiContents, materialSections, materialGlossary } from "./db/schema";
+import { users, projects, notifications, materiContents, materialSections, materialGlossary, gamePlayLogs, materialAccessLogs } from "./db/schema";
 import { KetuaTimDashboard } from "./views/components/KetuaTimDashboard";
 import { PembuatGameDashboard } from "./views/components/PembuatGameDashboard";
 import { PembuatMateriDashboard } from "./views/components/PembuatMateriDashboard";
 import { PakarDashboard } from "./views/components/PakarDashboard";
 import { MemberDashboard } from "./views/components/MemberDashboard";
+import { UserDashboard } from "./views/components/UserDashboard";
 import { KetuaTimAllProjects } from "./views/components/KetuaTimAllProjects";
-import { MateriSection } from "./views/components/MateriSection";
 import { MateriViewer, MateriViewerScript } from "./views/components/MateriViewer";
-import { eq, inArray, and, desc } from "drizzle-orm";
+import { DuelHubPage } from "./views/pages/DuelHubPage";
+import { DuelArenaPage } from "./views/pages/DuelArenaPage";
+import { UserGamesPage } from "./views/pages/UserGamesPage";
+import { UserMaterialsPage } from "./views/pages/UserMaterialsPage";
+import { UserJournalPage } from "./views/pages/UserJournalPage";
+import { eq, inArray, and, desc, sql } from "drizzle-orm";
 
 const app = new Elysia()
   .use(staticPlugin({
@@ -44,93 +58,23 @@ const app = new Elysia()
   )
   .get("/", async ({ jwt, cookie: { auth } }) => {
     let user: any = null;
-    let personalizedGamesHtml = "";
-    let onboardingModalHtml = "";
-
     if (auth?.value) {
       const payload: any = await jwt.verify(auth.value as string);
       if (payload) {
         const [userData] = await db.select().from(users).where(eq(users.id, payload.id));
         user = userData;
-
-        if (user) {
-          if (user.role === "USER" && !user.hasOnboarded) {
-            onboardingModalHtml = OnboardingModal();
-          }
-
-          if (user.role === "USER" && user.interests) {
-            const userInterests = user.interests.split(",");
-            const matchingGames = await db.select().from(projects).where(
-              and(
-                inArray(projects.category, userInterests),
-                eq(projects.type, "GAME"),
-                eq(projects.status, "PUBLISHED")
-              )
-            ).limit(10); // Ensure at least up to 10 for carousel
-            personalizedGamesHtml = PersonalizedGames({ games: matchingGames });
-          }
-        }
       }
     }
 
-    // Fetch all games for the main section
-    const allGames = await db.select().from(projects).where(
-      and(
-        eq(projects.type, "GAME"),
-        eq(projects.status, "PUBLISHED")
-      )
-    ).limit(25);
+    // Ambil maksimal 6 proyek (GAME/MATERI) yang sudah PUBLISHED
+    const publicGames = await db.select().from(projects).where(
+      eq(projects.status, "PUBLISHED")
+    ).limit(6);
 
-    const allMateris = await db.select().from(projects).where(
-      and(
-        eq(projects.type, "MATERI"),
-        eq(projects.status, "PUBLISHED")
-      )
-    ).limit(25);
-
-    const popularGames = [...allGames].sort(() => 0.5 - Math.random()).slice(0, 10);
-    const gamesSectionHtml = GamesSection({ allGames, popularGames });
-    const materiSectionHtml = MateriSection({ allMateris });
-
-    const html = await Bun.file("public/index.html").text();
-    const navbarHtml = Navbar({ user });
-
-    // Inject components
-    let dynamicHtml = html.replace(
-      /<nav class="header__nav">[\s\S]*?<\/nav>/,
-      navbarHtml
-    );
-
-    // Replace static games section with dynamic one
-    dynamicHtml = dynamicHtml.replace(
-      /<section class="section games" id="games">[\s\S]*?<\/section>/,
-      gamesSectionHtml + '\n' + materiSectionHtml
-    );
-
-    if (onboardingModalHtml) {
-      dynamicHtml = dynamicHtml.replace("</body>", `${onboardingModalHtml}\n${PublicGamePlayer()}\n</body>`);
-    } else {
-      dynamicHtml = dynamicHtml.replace("</body>", `${PublicGamePlayer()}\n</body>`);
-    }
-
-    if (personalizedGamesHtml) {
-      // Inject between Hero and Games Populer
-      dynamicHtml = dynamicHtml.replace(
-        /<\/section>\s*<!-- ========== GAMES CAROUSEL ========== -->/,
-        `</section>${personalizedGamesHtml}<!-- ========== GAMES CAROUSEL ========== -->`
-      );
-    }
-
-    const responseHeaders: Record<string, string> = {
-      "Content-Type": "text/html; charset=utf-8"
-    };
-
-    if (user) {
-      responseHeaders["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate";
-    }
-
-    return new Response(dynamicHtml, {
-      headers: responseHeaders
+    const html = LandingPage({ games: publicGames, user });
+    
+    return new Response(html, {
+      headers: { "Content-Type": "text/html; charset=utf-8" }
     });
   })
   .onError(({ code, error, set }) => {
@@ -163,6 +107,11 @@ const app = new Elysia()
   .use(bankSoalRoutes)
   .use(bankSoalUiRoutes)
   .use(dashboardRoutes)
+  .use(chatRoutes)
+  .use(projectChatRoutes)
+  .use(userDashboardRoutes)
+  .use(quizDuelsRoutes)
+  .use(journalsRoutes)
   .group("/dashboard", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
@@ -184,6 +133,114 @@ const app = new Elysia()
         const auth = cookie.auth;
         const payload = auth?.value ? await jwt.verify(auth.value as string) : null;
         return { user: payload ? { ...payload } : null };
+      })
+      .get("/profil", async ({ user }) => {
+        if (!user) return Response.redirect("/", 302);
+        
+        // Fetch full user data to get interests, etc.
+        const [fullUser] = await db.select().from(users).where(eq(users.id, Number((user as any).id)));
+        
+        return new Response(ProfilePage({ user: fullUser }), {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+          }
+        });
+      })
+      .get("/duels", async ({ user }) => {
+        if (!user) return Response.redirect("/", 302);
+        
+        const username = (user as any).username as string;
+        const userRole = (user as any).role as string;
+        const userId = Number((user as any).id);
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+        
+        const htmlResponse = Layout({
+          title: "Hub Duel 1v1",
+          username,
+          role: userRole,
+          children: DuelHubPage({ username, userId }),
+          notifications: userNotifications,
+          currentPage: "Mode Duel 1v1",
+          avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
+        });
+
+        return new Response(htmlResponse, {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
+          }
+        });
+      })
+      .get("/journal", async ({ user }) => {
+        if (!user) return Response.redirect("/", 302);
+        
+        const username = (user as any).username as string;
+        const userRole = (user as any).role as string;
+        const userId = Number((user as any).id);
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+
+        const htmlResponse = Layout({
+          title: "Jurnal Saya",
+          username,
+          role: userRole,
+          children: UserJournalPage(),
+          notifications: userNotifications,
+          currentPage: "Jurnal Saya",
+          avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
+        });
+
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
+        });
+      })
+      .get("/games", async ({ user }) => {
+        if (!user) return Response.redirect("/", 302);
+        
+        const username = (user as any).username as string;
+        const userRole = (user as any).role as string;
+        const userId = Number((user as any).id);
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+        
+        const games = await db.select().from(projects).where(and(eq(projects.status, "PUBLISHED"), eq(projects.type, "GAME")));
+
+        const htmlResponse = Layout({
+          title: "Jelajah Game",
+          username,
+          role: userRole,
+          children: UserGamesPage({ games }),
+          notifications: userNotifications,
+          currentPage: "Jelajah Game",
+          avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
+        });
+
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
+        });
+      })
+      .get("/materials", async ({ user }) => {
+        if (!user) return Response.redirect("/", 302);
+        
+        const username = (user as any).username as string;
+        const userRole = (user as any).role as string;
+        const userId = Number((user as any).id);
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+        
+        const materials = await db.select().from(projects).where(and(eq(projects.status, "PUBLISHED"), eq(projects.type, "MATERI")));
+
+        const htmlResponse = Layout({
+          title: "Materi Belajar",
+          username,
+          role: userRole,
+          children: UserMaterialsPage({ materials }),
+          notifications: userNotifications,
+          currentPage: "Materi Belajar",
+          avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
+        });
+
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
+        });
       })
       .get("/projects", async ({ user }) => {
         if (!user || (user as any).role !== "KETUA_TIM") {
@@ -210,6 +267,7 @@ const app = new Elysia()
         };
 
         const allProjectsData = await db.select(projectSelectFields).from(projects);
+        console.log("LOG KETUA TIM - JUMLAH PROYEK DITEMUKAN:", allProjectsData.length);
         const pembuatGamesData = await db.select().from(users).where(eq(users.role, "PEMBUAT_GAME"));
         const pembuatMaterisData = await db.select().from(users).where(eq(users.role, "PEMBUAT_MATERI"));
         const pakarData = await db.select().from(users).where(eq(users.role, "PAKAR"));
@@ -224,7 +282,8 @@ const app = new Elysia()
           role: "KETUA_TIM",
           children: dashboardContent,
           notifications: userNotifications,
-          currentPage: "Manajemen Proyek Game — Ketua Tim"
+          currentPage: "Manajemen Proyek Game — Ketua Tim",
+          avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
         return new Response(htmlResponse, {
@@ -253,6 +312,7 @@ const app = new Elysia()
         let myProjectsData: any[] = [];
         let publishedProjectsData: any[] = [];
         let allUsersData: any[] = [];
+        let analyticsData: any = null;
 
         const projectSelectFields = {
           id: projects.id,
@@ -278,31 +338,252 @@ const app = new Elysia()
           pembuatMaterisData = await db.select().from(users).where(eq(users.role, "PEMBUAT_MATERI"));
           pakarData = await db.select().from(users).where(eq(users.role, "PAKAR"));
         } else if (userRole === "PEMBUAT_GAME" || userRole === "PEMBUAT_MATERI") {
-          // Active/in-progress: semua proyek milik user kecuali yang sudah PUBLISHED
           myProjectsData = await db.select(projectSelectFields).from(projects).where(
-            and(
-              eq(projects.idPembuat, userId),
-              inArray(projects.status, ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "UNPUBLISHED"])
-            )
+            eq(projects.idPembuat, userId)
           );
           // Semua Proyek Saya: hanya yang sudah PUBLISHED oleh Ketua Tim
           publishedProjectsData = await db.select(projectSelectFields).from(projects).where(
             and(eq(projects.idPembuat, userId), eq(projects.status, "PUBLISHED"))
           );
           allUsersData = await db.select({ id: users.id, name: users.name, role: users.role }).from(users);
+          
+          if (userRole === "PEMBUAT_GAME") {
+            const allPublishedGames = await db.select({ count: sql<number>`count(*)` }).from(projects).where(and(eq(projects.type, "GAME"), eq(projects.status, "PUBLISHED")));
+            const allPublishedMaterials = await db.select({ count: sql<number>`count(*)` }).from(projects).where(and(eq(projects.type, "MATERI"), eq(projects.status, "PUBLISHED")));
+            
+            const creatorGames = await db.select().from(projects).where(and(eq(projects.type, "GAME"), eq(projects.idPembuat, userId)));
+            const activeGamesCount = creatorGames.filter(g => ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "UNPUBLISHED"].includes(g.status)).length;
+            
+            let totalMinutes = 0;
+            let completedGamesCount = 0;
+            let speedRankedProjects: any[] = [];
+            
+            creatorGames.forEach(g => {
+              if (g.startedAt && g.completedAt) {
+                const durationMs = new Date(g.completedAt).getTime() - new Date(g.startedAt).getTime();
+                if (durationMs > 0) {
+                  completedGamesCount++;
+                  const mins = Math.floor(durationMs / 60000);
+                  totalMinutes += mins;
+                  
+                  speedRankedProjects.push({
+                    id: g.id,
+                    title: g.title,
+                    durationMins: mins,
+                    durationFormatted: `${Math.floor(mins / 1440)} Hari ${Math.floor((mins % 1440) / 60)} Jam ${mins % 60} Menit`
+                  });
+                }
+              }
+            });
+            
+            const avgMins = completedGamesCount > 0 ? Math.floor(totalMinutes / completedGamesCount) : 0;
+            const avgCompletionTimeFormatted = `${Math.floor(avgMins / 1440)} Hari ${Math.floor((avgMins % 1440) / 60)} Jam ${avgMins % 60} Menit`;
+            
+            const totalRevisions = creatorGames.reduce((acc, g) => acc + (g.revisionCount || 0), 0);
+            const avgRevisionCount = creatorGames.length > 0 ? (totalRevisions / creatorGames.length).toFixed(1) : 0;
+            
+            speedRankedProjects.sort((a, b) => a.durationMins - b.durationMins);
+            
+            const topPlayedRes = await db.select({ 
+              title: projects.title, 
+              playCount: sql<number>`count(${gamePlayLogs.id})` 
+            }).from(gamePlayLogs)
+              .innerJoin(projects, eq(gamePlayLogs.projectId, projects.id))
+              .where(eq(projects.idPembuat, userId))
+              .groupBy(projects.id)
+              .orderBy(desc(sql`count(${gamePlayLogs.id})`))
+              .limit(5);
+
+            const topAccessedRes = await db.select({ 
+              title: projects.title, 
+              accessCount: sql<number>`count(${materialAccessLogs.id})` 
+            }).from(materialAccessLogs)
+              .innerJoin(projects, eq(materialAccessLogs.projectId, projects.id))
+              .groupBy(projects.id)
+              .orderBy(desc(sql`count(${materialAccessLogs.id})`))
+              .limit(5);
+
+            analyticsData = {
+              globalStats: {
+                totalPublishedGames: allPublishedGames[0]?.count || 0,
+                totalPublishedMaterials: allPublishedMaterials[0]?.count || 0
+              },
+              creatorKpi: {
+                totalAssignedGames: creatorGames.length,
+                activeGamesCount,
+                avgCompletionTimeFormatted,
+                avgRevisionCount,
+                speedRankedProjects
+              },
+              popularityStats: {
+                topPlayedGames: topPlayedRes,
+                topAccessedMaterials: topAccessedRes
+              }
+            };
+          } else if (userRole === "PEMBUAT_MATERI") {
+            const allPublishedGames = await db.select({ count: sql<number>`count(*)` }).from(projects).where(and(eq(projects.type, "GAME"), eq(projects.status, "PUBLISHED")));
+            const allPublishedMaterials = await db.select({ count: sql<number>`count(*)` }).from(projects).where(and(eq(projects.type, "MATERI"), eq(projects.status, "PUBLISHED")));
+            
+            const creatorMaterials = await db.select().from(projects).where(and(eq(projects.type, "MATERI"), eq(projects.idPembuat, userId)));
+            const activeMaterialsCount = creatorMaterials.filter(m => ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "UNPUBLISHED"].includes(m.status)).length;
+            
+            let totalMinutes = 0;
+            let completedMaterialsCount = 0;
+            let speedRankedMaterials: any[] = [];
+            
+            creatorMaterials.forEach(m => {
+              if (m.startedAt && m.completedAt) {
+                const durationMs = new Date(m.completedAt).getTime() - new Date(m.startedAt).getTime();
+                if (durationMs > 0) {
+                  completedMaterialsCount++;
+                  const mins = Math.floor(durationMs / 60000);
+                  totalMinutes += mins;
+                  
+                  speedRankedMaterials.push({
+                    id: m.id,
+                    title: m.title,
+                    durationMins: mins,
+                    durationFormatted: `${Math.floor(mins / 1440)} Hari ${Math.floor((mins % 1440) / 60)} Jam ${mins % 60} Menit`
+                  });
+                }
+              }
+            });
+            
+            const avgMins = completedMaterialsCount > 0 ? Math.floor(totalMinutes / completedMaterialsCount) : 0;
+            const avgCompletionTimeFormatted = `${Math.floor(avgMins / 1440)} Hari ${Math.floor((avgMins % 1440) / 60)} Jam ${avgMins % 60} Menit`;
+            
+            const totalRevisions = creatorMaterials.reduce((acc, m) => acc + (m.revisionCount || 0), 0);
+            const avgRevisionCount = creatorMaterials.length > 0 ? (totalRevisions / creatorMaterials.length).toFixed(1) : 0;
+            
+            speedRankedMaterials.sort((a, b) => a.durationMins - b.durationMins);
+            
+            const topPlayedRes = await db.select({ 
+              title: projects.title, 
+              playCount: sql<number>`count(${gamePlayLogs.id})` 
+            }).from(gamePlayLogs)
+              .innerJoin(projects, eq(gamePlayLogs.projectId, projects.id))
+              .groupBy(projects.id)
+              .orderBy(desc(sql`count(${gamePlayLogs.id})`))
+              .limit(5);
+
+            const topAccessedRes = await db.select({ 
+              title: projects.title, 
+              accessCount: sql<number>`count(${materialAccessLogs.id})` 
+            }).from(materialAccessLogs)
+              .innerJoin(projects, eq(materialAccessLogs.projectId, projects.id))
+              .where(eq(projects.idPembuat, userId))
+              .groupBy(projects.id)
+              .orderBy(desc(sql`count(${materialAccessLogs.id})`))
+              .limit(5);
+
+            analyticsData = {
+              globalStats: {
+                totalPublishedGames: allPublishedGames[0]?.count || 0,
+                totalPublishedMaterials: allPublishedMaterials[0]?.count || 0
+              },
+              creatorKpi: {
+                totalAssignedMaterials: creatorMaterials.length,
+                activeMaterialsCount,
+                avgCompletionTimeFormatted,
+                avgRevisionCount,
+                speedRankedMaterials
+              },
+              popularityStats: {
+                topPlayedGames: topPlayedRes,
+                topAccessedMaterials: topAccessedRes
+              }
+            };
+          }
+
         } else if (userRole === "PAKAR") {
-          // Active/in-progress: semua proyek yang ditugaskan ke pakar ini kecuali yang sudah PUBLISHED
           myProjectsData = await db.select(projectSelectFields).from(projects).where(
-            and(
-              eq(projects.idPakar, userId),
-              inArray(projects.status, ["REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA"])
-            )
+            eq(projects.idPakar, userId)
           );
           // Semua Proyek Saya: hanya yang sudah PUBLISHED oleh Ketua Tim dan pernah di-review pakar ini
           publishedProjectsData = await db.select(projectSelectFields).from(projects).where(
             and(eq(projects.idPakar, userId), eq(projects.status, "PUBLISHED"))
           );
           allUsersData = await db.select({ id: users.id, name: users.name, role: users.role }).from(users);
+
+          const pakarProjects = await db.select().from(projects).where(eq(projects.idPakar, userId));
+          const pendingReviewsCount = pakarProjects.filter(p => ["REVIEW_PAKAR", "REVISI_PAKAR"].includes(p.status)).length;
+          const completedReviewsCount = pakarProjects.filter(p => !["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR"].includes(p.status)).length;
+          const approvedCount = pakarProjects.filter(p => ["ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED"].includes(p.status)).length;
+          const approvalRatePercentage = pakarProjects.length > 0 ? Math.round((approvedCount / pakarProjects.length) * 100) : 0;
+
+          let totalMinutes = 0;
+          let speedRankedReviews: any[] = [];
+          let timeTrackedCount = 0;
+          
+          pakarProjects.forEach(p => {
+            const start = p.startedAt || p.createdAt;
+            const end = p.completedAt || p.updatedAt;
+            if (start && end && start !== end) {
+              const durationMs = new Date(end).getTime() - new Date(start).getTime();
+              if (durationMs > 0) {
+                timeTrackedCount++;
+                const mins = Math.floor(durationMs / 60000);
+                totalMinutes += mins;
+                speedRankedReviews.push({
+                  id: p.id,
+                  title: p.title,
+                  durationMins: mins,
+                  durationFormatted: `${Math.floor(mins / 1440)} Hari ${Math.floor((mins % 1440) / 60)} Jam ${mins % 60} Menit`
+                });
+              }
+            }
+          });
+
+          const totalRevisions = pakarProjects.reduce((acc, p) => acc + (p.revisionCount || 0), 0);
+          const avgRevisionPerProject = pakarProjects.length > 0 ? (totalRevisions / pakarProjects.length).toFixed(1) : 0;
+
+          const avgMins = timeTrackedCount > 0 ? Math.floor(totalMinutes / timeTrackedCount) : 0;
+          const avgReviewTimeFormatted = `${Math.floor(avgMins / 1440)} Hari ${Math.floor((avgMins % 1440) / 60)} Jam ${avgMins % 60} Menit`;
+          speedRankedReviews.sort((a, b) => a.durationMins - b.durationMins);
+
+          const allPublishedGames = await db.select({ count: sql<number>`count(*)` }).from(projects).where(and(eq(projects.type, "GAME"), eq(projects.status, "PUBLISHED")));
+          const allPublishedMaterials = await db.select({ count: sql<number>`count(*)` }).from(projects).where(and(eq(projects.type, "MATERI"), eq(projects.status, "PUBLISHED")));
+
+          const topPlayedRes = await db.select({ 
+            title: projects.title, 
+            playCount: sql<number>`count(${gamePlayLogs.id})` 
+          }).from(gamePlayLogs)
+            .innerJoin(projects, eq(gamePlayLogs.projectId, projects.id))
+            .where(eq(projects.idPakar, userId))
+            .groupBy(projects.id)
+            .orderBy(desc(sql`count(${gamePlayLogs.id})`))
+            .limit(5);
+
+          const topAccessedRes = await db.select({ 
+            title: projects.title, 
+            accessCount: sql<number>`count(${materialAccessLogs.id})` 
+          }).from(materialAccessLogs)
+            .innerJoin(projects, eq(materialAccessLogs.projectId, projects.id))
+            .where(eq(projects.idPakar, userId))
+            .groupBy(projects.id)
+            .orderBy(desc(sql`count(${materialAccessLogs.id})`))
+            .limit(5);
+
+          analyticsData = {
+            globalMetrics: {
+              totalPublishedGames: allPublishedGames[0]?.count || 0,
+              totalPublishedMaterials: allPublishedMaterials[0]?.count || 0
+            },
+            reviewerKpi: {
+              totalAssignedReviews: pakarProjects.length,
+              pendingReviewsCount,
+              completedReviewsCount,
+              avgReviewTimeFormatted,
+              avgRevisionPerProject,
+              approvalRatePercentage,
+              speedRankedReviews
+            },
+            popularityMetrics: {
+              topPlayedGames: topPlayedRes,
+              topAccessedMaterials: topAccessedRes
+            }
+          };
+
         } else if (userRole === "USER") {
           allProjectsData = await db.select(projectSelectFields).from(projects).where(eq(projects.status, "PUBLISHED"));
         }
@@ -314,18 +595,18 @@ const app = new Elysia()
               return KetuaTimDashboard();
 
             case "PEMBUAT_GAME":
-              return PembuatGameDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
+              return PembuatGameDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData, analytics: analyticsData });
 
 
             case "PEMBUAT_MATERI":
-              return PembuatMateriDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
+              return PembuatMateriDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData, analytics: analyticsData });
 
             case "PAKAR":
-              return PakarDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData });
+              return PakarDashboard({ myProjects: myProjectsData, publishedProjects: publishedProjectsData, allUsers: allUsersData, analytics: analyticsData });
 
 
             case "USER":
-              return MemberDashboard({ publishedGames: allProjectsData, username });
+              return UserDashboard({ username });
 
             default:
               return '<div class="p-8 text-center text-slate-500">Halaman Dashboard belum dikonfigurasi.</div>';
@@ -352,7 +633,8 @@ const app = new Elysia()
           role: userRole,
           children: dashboardContent,
           notifications: userNotifications,
-          currentPage: aiCurrentPage
+          currentPage: aiCurrentPage,
+          avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
         });
 
         return new Response(htmlResponse, {
@@ -363,6 +645,39 @@ const app = new Elysia()
         });
       })
   )
+  .post("/profile/update", async ({ body, cookie, jwt }) => {
+    const auth = cookie.auth;
+    if (!auth?.value) return new Response("Unauthorized", { status: 401 });
+    const payload: any = await jwt.verify(auth.value as string);
+    if (!payload) return new Response("Unauthorized", { status: 401 });
+    
+    const { name, interests, profile_picture } = body as any;
+    let avatarUrl = payload.avatarUrl;
+    
+    if (profile_picture && profile_picture.size > 0) {
+      const fileName = `avatar-${payload.id}-${Date.now()}-${profile_picture.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+      const path = `./public/uploads/avatars/${fileName}`;
+      await Bun.write(path, profile_picture);
+      avatarUrl = `/public/uploads/avatars/${fileName}`;
+    }
+    
+    const interestsString = interests ? (Array.isArray(interests) ? interests.join(",") : interests) : "";
+    
+    await db.update(users)
+      .set({ 
+        name, 
+        interests: interestsString,
+        ...(avatarUrl !== payload.avatarUrl ? { avatarUrl } : {})
+      })
+      .where(eq(users.id, payload.id));
+      
+    const newToken = await jwt.sign({ ...payload, name, avatarUrl });
+    cookie.auth!.value = newToken;
+    cookie.auth!.maxAge = 7 * 86400;
+    cookie.auth!.path = '/';
+      
+    return { success: true };
+  })
   .get("/materi/:id", async ({ params, jwt, cookie, set }) => {
     // Auth check
     const auth = cookie.auth;
@@ -421,6 +736,93 @@ const app = new Elysia()
       headers: { "Content-Type": "text/html; charset=utf-8" }
     });
   })
+  .get("/play/:id", async ({ params, jwt, cookie, set }) => {
+    // Auth check
+    const auth = cookie.auth;
+    let user = null;
+    if (auth?.value) {
+      const payload = await jwt.verify(auth.value as string);
+      if (payload) user = payload;
+    }
+
+    const projectId = Number(params.id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+    if (!project || project.type !== "GAME") {
+      set.status = 404;
+      return "Game tidak ditemukan";
+    }
+
+    // Insert to gamePlayLogs
+    await db.insert(gamePlayLogs).values({
+      projectId,
+      playedAt: new Date()
+    });
+
+    const pageHtml = `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${project.title} - Logos Lab</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+      </head>
+      <body class="bg-slate-100 font-sans antialiased h-screen flex flex-col">
+        ${Navbar({ user })}
+        <main class="flex-1 overflow-hidden">
+          ${PublicGamePlayer()}
+        </main>
+        
+        <script>
+          document.addEventListener('alpine:initialized', () => {
+             // Delay slightly to ensure component is fully mounted
+             setTimeout(() => {
+                if (typeof window.triggerPublicGame === 'function') {
+                    window.triggerPublicGame(${projectId});
+                }
+             }, 100);
+          });
+        </script>
+      </body>
+      </html>
+    `;
+
+    return new Response(pageHtml, {
+      headers: { "Content-Type": "text/html; charset=utf-8" }
+    });
+  })
+  .get("/duel/:id", async ({ params, jwt, cookie, set }) => {
+    const auth = cookie.auth;
+    let user = null;
+    if (auth?.value) {
+      const payload = await jwt.verify(auth.value as string);
+      if (payload) user = payload;
+    }
+
+    const pageHtml = `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Arena Duel - Logos Lab</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+      </head>
+      <body class="bg-slate-100 font-sans antialiased h-screen flex flex-col">
+        ${Navbar({ user })}
+        <main class="flex-1 overflow-hidden">
+          ${DuelArenaPage({ duelId: params.id, currentUser: user })}
+        </main>
+      </body>
+      </html>
+    `;
+
+    return new Response(pageHtml, {
+      headers: { "Content-Type": "text/html; charset=utf-8" }
+    });
+  })
   .group("/profile", (app) =>
     app
       .onBeforeHandle(async ({ jwt, cookie, set }) => {
@@ -434,23 +836,26 @@ const app = new Elysia()
       .get("/", async ({ jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);
         const [user] = await db.select().from(users).where(eq(users.id, payload.id));
-
-        return new Response(ProfilePage({ user }), {
-          headers: { "Content-Type": "text/html; charset=utf-8" }
-        });
-      })
-      .post("/update", async ({ body, jwt, cookie }) => {
-        const payload: any = await jwt.verify(cookie.auth!.value as string);
-        const { name, interests } = body as { name: string, interests?: string[] };
-
-        const updateData: any = { name };
-        if (interests) {
-          updateData.interests = interests.join(",");
+        
+        if (!user) {
+          return Response.redirect("/", 302);
         }
 
-        await db.update(users).set(updateData).where(eq(users.id, payload.id));
+        const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, payload.id)).orderBy(desc(notifications.createdAt));
 
-        return { success: true, message: "Profil berhasil diperbarui" };
+        const htmlResponse = Layout({
+          title: "Pengaturan Profil",
+          username: user.username || "",
+          role: user.role || "USER",
+          children: ProfilePage({ user }),
+          notifications: userNotifications,
+          currentPage: "Pengaturan Profil",
+          avatarUrl: user.avatarUrl || user.profilePicture || undefined
+        });
+
+        return new Response(htmlResponse, {
+          headers: { "Content-Type": "text/html; charset=utf-8" }
+        });
       })
       .post("/onboarding", async ({ body, jwt, cookie }) => {
         const payload: any = await jwt.verify(cookie.auth!.value as string);

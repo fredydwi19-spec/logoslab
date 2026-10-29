@@ -38,7 +38,8 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
       role: userRole,
       children: BankSoalQuizUI(),
       notifications: userNotifications,
-      currentPage: "Bank Soal Quiz"
+      currentPage: "Bank Soal Quiz",
+      avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   })
   .get("/ftb", async ({ user }) => {
@@ -53,7 +54,8 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
       role: userRole,
       children: BankSoalFtbUI(),
       notifications: userNotifications,
-      currentPage: "Bank Soal FTB"
+      currentPage: "Bank Soal FTB",
+      avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   })
   .get("/tts", async ({ user }) => {
@@ -68,6 +70,7 @@ export const bankSoalUiRoutes = new Elysia({ prefix: "/dashboard/bank-soal" })
       role: userRole,
       children: BankSoalTtsUI(),
       notifications: userNotifications,
-      currentPage: "Bank Soal TTS"
+      currentPage: "Bank Soal TTS",
+      avatarUrl: (user as any).avatarUrl || (user as any).profilePicture
     }), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   });

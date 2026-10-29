@@ -5,18 +5,21 @@ import { CrosswordEditor, CrosswordEditorScript } from "./CrosswordEditor";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
 import { ProjectHeader } from "./ProjectHeader";
 
-export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }: { myProjects: any[], publishedProjects: any[], allUsers: any[] }) => {
+export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, analytics }: { myProjects: any[], publishedProjects: any[], allUsers: any[], analytics?: any }) => {
   const myProjectsJson = JSON.stringify(myProjects).replace(/</g, '\\u003c');
   const publishedProjectsJson = JSON.stringify(publishedProjects).replace(/</g, '\\u003c');
   const allUsersJson = JSON.stringify(allUsers).replace(/</g, '\\u003c');
+  const analyticsJson = analytics ? JSON.stringify(analytics).replace(/</g, '\\u003c') : 'null';
 
   return `
     <script id="pembuatProjectsData" type="application/json">${myProjectsJson}</script>
     <script id="pembuatPublishedData" type="application/json">${publishedProjectsJson}</script>
     <script id="pembuatUsersData" type="application/json">${allUsersJson}</script>
+    <script id="pembuatAnalyticsData" type="application/json">${analyticsJson}</script>
     <script>
       document.addEventListener('alpine:init', () => {
         Alpine.data('pembuatDashboard', () => ({
+            analytics: JSON.parse(document.getElementById('pembuatAnalyticsData').textContent),
             activeProject: null,
             questions: [],
             gameData: null,
@@ -29,6 +32,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
             userFTBAnswers: [],
             saveTimeout: null,
             stagingQuestions: [],
+            menuTab: new URLSearchParams(window.location.search).get('tab') || 'dashboard',
             viewMode: new URLSearchParams(window.location.search).get('view') === 'all' ? 'all' : 'active',
             myProjects: JSON.parse(document.getElementById('pembuatProjectsData').textContent || '[]'),
             publishedProjects: JSON.parse(document.getElementById('pembuatPublishedData').textContent || '[]'),
@@ -76,25 +80,78 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                }
             },
 
+            filterKey: '',
+            filterValue: '',
+            filterStart: '',
+            filterEnd: '',
+            appliedFilter: { key: '', value: '', start: '', end: '' },
+
+            applyFilter() {
+              this.appliedFilter = {
+                key: this.filterKey,
+                value: this.filterValue,
+                start: this.filterStart,
+                end: this.filterEnd
+              };
+            },
+
+            resetFilter() {
+              this.filterKey = '';
+              this.filterValue = '';
+              this.filterStart = '';
+              this.filterEnd = '';
+              this.appliedFilter = { key: '', value: '', start: '', end: '' };
+            },
+
+            applyDynamicFilter(list) {
+              if (!list || !Array.isArray(list)) return [];
+              if (!this.appliedFilter.key) {
+                // If no filter is applied, we can still use searchActive if we want
+                if (this.searchActive) {
+                  return list.filter(p => p.title.toLowerCase().includes(this.searchActive.toLowerCase()));
+                }
+                return list;
+              }
+              return list.filter(p => {
+                const { key, value, start, end } = this.appliedFilter;
+                
+                // Still allow searchActive
+                if (this.searchActive && !p.title.toLowerCase().includes(this.searchActive.toLowerCase())) {
+                  return false;
+                }
+                
+                if (key === 'title_game') {
+                  if (!value) return false;
+                  return p.title?.toLowerCase().includes(value.toLowerCase());
+                }
+                if (key === 'type_game') {
+                  if (!value) return false;
+                  return p.gameType === value;
+                }
+                if (key === 'status') {
+                  if (!value) return false;
+                  return p.status === value;
+                }
+                if (key === 'deadline') {
+                  if (!p.deadline) return false;
+                  const d = new Date(p.deadline);
+                  const sd = start ? new Date(start) : null;
+                  const ed = end ? new Date(end) : null;
+                  if (sd && d < sd) return false;
+                  if (ed && d > ed) return false;
+                  return true;
+                }
+                return false;
+              });
+            },
+
             getUserName(id) {
               const u = this.allUsers.find(u => u.id === id);
               return u ? u.name : '-';
             },
 
             filteredActiveProjects() {
-              const statusMap = {
-                'DRAFT':          ['DRAFT'],
-                'REVIEW_PAKAR':   ['REVIEW_PAKAR'],
-                'REVISI_PAKAR':   ['REVISI_PAKAR', 'ACCEPTED_PAKAR'],
-                'REVIEW_KETUA':   ['REVIEW_KETUA'],
-                'REVISI_KETUA':   ['REVISI_KETUA', 'UNPUBLISHED'],
-              };
-              const allowed = statusMap[this.activeTab] || [];
-              return this.myProjects.filter(p => {
-                const matchTab = allowed.includes(p.status);
-                const matchSearch = !this.searchActive || p.title.toLowerCase().includes(this.searchActive.toLowerCase());
-                return matchTab && matchSearch;
-              });
+              return this.applyDynamicFilter(this.myProjects);
             },
 
             filteredPublishedProjects() {
@@ -351,21 +408,143 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
     <div class="bg-white p-0 rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" x-data="pembuatDashboard()">
       <div class="bg-[#1A237E] p-6 border-b-4 border-[#FFC107] flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <h2 class="text-lg md:text-xl font-bold text-white uppercase tracking-widest leading-tight" x-text="viewMode === 'all' ? 'Semua Proyek Saya' : 'Workspace Produksi Game'"></h2>
+          <h2 class="text-lg md:text-xl font-bold text-white uppercase tracking-widest leading-tight" x-text="activeProject ? 'Workspace Produksi Game' : (menuTab === 'dashboard' ? 'Dashboard Analitik' : (viewMode === 'all' ? 'Semua Proyek Saya' : 'Manajemen Proyek'))"></h2>
         </div>
         <div class="flex items-center gap-4">
            <span x-show="activeProject" id="saveStatus" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-inner transition-all duration-500">CLOUD SYNC ACTIVE</span>
-           <div class="flex gap-2" x-show="!activeProject">
-             <a href="/dashboard/game" :class="viewMode === 'active' ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-white/10 text-white'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Proyek Dikerjakan</a>
-             <a href="/dashboard/game?view=all" :class="viewMode === 'all' ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-white/10 text-white'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Semua Proyek Saya</a>
+           <div class="flex gap-2" x-show="!activeProject && menuTab === 'projects'">
            </div>
         </div>
       </div>
       
       <div class="p-8">
 
+        <!-- ANALYTICS WIDGETS -->
+        <template x-if="menuTab === 'dashboard' && !activeProject && analytics">
+          <div class="space-y-6 mb-8">
+            <!-- SECTION 1: GLOBAL PUBLISHED METRICS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-gradient-to-r from-[#1A237E] to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Total Proyek Game Dipublish</p>
+                  <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalStats.totalPublishedGames"></h3>
+                </div>
+                <div class="text-5xl opacity-80"><i class="bi bi-controller"></i></div>
+              </div>
+              <div class="bg-gradient-to-r from-[#FF5722] to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Proyek Materi Dipublish</p>
+                  <h3 class="text-4xl font-black" x-text="analytics.globalStats.totalPublishedMaterials"></h3>
+                </div>
+                <div class="text-5xl opacity-80"><i class="bi bi-journal-text"></i></div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: KEY PERFORMANCE INDEX (KPI Creator) -->
+            <div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <div class="flex items-center gap-3 mb-6">
+                <span class="h-6 w-1.5 bg-[#1A237E] rounded-full"></span>
+                <h3 class="text-lg font-bold text-[#1A237E] uppercase tracking-widest">KPI Creator</h3>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Game Dikerjakan</p>
+                  <p class="text-2xl font-black text-[#1A237E]" x-text="analytics.creatorKpi.totalAssignedGames"></p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Game Sedang Dikerjakan</p>
+                  <p class="text-2xl font-black text-[#FF5722]" x-text="analytics.creatorKpi.activeGamesCount"></p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Waktu Penyelesaian</p>
+                  <p class="text-sm font-black text-green-600 mt-2" x-text="analytics.creatorKpi.avgCompletionTimeFormatted"></p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Revisi per Proyek</p>
+                  <p class="text-2xl font-black text-purple-600" x-text="analytics.creatorKpi.avgRevisionCount"></p>
+                </div>
+              </div>
+              <!-- Tabel Peringkat Kecepatan Pengerjaan -->
+              <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" x-data="{ sortAsc: true }">
+                <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
+                  <h4 class="text-xs font-bold text-[#1A237E] uppercase tracking-widest">Peringkat Kecepatan Pengerjaan Game</h4>
+                  <button @click="sortAsc = !sortAsc; analytics.creatorKpi.speedRankedProjects.reverse()" class="text-[10px] bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-black uppercase tracking-tighter text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                    <i class="bi" :class="sortAsc ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up'"></i>
+                    <span x-text="sortAsc ? 'Tercepat -> Terlambat' : 'Terlambat -> Tercepat'"></span>
+                  </button>
+                </div>
+                <div class="max-h-48 overflow-y-auto">
+                  <template x-if="analytics.creatorKpi.speedRankedProjects.length === 0">
+                    <div class="p-6 text-center text-xs text-slate-400 font-bold italic">Belum ada proyek yang diselesaikan.</div>
+                  </template>
+                  <table class="w-full text-left border-collapse" x-show="analytics.creatorKpi.speedRankedProjects.length > 0">
+                    <tbody>
+                      <template x-for="(proj, idx) in analytics.creatorKpi.speedRankedProjects" :key="proj.id">
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                          <td class="p-3 pl-4">
+                            <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
+                          </td>
+                          <td class="p-3 text-sm font-semibold text-[#1A237E]" x-text="proj.title"></td>
+                          <td class="p-3 text-xs font-bold text-slate-500 text-right pr-4" x-text="proj.durationFormatted"></td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: POPULARITY & ENGAGEMENT SHOWCASE -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Top Played Games -->
+              <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="h-6 w-1.5 bg-[#FFC107] rounded-full"></span>
+                  <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Game Paling Sering Dimainkan</h3>
+                </div>
+                <div class="space-y-3">
+                  <template x-if="analytics.popularityStats.topPlayedGames.length === 0">
+                    <div class="text-xs text-slate-400 italic">Belum ada data permainan.</div>
+                  </template>
+                  <template x-for="(game, i) in analytics.popularityStats.topPlayedGames" :key="i">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                      <div class="flex items-center gap-3">
+                        <div class="text-lg opacity-50">🎮</div>
+                        <h4 class="text-sm font-semibold text-slate-700" x-text="game.title"></h4>
+                      </div>
+                      <div class="text-xs font-black bg-blue-100 text-blue-800 px-3 py-1 rounded-full"><span x-text="game.playCount"></span>x Dimainkan</div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              
+              <!-- Top Accessed Materials -->
+              <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="h-6 w-1.5 bg-[#FF5722] rounded-full"></span>
+                  <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Materi Paling Sering Diakses</h3>
+                </div>
+                <div class="space-y-3">
+                  <template x-if="analytics.popularityStats.topAccessedMaterials.length === 0">
+                    <div class="text-xs text-slate-400 italic">Belum ada data materi.</div>
+                  </template>
+                  <template x-for="(mat, i) in analytics.popularityStats.topAccessedMaterials" :key="i">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                      <div class="flex items-center gap-3">
+                        <div class="text-lg opacity-50">📖</div>
+                        <h4 class="text-sm font-semibold text-slate-700" x-text="mat.title"></h4>
+                      </div>
+                      <div class="text-xs font-black bg-orange-100 text-orange-800 px-3 py-1 rounded-full"><span x-text="mat.accessCount"></span>x Diakses</div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- ======= VIEW: PROYEK DIKERJAKAN (ACTIVE) ======= -->
-        <div x-show="viewMode === 'active' && !activeProject">
+        <div x-show="menuTab === 'projects' && viewMode === 'active' && !activeProject">
           <!-- Header + Search -->
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
@@ -375,42 +554,75 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
               </h2>
               <p class="text-xs md:text-sm text-slate-400 font-medium mt-1">Proyek aktif yang ditugaskan kepada Anda</p>
             </div>
-            <div class="relative w-full md:w-64">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <input type="text" x-model="searchActive" placeholder="Cari judul proyek..." class="w-full border-2 border-slate-100 rounded-xl pl-9 pr-4 py-2 text-sm font-bold focus:border-[#FFC107] outline-none shadow-inner">
-            </div>
           </div>
 
           <!-- Tab Panel -->
           <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 mb-0">
 
-            <!-- Tab Bar -->
-            <div class="flex overflow-x-auto bg-[#1A237E] border-b-0">
-              <button @click="activeTab = 'DRAFT'"
-                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
-                :class="activeTab === 'DRAFT' ? 'bg-white text-yellow-600 border-yellow-400 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                📝 Draft
-              </button>
-              <button @click="activeTab = 'REVIEW_PAKAR'"
-                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
-                :class="activeTab === 'REVIEW_PAKAR' ? 'bg-white text-blue-600 border-blue-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                🔍 Review Pakar
-              </button>
-              <button @click="activeTab = 'REVISI_PAKAR'"
-                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
-                :class="activeTab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                <i class="bi bi-pencil-square"></i> Revisi Pakar
-              </button>
-              <button @click="activeTab = 'REVIEW_KETUA'"
-                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
-                :class="activeTab === 'REVIEW_KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                <i class="bi bi-award"></i> Review Ketua
-              </button>
-              <button @click="activeTab = 'REVISI_KETUA'"
-                class="flex-shrink-0 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px] flex items-center gap-1.5"
-                :class="activeTab === 'REVISI_KETUA' ? 'bg-white text-red-600 border-red-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-                🔁 Revisi Ketua
-              </button>
+            <!-- Dynamic Filter -->
+            <div class="flex flex-wrap items-center gap-3 w-full p-4 bg-slate-50/80 border-b border-slate-200">
+              <div class="flex flex-col gap-1 w-48 shrink-0">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
+                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <option value="">-- Pilih Kriteria --</option>
+                  <option value="title_game">Judul Game</option>
+                  <option value="type_game">Jenis Game</option>
+                  <option value="status">Status</option>
+                  <option value="deadline">Tanggal Deadline</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
+                
+                <template x-if="filterKey === 'title_game'">
+                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                </template>
+
+                <template x-if="filterKey === 'type_game'">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <option value="">-- Pilih Jenis Game --</option>
+                    <option value="QUIZ">QUIZ</option>
+                    <option value="FILL_THE_BLANK">FILL THE BLANK</option>
+                    <option value="WORD_SEARCH">WORD SEARCH</option>
+                    <option value="CROSSWORD">CROSSWORD</option>
+                  </select>
+                </template>
+
+                <template x-if="filterKey === 'status'">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <option value="">-- Pilih Status --</option>
+                    <option value="DRAFT">DRAFT</option>
+                    <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
+                    <option value="REVISI_PAKAR">REVISI PAKAR</option>
+                    <option value="ACCEPTED_PAKAR">ACCEPTED PAKAR</option>
+                    <option value="REVIEW_KETUA">REVIEW KETUA</option>
+                    <option value="REVISI_KETUA">REVISI KETUA</option>
+                    <option value="PUBLISHED">PUBLISHED</option>
+                    <option value="UNPUBLISHED">UNPUBLISHED</option>
+                  </select>
+                </template>
+
+                <template x-if="filterKey === 'deadline'">
+                  <div class="flex gap-2">
+                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <span class="self-center font-bold text-slate-400">-</span>
+                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  </div>
+                </template>
+
+                <template x-if="!filterKey">
+                  <div class="w-full border-2 border-slate-200 border-dashed rounded-lg py-2 px-3 text-sm text-slate-400 italic bg-white text-center shadow-sm">Pilih kriteria terlebih dahulu</div>
+                </template>
+              </div>
+              
+              <div class="flex gap-2 ml-auto shrink-0 self-end">
+                <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+                  TERAPKAN
+                </button>
+                <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
+                  RESET
+                </button>
+              </div>
             </div>
 
             <!-- Active Projects Table -->
@@ -456,8 +668,15 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                         x-text="p.status.replace(/_/g, ' ')">
                       </span>
                     </td>
-                    <td class="px-6 py-5 text-right">
-                      <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">BUKA</button>
+                    <td class="px-6 py-5 align-middle">
+                      <div class="flex items-center justify-end gap-2">
+                        <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <button x-show="p.status === 'DRAFT' || p.status === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
+                        <button x-show="['REVISI_PAKAR', 'REVISI_KETUA'].includes(p.status)" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">PERBAIKI</button>
+                        <button x-show="['REVIEW_PAKAR', 'REVIEW_KETUA', 'ACCEPTED_PAKAR', 'PUBLISHED'].includes(p.status)" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
+                      </div>
                     </td>
                   </tr>
                 </template>
@@ -474,7 +693,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
         </div><!-- /viewMode active -->
 
         <!-- ======= VIEW: SEMUA PROYEK SAYA (PUBLISHED) ======= -->
-        <div x-show="viewMode === 'all' && !activeProject">
+        <div x-show="menuTab === 'projects' && viewMode === 'all' && !activeProject">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
@@ -524,8 +743,13 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers }
                         <span class="text-green-700 font-black text-sm" x-text="p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
                       </div>
                     </td>
-                    <td class="px-6 py-5 text-right">
-                      <button @click="openProject(p.id)" class="bg-green-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">LIHAT DETAIL</button>
+                    <td class="px-6 py-5 align-middle">
+                      <div class="flex items-center justify-end gap-2">
+                        <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <button @click="openProject(p.id)" class="bg-green-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">LIHAT DETAIL</button>
+                      </div>
                     </td>
                   </tr>
                 </template>

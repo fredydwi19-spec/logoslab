@@ -8,7 +8,8 @@ Platform ini digunakan oleh tim kolaborasi yang terdiri dari Ketua Tim, Pembuat 
 Saat ini user berada di halaman: ${context}.
 Berikan jawaban yang singkat, jelas, dan relevan dengan konteks platform Logos LAB.
 Jika pertanyaan di luar konteks platform, tetap bantu dengan sopan namun arahkan kembali ke topik Logos LAB.
-Balas selalu dalam Bahasa Indonesia.`;
+Balas selalu dalam Bahasa Indonesia.
+Gunakan format Markdown yang rapi. Selalu gunakan baris baru (newline/double enter) untuk setiap poin penomoran (numbered list) atau bullet points agar mudah dibaca.`;
 }
 
 // ── Helper: Sanitize user input ────────────────────────────────────────────
@@ -22,7 +23,7 @@ async function callGemini(systemPrompt: string, userMessage: string): Promise<st
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
   const payload = {
     systemInstruction: {
@@ -94,7 +95,7 @@ export const aiRoutes = new Elysia({ prefix: "/api/ai" })
       const reply = await callGemini(systemPrompt, cleanMessage);
       return { success: true, reply };
     } catch (err: any) {
-      console.error("[AI Route Error]", err.message);
+      console.error("[AI Route Error]", err);
       return new Response(
         JSON.stringify({ success: false, error: "AI tidak dapat merespons saat ini. Coba lagi nanti." }),
         { status: 503 }

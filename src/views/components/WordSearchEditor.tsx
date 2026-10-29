@@ -187,16 +187,16 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
             <div>
-              <h2 class="text-xl md:text-2xl font-bold text-[#1A237E] uppercase tracking-tighter leading-none">Editor Word Search</h2>
+              <h2 class="text-base md:text-lg font-bold text-[#1A237E] uppercase tracking-tighter leading-none">Editor Word Search</h2>
               <p class="text-slate-400 text-xs md:text-sm font-medium uppercase tracking-[0.2em] mt-2">Generate tantangan pencarian kata teologis</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-3 w-full xl:w-auto">
-            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
+            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                GENERATE GRID
             </button>
-            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
+            <button @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
                <span x-text="isSaving ? 'SAVING...' : 'SIMPAN KE CLOUD'"></span>
             </button>
           </div>
@@ -211,7 +211,7 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
                 <template x-for="diff in ['EASY', 'MEDIUM', 'HARD']">
                   <button @click="difficulty = diff; updateGridSize()" 
                           :class="difficulty === diff ? 'bg-[#1A237E] text-[#FFC107] border-[#1A237E]' : 'bg-white text-slate-400 border-slate-200'"
-                          class="py-3 rounded-xl border-2 font-black text-xs transition-all uppercase tracking-widest shadow-sm"
+                          class="py-2 rounded-xl border-2 font-black text-xs transition-all uppercase tracking-widest shadow-sm"
                           x-text="diff"></button>
                 </template>
               </div>
@@ -244,7 +244,7 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
                       </button>
                     </div>
                     <textarea x-model="item.explanation" placeholder="Penjelasan Teologis..." 
-                              class="w-full bg-slate-50 rounded-lg p-3 text-xs font-medium text-slate-600 outline-none focus:ring-1 ring-[#1A237E] h-16 resize-none"></textarea>
+                              class="w-full bg-slate-50 rounded-lg p-3 text-xs font-medium text-slate-600 outline-none focus:ring-1 ring-[#1A237E] h-16 resize-none" rows="3"></textarea>
                   </div>
                 </template>
               </div>
@@ -253,7 +253,7 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
 
           <!-- Right: Grid Preview -->
           <div class="space-y-6">
-            <div class="bg-[#1A237E] p-4 sm:p-8 rounded-[2.5rem] shadow-2xl border-4 border-[#FFC107] relative overflow-hidden flex items-center justify-center min-h-[400px] md:min-h-[500px]">
+            <div class="bg-[#1A237E] p-4 sm:p-5 rounded-[2.5rem] shadow-2xl border-4 border-[#FFC107] relative overflow-hidden flex items-center justify-center min-h-[400px] md:min-h-[500px]">
               <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
               
               <div x-show="grid.length > 0" class="relative z-10 w-full flex justify-center">

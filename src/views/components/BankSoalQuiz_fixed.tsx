@@ -1,17 +1,17 @@
 ﻿export const BankSoalQuizUI = () => {
   return `
-    <div class="p-6 md:p-10 space-y-8" x-data="bankSoalQuizData()">
+    <div class="p-6 md:p-6 space-y-8" x-data="bankSoalQuizData()">
       <!-- Header -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="text-xl md:text-2xl font-bold text-[#1A237E] font-poppins">Bank Soal Quiz</h1>
+          <h1 class="text-base md:text-lg font-bold text-[#1A237E] font-poppins">Bank Soal Quiz</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal Quiz secara global.</p>
         </div>
         <div class="flex gap-2">
-          <button @click="openImportModal = true" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2">
+          <button @click="openImportModal = true" class="p-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2">
             <span>ðŸ“¥</span> Import CSV
           </button>
-          <button @click="openFormModal()" class="px-4 py-2 bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md">
+          <button @click="openFormModal()" class="p-2 text-sm bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md">
             <span>âž•</span> Tambah Soal
           </button>
         </div>
@@ -31,10 +31,10 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
               <template x-if="loading">
-                <tr><td colspan="4" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+                <tr><td colspan="4" class="p-5 text-center text-slate-500">Memuat data...</td></tr>
               </template>
               <template x-if="!loading && soalList.length === 0">
-                <tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada soal di Bank Soal Quiz.</td></tr>
+                <tr><td colspan="4" class="p-5 text-center text-slate-500">Belum ada soal di Bank Soal Quiz.</td></tr>
               </template>
               <template x-for="soal in soalList" :key="soal.id">
                 <tr class="hover:bg-slate-50 transition-colors">
@@ -119,8 +119,8 @@
             </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-            <button @click="showForm = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitForm()" class="px-4 py-2 text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
+            <button @click="showForm = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
+            <button @click="submitForm()" class="p-2 text-sm text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
           </div>
         </div>
       </div>
@@ -140,15 +140,15 @@
             <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition-colors">
               <input type="file" id="fileImport" accept=".csv" class="hidden" @change="handleFileChange">
               <label for="fileImport" class="cursor-pointer flex flex-col items-center">
-                <span class="text-3xl mb-2">ðŸ“„</span>
+                <span class="text-base mb-2">ðŸ“„</span>
                 <span class="text-sm font-semibold text-slate-700" x-text="selectedFileName || 'Klik untuk memilih file .csv'"></span>
                 <span class="text-xs text-slate-400 mt-1">Hanya file .csv yang diterima</span>
               </label>
             </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-            <button @click="openImportModal = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="px-4 py-2 text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
+            <button @click="openImportModal = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
+            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="p-2 text-sm text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
               <span x-text="isImporting ? 'Mengimpor...' : 'Import'"></span>
             </button>
           </div>

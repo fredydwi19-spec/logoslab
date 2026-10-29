@@ -8,47 +8,47 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
          
       <!-- Top Row (KPI Cards) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-2xl p-6 hover:-translate-y-1 transition-transform">
            <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
-                 <i class="bi bi-fire text-orange-500 text-2xl"></i>
+                 <i class="bi bi-fire text-orange-500 text-lg"></i>
               </div>
               <div>
                  <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Learning Streak</p>
-                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="(summary?.kpi?.streak || 0) + ' Hari'">...</h4>
+                 <h4 class="text-lg font-black text-[#1A237E]" x-text="(summary?.kpi?.streak || 0) + ' Hari'">...</h4>
               </div>
            </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-2xl p-6 hover:-translate-y-1 transition-transform">
            <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center">
-                 <i class="bi bi-lightning-charge-fill text-[#FFC107] text-2xl"></i>
+                 <i class="bi bi-lightning-charge-fill text-[#FFC107] text-lg"></i>
               </div>
               <div>
                  <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Total XP</p>
-                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="summary?.kpi?.totalXP || 0">...</h4>
+                 <h4 class="text-lg font-black text-[#1A237E]" x-text="summary?.kpi?.totalXP || 0">...</h4>
               </div>
            </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-2xl p-6 hover:-translate-y-1 transition-transform">
            <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
-                 <i class="bi bi-check-circle-fill text-green-500 text-2xl"></i>
+                 <i class="bi bi-check-circle-fill text-green-500 text-lg"></i>
               </div>
               <div>
                  <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Completion</p>
-                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="(summary?.kpi?.completionRate || 0) + '%'">...</h4>
+                 <h4 class="text-lg font-black text-[#1A237E]" x-text="(summary?.kpi?.completionRate || 0) + '%'">...</h4>
               </div>
            </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+        <div class="bg-white/90 backdrop-blur-sm border border-slate-100 shadow-sm rounded-2xl p-6 hover:-translate-y-1 transition-transform">
            <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
-                 <i class="bi bi-award-fill text-indigo-500 text-2xl"></i>
+                 <i class="bi bi-award-fill text-indigo-500 text-lg"></i>
               </div>
               <div>
                  <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Badges</p>
-                 <h4 class="text-2xl font-black text-[#1A237E]" x-text="summary?.kpi?.badges || 0">...</h4>
+                 <h4 class="text-lg font-black text-[#1A237E]" x-text="summary?.kpi?.badges || 0">...</h4>
               </div>
            </div>
         </div>
@@ -79,10 +79,10 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                <div class="flex justify-between items-start mb-4">
                  <div>
                     <p class="text-xs text-indigo-300 font-bold uppercase tracking-widest mb-1">Tugas Berikutnya</p>
-                    <h3 class="text-xl md:text-2xl font-black text-[#FFC107]">Lanjutkan Belajar</h3>
+                    <h3 class="text-base md:text-lg font-black text-[#FFC107]">Lanjutkan Belajar</h3>
                  </div>
                  <div class="bg-indigo-900/50 p-3 rounded-2xl">
-                    <i class="bi bi-play-circle-fill text-2xl text-white"></i>
+                    <i class="bi bi-play-circle-fill text-lg text-white"></i>
                  </div>
                </div>
                <p class="text-sm text-indigo-200 mb-6">Materi ini akan membantu Anda memahami dasar-dasar teologi secara lebih dalam.</p>
@@ -97,7 +97,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                  </div>
                </div>
                
-               <button class="mt-6 w-full bg-white text-[#1A237E] font-black uppercase tracking-widest py-3 rounded-xl hover:bg-slate-100 transition-colors shadow-lg">Lanjutkan Belajar</button>
+               <button class="mt-6 w-full bg-white text-[#1A237E] font-black uppercase tracking-widest py-2 rounded-xl hover:bg-slate-100 transition-colors shadow-lg">Lanjutkan Belajar</button>
             </div>
          </div>
          
@@ -105,7 +105,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
          <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col">
             <div class="flex items-center justify-between mb-6">
                <h3 class="text-base md:text-lg font-bold text-[#1A237E] flex items-center gap-2">
-                 <i class="bi bi-trophy-fill text-yellow-500 text-xl"></i> Papan Peringkat
+                 <i class="bi bi-trophy-fill text-yellow-500 text-base"></i> Papan Peringkat
                </h3>
                <a href="#" class="text-xs font-bold text-indigo-500 uppercase hover:underline">Lihat Semua</a>
             </div>
@@ -117,7 +117,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                      <h4 class="font-bold text-sm text-[#1A237E]">David F.</h4>
                      <p class="text-xs text-slate-500">2,500 XP</p>
                   </div>
-                  <i class="bi bi-fire text-orange-500 text-xl"></i>
+                  <i class="bi bi-fire text-orange-500 text-base"></i>
                </div>
                <!-- Rank 2 -->
                <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
@@ -144,7 +144,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
              <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
-              <h2 class="text-xl md:text-2xl font-bold text-[#1A237E] uppercase tracking-wider">Permainan Tersedia</h2>
+              <h2 class="text-base md:text-lg font-bold text-[#1A237E] uppercase tracking-wider">Permainan Tersedia</h2>
           </div>
           <a href="#" class="text-[10px] font-black text-[#FF5722] uppercase tracking-widest hover:underline">Lihat Semua &rarr;</a>
         </div>
@@ -155,7 +155,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                <div class="relative h-48 overflow-hidden cursor-pointer" @click="playGame(${game.id})">
                   <img src="${game.thumbnailUrl || 'https://via.placeholder.com/400x250?text=Logos+LAB'}" class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
                   <div class="absolute inset-0 bg-gradient-to-t from-[#1A237E]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                     <button class="w-full bg-[#FFC107] text-[#1A237E] py-3 rounded-xl font-black uppercase tracking-widest shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">Mainkan Sekarang</button>
+                     <button class="w-full bg-[#FFC107] text-[#1A237E] py-2 rounded-xl font-black uppercase tracking-widest shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">Mainkan Sekarang</button>
                   </div>
                   <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black text-[#1A237E] uppercase tracking-widest shadow-sm">${game.gameType}</div>
                </div>
@@ -173,7 +173,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
             </div>
           `).join('')}
           ${publishedGames.length === 0 ? `
-            <div class="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100">
+            <div class="col-span-full py-20 text-center bg-white rounded-2xl border-2 border-dashed border-slate-100">
                <div class="text-6xl mb-4 opacity-20">💤</div>
                <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Belum ada permainan yang dirilis saat ini.</p>
             </div>
@@ -182,14 +182,14 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
       </div>
 
       <!-- Game Modal Player -->
-      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-10">
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-6">
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
             <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
-                  <div class="bg-[#1A237E] px-6 md:px-10 py-4 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                  <div class="bg-[#1A237E] px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
                      <div class="flex items-center gap-3 md:gap-4">
                         <img src="/public/assets/logo-logoslab.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
@@ -200,7 +200,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                      <div class="flex items-center gap-4 md:gap-6">
                         <div class="text-right hidden sm:block">
                            <p class="text-[9px] font-black uppercase opacity-60">Skor Saat Ini</p>
-                           <div class="text-xl md:text-2xl font-black text-[#FFC107]" x-text="currentScore"></div>
+                           <div class="text-base md:text-lg font-black text-[#FFC107]" x-text="currentScore"></div>
                         </div>
                         <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -212,14 +212,14 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                   <div class="h-2 w-full bg-slate-100 relative">
                      <div class="h-full bg-[#FF5722] transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
                               <!-- Question Body -->
-                  <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
+                  <div class="flex-1 overflow-y-auto p-6 md:p-6 bg-slate-50 flex items-center justify-center relative">
                      <div class="w-full max-w-3xl text-center">
                         <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
                         
                         <!-- Quiz Content -->
                         <template x-if="activeGame?.gameType === 'QUIZ'">
                           <div>
-                            <h2 class="text-lg md:text-2xl font-bold text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
+                            <h2 class="text-lg md:text-lg font-bold text-[#1A237E] mb-6 md:mb-12 leading-tight" x-text="questions[currentIndex]?.question"></h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                <template x-for="opt in ['A', 'B', 'C', 'D']">
                                   <button @click="selectAnswer(opt)" 
@@ -229,7 +229,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                                         'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
                                         'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
                                      }"
-                                     class="border-4 p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
+                                     class="border-4 p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] text-left flex items-center gap-3 md:gap-5 transition-all group disabled:cursor-default"
                                      :disabled="showFeedback">
                                      <span class="h-8 w-8 md:h-10 md:w-10 rounded-xl md:rounded-2xl flex items-center justify-center font-black text-sm md:text-lg transition-colors" 
                                            :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
@@ -245,20 +245,20 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                         <!-- Fill The Blank Content -->
                         <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
                           <div class="flex flex-col items-center">
-                            <div class="text-lg md:text-xl font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                            <div class="text-lg md:text-base font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
                                  x-html="renderFTB(questions[currentIndex])"></div>
                             
                             <div class="mt-4" x-show="!showFeedback">
-                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
+                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-2.5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
                             </div>
                           </div>
                         </template>
 
                         <!-- Educational Feedback -->
-                        <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-8 rounded-2xl md:rounded-3xl text-left border-4 border-dashed"
+                        <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-5 rounded-2xl md:rounded-2xl text-left border-4 border-dashed"
                              :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
                            <div class="flex items-center gap-3 mb-2 md:mb-3">
-                              <span class="text-xl md:text-2xl" x-text="isCorrect ? '✨' : '💡'"></span>
+                              <span class="text-base md:text-lg" x-text="isCorrect ? '✨' : '💡'"></span>
                               <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="isCorrect ? 'text-green-800' : 'text-red-800'">
                                  <span x-text="isCorrect ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
                               </h4>
@@ -281,7 +281,7 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
                            </div>
                            
                            <div class="mt-4 md:mt-6 flex justify-end">
-                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
+                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-2 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
                                  <span x-text="currentIndex === questions.length - 1 ? 'LIHAT HASIL AKHIR' : 'SOAL BERIKUTNYA'"></span>
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                               </button>
@@ -308,34 +308,34 @@ export const MemberDashboard = ({ publishedGames, username }: { publishedGames: 
 
             <!-- Result Screen -->
             <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
-               <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
+               <div class="h-full flex flex-col items-center justify-center p-6 md:p-6 bg-gradient-to-br from-white to-blue-50 text-center">
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
                         <div class="text-6xl md:text-8xl mb-4 animate-bounce">🏆</div>
                         <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-black shadow-xl ring-4 ring-white">100</div>
                      </div>
                      
-                     <h2 class="text-2xl md:text-4xl font-black text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
+                     <h2 class="text-lg md:text-lg font-black text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
                      <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus, <span x-text="username"></span>!</p>
                      
                      <!-- Stats Grid -->
                      <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
                            <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
-                           <div class="text-xl md:text-3xl font-black text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
+                           <div class="text-base md:text-base font-black text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-green-500">
                            <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Benar</div>
-                           <div class="text-xl md:text-3xl font-black text-green-600" x-text="correctCount"></div>
+                           <div class="text-base md:text-base font-black text-green-600" x-text="correctCount"></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-red-500">
                            <div class="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salah</div>
-                           <div class="text-xl md:text-3xl font-black text-red-600" x-text="wrongCount"></div>
+                           <div class="text-base md:text-base font-black text-red-600" x-text="wrongCount"></div>
                         </div>
                      </div>
 
                      <div class="space-y-4">
-                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">SIMPAN & SELESAI</button>
+                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-2.5 md:py-2.5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">SIMPAN & SELESAI</button>
                         <p class="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-50">Skor Anda akan tercatat di papan peringkat.</p>
                      </div>
                   </div>

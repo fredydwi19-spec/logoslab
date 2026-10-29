@@ -4,14 +4,14 @@ export const PublicGamePlayer = () => {
   return `
     <div x-data="publicGamePlayerData()">
       <!-- Game Modal Player -->
-      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-10">
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-6">
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
             <template x-if="isPlaying && !gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
-                  <div class="bg-[#1A237E] px-6 md:px-10 py-4 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                  <div class="bg-[#1A237E] px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
                      <div class="flex items-center gap-3 md:gap-4">
                         <img src="/public/assets/logo-logoslab.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
@@ -22,7 +22,7 @@ export const PublicGamePlayer = () => {
                      <div class="flex items-center gap-4 md:gap-6">
                         <div class="text-right hidden sm:block">
                            <p class="text-[9px] font-medium uppercase opacity-60">Skor Saat Ini</p>
-                           <div class="text-xl md:text-2xl font-bold text-[#FFC107]" x-text="currentScore"></div>
+                           <div class="text-base md:text-lg font-bold text-[#FFC107]" x-text="currentScore"></div>
                         </div>
                         <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -36,7 +36,7 @@ export const PublicGamePlayer = () => {
                   </div>
                   
                   <!-- Question Body -->
-                  <div class="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50 flex items-center justify-center relative">
+                  <div class="flex-1 overflow-y-auto p-6 md:p-6 bg-slate-50 flex items-center justify-center relative">
                      <div class="w-full max-w-3xl text-center">
                         <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-medium uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
                         
@@ -69,20 +69,20 @@ export const PublicGamePlayer = () => {
                         <!-- Fill The Blank Content -->
                         <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
                           <div class="flex flex-col items-center">
-                            <div class="text-lg md:text-xl font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                            <div class="text-lg md:text-base font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
                                  x-html="renderFTB(questions[currentIndex])"></div>
                             
                             <div class="mt-4" x-show="!showFeedback">
-                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
+                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-2.5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
                             </div>
                           </div>
                         </template>
 
                         <!-- Educational Feedback -->
-                        <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-8 rounded-2xl md:rounded-3xl text-left border-4 border-dashed"
+                        <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-5 rounded-2xl md:rounded-2xl text-left border-4 border-dashed"
                              :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
                            <div class="flex items-center gap-3 mb-2 md:mb-3">
-                              <span class="text-xl md:text-2xl" x-text="isCorrect ? '✨' : '💡'"></span>
+                              <span class="text-base md:text-lg" x-text="isCorrect ? '✨' : '💡'"></span>
                               <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="isCorrect ? 'text-green-800' : 'text-red-800'">
                                  <span x-text="isCorrect ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
                               </h4>
@@ -105,7 +105,7 @@ export const PublicGamePlayer = () => {
                            </div>
                            
                            <div class="mt-4 md:mt-6 flex justify-end">
-                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
+                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-2 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
                                  <span x-text="currentIndex === questions.length - 1 ? 'LIHAT HASIL AKHIR' : 'SOAL BERIKUTNYA'"></span>
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                               </button>
@@ -125,34 +125,53 @@ export const PublicGamePlayer = () => {
 
             <!-- Result Screen -->
             <template x-if="gameFinished && activeGame?.gameType !== 'WORD_SEARCH'">
-               <div class="h-full flex flex-col items-center justify-center p-6 md:p-12 bg-gradient-to-br from-white to-blue-50 text-center">
+               <div class="h-full flex flex-col items-center justify-center p-6 md:p-6 bg-gradient-to-br from-white to-blue-50 text-center">
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
                         <div class="text-6xl md:text-8xl mb-4 animate-bounce"><i class="bi bi-trophy text-yellow-400"></i></div>
                         <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
                      </div>
                      
-                     <h2 class="text-xl md:text-3xl font-bold text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
+                     <h2 class="text-base md:text-base font-bold text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
                      <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
                      
                      <!-- Stats Grid -->
                      <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
                            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
-                           <div class="text-xl md:text-2xl font-bold text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
+                           <div class="text-base md:text-lg font-bold text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-green-500">
                            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Benar</div>
-                           <div class="text-xl md:text-2xl font-bold text-green-600" x-text="correctCount"></div>
+                           <div class="text-base md:text-lg font-bold text-green-600" x-text="correctCount"></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-red-500">
                            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Salah</div>
-                           <div class="text-xl md:text-2xl font-bold text-red-600" x-text="wrongCount"></div>
+                           <div class="text-base md:text-lg font-bold text-red-600" x-text="wrongCount"></div>
                         </div>
                      </div>
 
+                     <!-- Reflection Section -->
+                     <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-lg text-left">
+                        <label class="block text-[#1A237E] font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
+                        <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-[#1A237E] focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
+                        <button @click="saveJournal()" class="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2" :class="{'opacity-50 cursor-not-allowed': !reflectionText.trim() || isJournalSaved}" :disabled="!reflectionText.trim() || isJournalSaved">
+                          <span x-text="isJournalSaved ? 'Tersimpan ke Jurnal! ✅' : 'Simpan ke Jurnal (+20 XP)'"></span>
+                        </button>
+                     </div>
+
                      <div class="space-y-4">
-                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform hover:scale-105">TUTUP HASIL</button>
+                        <template x-if="!duelId">
+                          <button @click="createDuel()" class="w-full bg-[#FF5722] text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-2xl hover:bg-[#E64A19] transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+                            <span>⚔️ Tantang Teman dengan Kuis Ini</span>
+                          </button>
+                        </template>
+                        <template x-if="duelId">
+                          <button @click="submitDuel()" class="w-full bg-green-500 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-2xl hover:bg-green-600 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+                            <span>Kirim Hasil Duel! ⚔️</span>
+                          </button>
+                        </template>
+                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-2.5 md:py-2.5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-xl transform hover:-translate-y-1">TUTUP HASIL</button>
                      </div>
                   </div>
                </div>
@@ -184,6 +203,9 @@ export const PublicGamePlayer = () => {
           isCorrect: false,
           userFTBAnswers: [],
           submissionResults: [],
+          duelId: null,
+          reflectionText: '',
+          isJournalSaved: false,
           
           async playGame(id) {
             console.log('Playing public game:', id);
@@ -215,6 +237,11 @@ export const PublicGamePlayer = () => {
                 this.userFTBAnswers = [];
                 this.submissionResults = [];
                 this.gameData = null;
+                this.reflectionText = '';
+                this.isJournalSaved = false;
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                this.duelId = urlParams.get('duel');
 
                 if (this.activeGame.gameType === 'WORD_SEARCH') {
                   const wsRes = await fetch('/api/word-search/' + id);
@@ -311,6 +338,88 @@ export const PublicGamePlayer = () => {
           quitGame() {
             this.isPlaying = false;
             this.activeGame = null;
+            if (window.location.pathname.startsWith('/play/')) {
+               window.location.href = '/';
+            }
+          },
+
+          async createDuel() {
+            try {
+              const res = await fetch('/api/duels/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  quizId: this.activeGame.id,
+                  score: this.currentScore,
+                  timeInSeconds: 0,
+                  questionIds: this.questions.map(q => q.id)
+                })
+              });
+              const json = await res.json();
+              if (json.success) {
+                alert('Tantangan Duel berhasil dibuat! Menyalin link...');
+                navigator.clipboard.writeText(window.location.origin + json.shareUrl);
+                window.location.href = json.shareUrl;
+              } else {
+                alert('Gagal membuat duel: ' + json.error);
+                if (json.error === 'Unauthorized') window.location.href = '/login';
+              }
+            } catch (e) {
+              alert('Terjadi kesalahan saat membuat duel.');
+            }
+          },
+
+          async submitDuel() {
+            if (!this.duelId) return;
+            try {
+              const res = await fetch('/api/duels/' + this.duelId + '/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  score: this.currentScore,
+                  timeInSeconds: 0
+                })
+              });
+              const json = await res.json();
+              if (json.success) {
+                alert('Hasil duel berhasil dikirim!');
+                window.location.href = '/duel/' + this.duelId;
+              } else {
+                alert('Gagal mengirim hasil duel: ' + json.error);
+              }
+            } catch (e) {
+              alert('Terjadi kesalahan saat mengirim hasil duel.');
+            }
+          },
+
+          async saveJournal() {
+            if (!this.reflectionText.trim() || this.isJournalSaved) return;
+            try {
+              const res = await fetch('/api/journals/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  referenceType: 'QUIZ',
+                  referenceId: this.activeGame.id,
+                  title: this.activeGame.title,
+                  reflectionText: this.reflectionText
+                })
+              });
+              const json = await res.json();
+              if (json.success) {
+                this.isJournalSaved = true;
+                alert('Jurnal berhasil disimpan! Kamu mendapatkan ' + json.xpEarned + ' XP.');
+              } else {
+                if (json.error === 'Unauthorized') {
+                  alert('Silakan login terlebih dahulu untuk menyimpan jurnal.');
+                  window.location.href = '/login';
+                } else {
+                  alert('Gagal menyimpan jurnal.');
+                }
+              }
+            } catch (e) {
+              alert('Terjadi kesalahan jaringan.');
+            }
           }
         };
       };

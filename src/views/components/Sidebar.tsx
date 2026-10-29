@@ -1,18 +1,22 @@
 export const Sidebar = ({ username, role }: { username: string; role: string }) => {
   const menuItems: { label: string; icon: string; link: string }[] = [
-    { label: "Dashboard", icon: "<i class='bi bi-house'></i>", link: `/dashboard/${role.toLowerCase().split('_')[0]}` },
+    { label: "Dashboard", icon: "<i class='bi bi-house'></i>", link: `/dashboard/${role.toLowerCase().split('_')[0]}?tab=dashboard` },
   ];
 
   if (role === "KETUA_TIM") {
     menuItems.push({ label: "Semua Proyek", icon: "<i class='bi bi-bar-chart'></i>", link: "/dashboard/projects" });
   } else if (role === "PEMBUAT_GAME") {
-    menuItems.push({ label: "Proyek Dikerjakan", icon: "<i class='bi bi-controller'></i>", link: "/dashboard/game" });
+    menuItems.push({ label: "Proyek Dikerjakan", icon: "<i class='bi bi-controller'></i>", link: "/dashboard/pembuat?tab=projects" });
   } else if (role === "PEMBUAT_MATERI") {
-    menuItems.push({ label: "Proyek Saya", icon: "<i class='bi bi-book'></i>", link: "/dashboard/materi" });
+    menuItems.push({ label: "Proyek Saya", icon: "<i class='bi bi-book'></i>", link: "/dashboard/pembuat?tab=projects" });
   } else if (role === "PAKAR") {
-    menuItems.push({ label: "Proyek Dikerjakan", icon: "<i class='bi bi-clipboard-check'></i>", link: "/dashboard/pakar" });
+    menuItems.push({ label: "Proyek Dikerjakan", icon: "<i class='bi bi-clipboard-check'></i>", link: "/dashboard/pakar?tab=projects" });
   } else if (role === "USER") {
     menuItems.push({ label: "Pencapaian Saya", icon: "<i class='bi bi-trophy'></i>", link: "/dashboard/user" });
+    menuItems.push({ label: "Jurnal Saya", icon: "📖", link: "/dashboard/journal" });
+    menuItems.push({ label: "Jelajah Game", icon: "🎮", link: "/dashboard/games" });
+    menuItems.push({ label: "Materi Belajar", icon: "📚", link: "/dashboard/materials" });
+    menuItems.push({ label: "Mode Duel", icon: "⚔️", link: "/dashboard/duels" });
   }
 
   return `
@@ -30,7 +34,7 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
       <div class="flex-1 mt-5 space-y-1 w-full" x-data="{ openBankSoal: false }">
         <p class="px-5 text-[8px] font-medium text-blue-300 uppercase tracking-[0.2em] mb-2 opacity-50">Navigasi Utama</p>
         ${menuItems.map(item => `
-          <a href="${item.link}" class="flex items-center px-5 py-3 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
+          <a href="${item.link}" class="flex items-center p-2 text-sm.5 text-sm rounded-lg text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
             <span class="mr-3 text-lg transition-transform group-hover:scale-110">${item.icon}</span>
             <span class="font-semibold uppercase tracking-wide text-xs">${item.label}</span>
           </a>
@@ -39,7 +43,7 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
         ${(role === "KETUA_TIM" || role === "PEMBUAT_GAME") ? `
         <!-- Dropdown Bank Soal -->
         <div class="w-full">
-          <button @click="openBankSoal = !openBankSoal" class="w-full flex items-center justify-between px-5 py-3 text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
+          <button @click="openBankSoal = !openBankSoal" class="w-full flex items-center justify-between p-2 text-sm.5 text-sm rounded-lg text-blue-100 hover:bg-white/10 hover:text-[#FFC107] transition-all group border-l-4 border-transparent hover:border-[#FFC107]">
             <div class="flex items-center">
               <span class="mr-3 text-lg transition-transform group-hover:scale-110"><i class="bi bi-bank"></i></span>
               <span class="font-semibold uppercase tracking-wide text-xs">Bank Soal</span>
@@ -70,10 +74,6 @@ export const Sidebar = ({ username, role }: { username: string; role: string }) 
         <a href="/" class="flex items-center justify-center gap-2 w-full py-2.5 text-[10px] font-bold text-white bg-[#FF5722] hover:bg-[#E64A19] rounded-lg transition-all shadow-lg uppercase tracking-widest">
            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
            KE BERANDA
-        </a>
-        <a href="/api/auth/logout" class="flex items-center justify-center gap-2 w-full py-2.5 text-[10px] font-bold text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all uppercase tracking-widest border border-white/10">
-           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-           LOGOUT
         </a>
       </div>
     </div>

@@ -10,8 +10,12 @@ export const users = mysqlTable("users", {
   role: mysqlEnum("role", ["KETUA_TIM", "PEMBUAT_GAME", "PEMBUAT_MATERI", "PAKAR", "USER"]).default("USER").notNull(),
   isVerified: boolean("is_verified").default(false),
   profilePicture: varchar("profile_picture", { length: 255 }),
+  avatarUrl: text("avatar_url"),
   hasOnboarded: boolean("has_onboarded").default(false),
   interests: varchar("interests", { length: 500 }), // Store as comma-separated or JSON string
+  totalXp: int("total_xp").default(0),
+  currentStreak: int("current_streak").default(0),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
 });
@@ -34,6 +38,8 @@ export const projects = mysqlTable("projects", {
   category: varchar("category", { length: 100 }), // Matching user interests
   status: mysqlEnum("status", ["DRAFT", "REVIEW_PAKAR", "REVISI_PAKAR", "ACCEPTED_PAKAR", "REVIEW_KETUA", "REVISI_KETUA", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT").notNull(),
   revisionCount: int("revision_count").default(0),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
   deadline: timestamp("deadline"),
   thumbnailUrl: longtext("thumbnail_url"),
   idPembuat: bigint("id_pembuat", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
@@ -238,4 +244,54 @@ export const bankSoalTts = mysqlTable("bank_soal_tts", {
   createdBy: bigint("created_by", { mode: 'number', unsigned: true }).references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const gamePlayLogs = mysqlTable("game_play_logs", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  playedAt: timestamp("played_at").defaultNow(),
+});
+
+export const materialAccessLogs = mysqlTable("material_access_logs", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  accessedAt: timestamp("accessed_at").defaultNow(),
+});
+
+export const projectChats = mysqlTable("project_chats", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  senderId: bigint("sender_id", { mode: 'number', unsigned: true }).references(() => users.id).notNull(),
+  contextType: mysqlEnum("context_type", ["GENERAL", "QUESTION"]).default("GENERAL").notNull(),
+  contextTargetId: bigint("context_target_id", { mode: 'number', unsigned: true }),
+  message: text("message").notNull(),
+  isActionable: boolean("is_actionable").default(false),
+  isResolved: boolean("is_resolved").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const quizDuels = mysqlTable("quiz_duels", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  challengerId: bigint("challenger_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  opponentId: bigint("opponent_id", { mode: 'number', unsigned: true }).references(() => users.id),
+  quizId: bigint("quiz_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  questionIds: text("question_ids").notNull(),
+  challengerScore: int("challenger_score").default(0),
+  challengerTimeSec: int("challenger_time_sec").default(0),
+  opponentScore: int("opponent_score"),
+  opponentTimeSec: int("opponent_time_sec"),
+  status: mysqlEnum("status", ["WAITING_OPPONENT", "COMPLETED"]).default("WAITING_OPPONENT").notNull(),
+  winnerId: bigint("winner_id", { mode: 'number', unsigned: true }).references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userJournals = mysqlTable("user_journals", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  referenceType: mysqlEnum("reference_type", ["QUIZ", "MATERIAL"]).notNull(),
+  referenceId: bigint("reference_id", { mode: 'number', unsigned: true }).references(() => projects.id).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  reflectionText: text("reflection_text").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });

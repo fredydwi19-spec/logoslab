@@ -5,12 +5,14 @@ import { ProjectHeader } from "./ProjectHeader";
 
 export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris = [], pakars = [] }: { allProjects: any[], pembuatGames: any[], pembuatMateris?: any[], pakars?: any[] }) => {
   const allProjectsJson = JSON.stringify(allProjects).replace(/</g, '\\u003c');
+  const pakarsJson = JSON.stringify(pakars).replace(/</g, '\\u003c');
   const pembuatOptions = pembuatGames.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
   const pembuatMateriOptions = pembuatMateris.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
   const pakarOptions = pakars.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
 
   return `
     <script id="ketuaProjectsData" type="application/json">${allProjectsJson}</script>
+    <script id="ketuaPakarsData" type="application/json">${pakarsJson}</script>
 
     <script>
       document.addEventListener('alpine:init', () => {
@@ -29,49 +31,71 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           showExplanation: false,
           isCorrect: false,
           userFTBAnswers: [],
-          filterTypeMain: 'ALL',
-          filterType: 'ALL',
-          statusTab: 'ALL',
-          speakingIdx: null,
-          unlockedIdx: 0,
-          isReading: false,
-          isPaused: false,
           allProjects: JSON.parse(document.getElementById('ketuaProjectsData').textContent || '[]'),
-          selectedCategories: [],
-          availableCategories: [
-            "Biblical Knowledge",
-            "Eksegesis & Hermeneutik",
-            "Biblical Theory",
-            "Homiletika",
-            "Apologetika"
-          ],
+          pakars: JSON.parse(document.getElementById('ketuaPakarsData').textContent || '[]'),
+          filterKey: '',
+          filterValue: '',
+          filterStart: '',
+          filterEnd: '',
+          appliedFilter: { key: '', value: '', start: '', end: '' },
 
-          filteredProjects() {
-            let base = this.allProjects;
-            if (this.filterTypeMain !== 'ALL') {
-              base = base.filter(p => p.type === this.filterTypeMain);
-            }
-            if (this.filterType !== 'ALL') {
-              if (this.filterTypeMain === 'GAME') {
-                base = base.filter(p => p.gameType === this.filterType);
-              } else if (this.filterTypeMain === 'MATERI') {
-                base = base.filter(p => p.materiType === this.filterType);
-              }
-            }
-            return base;
+          applyFilter() {
+            this.appliedFilter = {
+              key: this.filterKey,
+              value: this.filterValue,
+              start: this.filterStart,
+              end: this.filterEnd
+            };
           },
 
-          filteredByStatus() {
-            const base = this.filteredProjects();
-            if (this.statusTab === 'ALL') return base;
-            if (this.statusTab === 'DRAFT')         return base.filter(p => p.status === 'DRAFT');
-            if (this.statusTab === 'REVIEW_PAKAR')  return base.filter(p => p.status === 'REVIEW_PAKAR');
-            if (this.statusTab === 'REVISI_PAKAR')  return base.filter(p => p.status === 'REVISI_PAKAR');
-            if (this.statusTab === 'ACCEPTED_PAKAR')return base.filter(p => p.status === 'ACCEPTED_PAKAR');
-            if (this.statusTab === 'REVIEW_KETUA')  return base.filter(p => p.status === 'REVIEW_KETUA');
-            if (this.statusTab === 'REVISI_KETUA')  return base.filter(p => p.status === 'REVISI_KETUA');
-            if (this.statusTab === 'UNPUBLISHED')   return base.filter(p => p.status === 'UNPUBLISHED');
-            return base;
+          resetFilter() {
+            this.filterKey = '';
+            this.filterValue = '';
+            this.filterStart = '';
+            this.filterEnd = '';
+            this.appliedFilter = { key: '', value: '', start: '', end: '' };
+          },
+
+          applyDynamicFilter(list) {
+            if (!list || !Array.isArray(list)) return [];
+            
+            const { key, value, start, end } = this.appliedFilter;
+
+            // JIKA TIDAK ADA FILTER DITERAPKAN (kriteria kosong ATAU '-- Pilih Kriteria --' ATAU nilai filter kosong)
+            if (!key || key === '' || (!value && !start && !end)) {
+              return list; // RETURN 100% SELURUH PROYEK TANPA DIPOTONG
+            }
+
+            return list.filter(p => {
+              if (key === 'title_game') {
+                return p.title?.toLowerCase().includes(value.toLowerCase());
+              }
+              if (key === 'type_game') {
+                return (p.type === 'MATERI' ? p.materiType : p.gameType) === value;
+              }
+              if (key === 'status') {
+                return p.status === value;
+              }
+              if (key === 'deadline') {
+                if (!p.deadline) return false;
+                const d = new Date(p.deadline);
+                const sd = start ? new Date(start) : null;
+                const ed = end ? new Date(end) : null;
+                if (sd && d < sd) return false;
+                if (ed && d > ed) return false;
+                return true;
+              }
+              return false;
+            });
+          },
+
+          getUserName(id) {
+            const u = this.pakars.find(u => u.id === id);
+            return u ? u.username || u.name : '-';
+          },
+
+          filteredActiveProjects() {
+            return this.applyDynamicFilter(this.allProjects);
           },
 
           async openProject(id) {
@@ -341,101 +365,120 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
       </div>
 
       <!-- List View -->
-      <div x-show="!activeProject" class="bg-white p-8 rounded-xl border border-slate-200 shadow-xl overflow-hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div class="flex items-center gap-3">
-            <div class="h-8 w-2 bg-[#FFC107] rounded-full"></div>
-            <h2 class="text-lg md:text-xl font-semibold text-[#1A237E]">Daftar Aktifitas Produksi</h2>
-          </div>
-          <div class="flex flex-col gap-2">
-            <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <button @click="filterTypeMain = 'ALL'; filterType = 'ALL'" :class="filterTypeMain === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">SEMUA PROYEK</button>
-              <button @click="filterTypeMain = 'GAME'; filterType = 'ALL'" :class="filterTypeMain === 'GAME' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">GAME</button>
-              <button @click="filterTypeMain = 'MATERI'; filterType = 'ALL'" :class="filterTypeMain === 'MATERI' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all">MATERI</button>
-            </div>
-            <div x-show="filterTypeMain === 'GAME'" class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
-              <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">SEMUA GAME</button>
-              <button @click="filterType = 'QUIZ'" :class="filterType === 'QUIZ' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">QUIZ</button>
-              <button @click="filterType = 'FILL_THE_BLANK'" :class="filterType === 'FILL_THE_BLANK' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">FTB</button>
-              <button @click="filterType = 'WORD_SEARCH'" :class="filterType === 'WORD_SEARCH' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">WORD SEARCH</button>
-              <button @click="filterType = 'CROSSWORD'" :class="filterType === 'CROSSWORD' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">CROSSWORD</button>
-            </div>
-            <div x-show="filterTypeMain === 'MATERI'" class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
-              <button @click="filterType = 'ALL'" :class="filterType === 'ALL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">SEMUA MATERI</button>
-              <button @click="filterType = 'TEKS'" :class="filterType === 'TEKS' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">TEKS</button>
-              <button @click="filterType = 'VIDEO'" :class="filterType === 'VIDEO' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">VIDEO</button>
-              <button @click="filterType = 'MANUAL'" :class="filterType === 'MANUAL' ? 'bg-white text-[#1A237E] shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-lg text-xs font-black transition-all whitespace-nowrap">MANUAL</button>
-            </div>
+      <div x-show="!activeProject">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+          <div>
+            <h2 class="text-base md:text-lg font-semibold text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
+              <span class="h-5 w-1.5 bg-[#FFC107] rounded-full"></span>
+              Proyek Yang Sedang Dikerjakan
+            </h2>
+            <p class="text-xs md:text-sm text-slate-400 font-medium mt-1">Daftar seluruh proyek produksi dalam sistem</p>
           </div>
         </div>
 
-        <!-- Status Tab Panel -->
-        <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200">
-          <!-- Tab Bar -->
-          <div class="flex overflow-x-auto bg-[#1A237E]">
-            <button @click="statusTab = 'ALL'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'ALL' ? 'bg-white text-[#1A237E] border-[#FFC107] shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              🗂 Semua
-            </button>
-            <button @click="statusTab = 'DRAFT'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'DRAFT' ? 'bg-white text-yellow-600 border-yellow-400 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              📝 Draft
-            </button>
-            <button @click="statusTab = 'REVIEW_PAKAR'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'REVIEW_PAKAR' ? 'bg-white text-blue-600 border-blue-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              🔍 Review Pakar
-            </button>
-            <button @click="statusTab = 'REVISI_PAKAR'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'REVISI_PAKAR' ? 'bg-white text-orange-600 border-orange-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              <i class="bi bi-pencil-square"></i> Revisi Pakar
-            </button>
-            <button @click="statusTab = 'ACCEPTED_PAKAR'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'ACCEPTED_PAKAR' ? 'bg-white text-green-600 border-green-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              <i class="bi bi-check-circle"></i> Disetujui Pakar
-            </button>
-            <button @click="statusTab = 'REVIEW_KETUA'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'REVIEW_KETUA' ? 'bg-white text-indigo-700 border-indigo-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              <i class="bi bi-award"></i> Review Ketua
-            </button>
-            <button @click="statusTab = 'REVISI_KETUA'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'REVISI_KETUA' ? 'bg-white text-red-600 border-red-500 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              🔁 Revisi Ketua
-            </button>
-            <button @click="statusTab = 'UNPUBLISHED'"
-              class="flex-shrink-0 px-4 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all border-b-[3px]"
-              :class="statusTab === 'UNPUBLISHED' ? 'bg-white text-slate-600 border-slate-400 shadow-inner' : 'text-white/60 border-transparent hover:text-white hover:bg-white/10'">
-              📦 Unpublished
-            </button>
+        <!-- Tab Panel -->
+        <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 mb-0">
+
+          <!-- Dynamic Filter -->
+          <div class="flex flex-wrap items-center gap-3 w-full p-4 bg-slate-50/80 border-b border-slate-200">
+            <div class="flex flex-col gap-1 w-48 shrink-0">
+              <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
+              <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <option value="">-- Pilih Kriteria --</option>
+                <option value="title_game">Judul Game/Materi</option>
+                <option value="type_game">Jenis</option>
+                <option value="status">Status</option>
+                <option value="deadline">Tanggal Deadline</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+              <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
+              
+              <template x-if="filterKey === 'title_game'">
+                <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              </template>
+
+              <template x-if="filterKey === 'type_game'">
+                <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <option value="">-- Pilih Jenis --</option>
+                  <option value="QUIZ">QUIZ</option>
+                  <option value="FILL_THE_BLANK">FILL THE BLANK</option>
+                  <option value="WORD_SEARCH">WORD SEARCH</option>
+                  <option value="CROSSWORD">CROSSWORD</option>
+                  <option value="TEKS">TEKS (MATERI)</option>
+                  <option value="VIDEO">VIDEO (MATERI)</option>
+                  <option value="MANUAL">MANUAL (MATERI)</option>
+                </select>
+              </template>
+
+              <template x-if="filterKey === 'status'">
+                <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <option value="">-- Pilih Status --</option>
+                  <option value="DRAFT">DRAFT</option>
+                  <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
+                  <option value="REVISI_PAKAR">REVISI PAKAR</option>
+                  <option value="ACCEPTED_PAKAR">ACCEPTED PAKAR</option>
+                  <option value="REVIEW_KETUA">REVIEW KETUA</option>
+                  <option value="REVISI_KETUA">REVISI KETUA</option>
+                  <option value="PUBLISHED">PUBLISHED</option>
+                  <option value="UNPUBLISHED">UNPUBLISHED</option>
+                </select>
+              </template>
+
+              <template x-if="filterKey === 'deadline'">
+                <div class="flex gap-2">
+                  <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <span class="self-center font-bold text-slate-400">-</span>
+                  <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                </div>
+              </template>
+
+              <template x-if="!filterKey">
+                <div class="w-full border-2 border-slate-200 border-dashed rounded-lg py-2 px-3 text-sm text-slate-400 italic bg-white text-center shadow-sm">Pilih kriteria terlebih dahulu</div>
+              </template>
+            </div>
+            
+            <div class="flex gap-2 ml-auto shrink-0 self-end">
+              <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+                TERAPKAN
+              </button>
+              <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
+                RESET
+              </button>
+            </div>
           </div>
 
-          <!-- Table -->
+          <!-- Active Projects Table -->
           <div class="overflow-x-auto bg-white">
           <table class="w-full text-left">
-            <thead>
-              <tr class="border-b border-slate-100 text-slate-400 text-xs md:text-sm font-medium uppercase tracking-wider">
-                <th class="pb-4 pt-4 px-6">No.</th>
-                <th class="pb-4 pt-4 px-6">Judul Game / Materi</th>
-                <th class="pb-4 pt-4 px-6">Status</th>
-                <th class="pb-4 pt-4 px-6 text-right">Aksi</th>
+            <thead class="bg-slate-50">
+              <tr class="text-slate-400 text-xs md:text-sm font-medium uppercase tracking-wider">
+                <th class="px-6 py-4 font-black">Judul Game/Materi</th>
+                <th class="px-6 py-4 font-black">Jenis</th>
+                <th class="px-6 py-4 font-black">Deadline</th>
+                <th class="px-6 py-4 font-black">PIC Pakar</th>
+                <th class="px-6 py-4 font-black">Status</th>
+                <th class="px-6 py-4 font-black text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody class="text-slate-600">
-              <template x-for="(p, index) in filteredByStatus()" :key="p.id">
-                <tr class="border-b border-slate-50 hover:bg-blue-50/30 transition-colors group">
-                  <td class="py-5 px-6 font-bold text-[#1A237E] text-sm md:text-base text-center" x-text="index + 1"></td>
-                  <td class="py-5 px-6">
-                    <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight mb-1" x-text="p.title"></div>
-                    <span class="text-[10px] bg-[#1A237E] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider" x-text="p.type === 'MATERI' ? p.materiType : p.gameType"></span>
+            <tbody class="text-slate-600 divide-y divide-slate-50">
+              <template x-for="p in filteredActiveProjects()" :key="p.id">
+                <tr class="hover:bg-blue-50/40 transition-all group">
+                  <td class="px-6 py-5">
+                    <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
+                    <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
                   </td>
-                  <td class="py-5 px-6">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter"
+                  <td class="px-6 py-5">
+                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-black uppercase border border-slate-200" x-text="p.type === 'MATERI' ? p.materiType : (p.gameType || '-')"></span>
+                  </td>
+                  <td class="px-6 py-5">
+                    <span :class="new Date(p.deadline) < new Date() ? 'text-red-600 font-black' : 'text-slate-700 font-bold'" x-text="p.deadline ? new Date(p.deadline).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '-'"></span>
+                  </td>
+                  <td class="px-6 py-5">
+                    <span class="text-sm md:text-base font-medium text-slate-700" x-text="p.idPakar ? getUserName(p.idPakar) : 'Belum Ditentukan'"></span>
+                  </td>
+                  <td class="px-6 py-5">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
                       :class="{
                         'bg-yellow-100 text-yellow-800 border border-yellow-200': p.status === 'DRAFT',
                         'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR',
@@ -443,24 +486,30 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                         'bg-green-100 text-green-800 border border-green-200': p.status === 'ACCEPTED_PAKAR',
                         'bg-indigo-100 text-indigo-800 border border-indigo-200': p.status === 'REVIEW_KETUA',
                         'bg-red-100 text-red-800 border border-red-200': p.status === 'REVISI_KETUA',
-                        'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'UNPUBLISHED',
+                        'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'UNPUBLISHED' || p.status === 'PUBLISHED',
                       }"
                       x-text="p.status.replace(/_/g, ' ')">
                     </span>
                   </td>
-                  <td class="py-5 px-6 text-right">
-                    <div class="flex justify-end gap-2">
+                  <td class="px-6 py-5 align-middle">
+                    <div class="flex items-center justify-end gap-2">
                       <template x-if="p.status === 'DRAFT' || p.status === 'REVISI_KETUA' || p.status === 'REVISI_PAKAR'">
                         <button @click="editProject(p)" class="bg-blue-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-blue-600 transition-all shadow-md font-bold">Edit</button>
                       </template>
                       <button @click="deleteProject(p.id)" class="bg-red-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-red-600 transition-all shadow-md font-bold">Hapus</button>
+                      <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
+                      </button>
                       <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 shadow-md transition-all uppercase tracking-widest">DETAIL</button>
                     </div>
                   </td>
                 </tr>
               </template>
-              <template x-if="filteredByStatus().length === 0">
-                <tr><td colspan="4" class="text-center py-10 text-slate-400 italic">Tidak ada proyek ditemukan.</td></tr>
+              <template x-if="filteredActiveProjects().length === 0">
+                <tr><td colspan="6" class="text-center py-16 text-slate-400 italic font-bold">
+                  <div class="text-4xl mb-3 opacity-30">📭</div>
+                  <div class="text-xs uppercase tracking-widest">Tidak ada proyek ditemukan.</div>
+                </td></tr>
               </template>
             </tbody>
           </table>

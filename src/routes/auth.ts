@@ -47,6 +47,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
         id: user.id,
         role: user.role,
         username: user.username,
+        avatarUrl: user.avatarUrl
       });
 
       cookie.auth!.set({
@@ -57,27 +58,30 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
       });
 
       // Redirect logic based on role
-      let redirectUrl = "/dashboard/member";
+      let redirectUrl = "/";
       switch (user.role) {
         case "KETUA_TIM":
           redirectUrl = "/dashboard/ketua";
           break;
         case "PEMBUAT_GAME":
-          redirectUrl = "/dashboard/game";
+          redirectUrl = "/dashboard/pembuat";
           break;
         case "PEMBUAT_MATERI":
-          redirectUrl = "/dashboard/materi";
+          redirectUrl = "/dashboard/pembuat";
           break;
         case "PAKAR":
           redirectUrl = "/dashboard/pakar";
           break;
+        case "USER":
+          redirectUrl = "/";
+          break;
         default:
-          redirectUrl = "/dashboard/member";
+          redirectUrl = "/";
       }
 
       return {
         message: "Login successful",
-        redirect: "/",
+        redirect: redirectUrl,
       };
     },
     {
@@ -163,6 +167,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
         id: user.id,
         role: user.role,
         username: user.username,
+        avatarUrl: user.avatarUrl
       });
 
       cookie.auth!.set({
@@ -181,7 +186,7 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
       return Response.redirect("/?error=google_auth_failed");
     }
   })
-  .get("/logout", ({ cookie }) => {
+  .all("/logout", ({ cookie }) => {
     cookie.auth!.remove();
     return Response.redirect("/", 302);
   })
@@ -259,4 +264,29 @@ export const authRoutes = new Elysia({ prefix: "/api/auth" })
     await db.delete(verificationTokens).where(eq(verificationTokens.id, verifToken.id));
     
     return Response.redirect("/?verified=true", 302);
+  })
+  .get("/me", async ({ jwt, cookie, set }) => {
+    const auth = cookie.auth;
+    if (!auth?.value) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+    const payload = await jwt.verify(auth.value as string);
+    if (!payload) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+    const [user] = await db.select().from(users).where(eq(users.id, payload.id as number));
+    if (!user) {
+      set.status = 401;
+      return { error: "User not found" };
+    }
+    return {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatarUrl || user.profilePicture
+    };
   });

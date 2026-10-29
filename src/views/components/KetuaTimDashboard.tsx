@@ -146,8 +146,8 @@ export const KetuaTimDashboard = () => {
 
       <!-- ERROR STATE -->
       <template x-if="!kpiLoading && kpiError">
-        <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
-          <div class="text-4xl mb-3 text-red-500"><i class="bi bi-exclamation-triangle"></i></div>
+        <div class="bg-red-50 border border-red-200 rounded-2xl p-5 text-center">
+          <div class="text-lg mb-3 text-red-500"><i class="bi bi-exclamation-triangle"></i></div>
           <h3 class="text-base font-black text-red-700 mb-2">Gagal Memuat Dashboard</h3>
           <p class="text-sm text-red-500 font-medium" x-text="kpiError"></p>
           <button @click="kpiLoading=true; kpiError=''; init()" class="mt-4 bg-[#1A237E] text-white text-xs font-black uppercase tracking-widest px-6 py-2 rounded-lg hover:bg-blue-900 transition-colors">Coba Lagi</button>
@@ -166,7 +166,7 @@ export const KetuaTimDashboard = () => {
               <div class="flex items-start justify-between">
                 <div>
                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Proyek Berjalan</p>
-                  <p class="text-4xl font-black text-[#1A237E] leading-none" x-text="kpi.totalActiveProjects || 0"></p>
+                  <p class="text-lg font-black text-[#1A237E] leading-none" x-text="kpi.totalActiveProjects || 0"></p>
                   <p class="text-[10px] text-slate-400 mt-2 font-medium">Aktif saat ini</p>
                 </div>
                 <div class="bg-[#1A237E]/10 p-3 rounded-xl group-hover:bg-[#1A237E] transition-colors">
@@ -180,7 +180,7 @@ export const KetuaTimDashboard = () => {
               <div class="flex items-start justify-between">
                 <div>
                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Revisi Kritis</p>
-                  <p class="text-4xl font-black leading-none"
+                  <p class="text-lg font-black leading-none"
                      :class="(kpi.criticalRevisionCount || 0) > 0 ? 'text-[#FF5722]' : 'text-green-500'"
                      x-text="kpi.criticalRevisionCount || 0"></p>
                   <p class="text-[10px] text-slate-400 mt-2 font-medium">Belum direspons</p>
@@ -196,7 +196,7 @@ export const KetuaTimDashboard = () => {
               <div class="flex items-start justify-between">
                 <div>
                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Pengguna</p>
-                  <p class="text-4xl font-black text-[#FFC107] leading-none" x-text="kpi.totalUsers || 0"></p>
+                  <p class="text-lg font-black text-[#FFC107] leading-none" x-text="kpi.totalUsers || 0"></p>
                   <p class="text-[10px] text-slate-400 mt-2 font-medium">Terdaftar di platform</p>
                 </div>
                 <div class="bg-yellow-50 p-3 rounded-xl group-hover:bg-[#FFC107] transition-colors">
@@ -211,7 +211,7 @@ export const KetuaTimDashboard = () => {
                 <div>
                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Live Online</p>
                   <div class="flex items-center gap-2">
-                    <p class="text-4xl font-black text-emerald-500 leading-none" x-text="kpi.liveUsers || 0"></p>
+                    <p class="text-lg font-black text-emerald-500 leading-none" x-text="kpi.liveUsers || 0"></p>
                     <span class="relative flex h-3 w-3 mt-1">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>

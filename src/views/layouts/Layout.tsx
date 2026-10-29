@@ -1,7 +1,8 @@
 import { Sidebar } from "../components/Sidebar";
 import { FloatingChatWidget } from "../components/FloatingChatWidget";
+import { ProjectChatDrawer } from "../components/ProjectChatDrawer";
 
-export const Layout = ({ children, title, username, role, notifications = [], currentPage }: { children: string; title: string; username: string; role: string; notifications?: any[]; currentPage?: string }) => {
+export const Layout = ({ children, title, username, role, notifications = [], currentPage, avatarUrl }: { children: string; title: string; username: string; role: string; notifications?: any[]; currentPage?: string; avatarUrl?: string }) => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   // Show AI widget for all team roles (not for regular USER)
   const showChatWidget = role !== 'USER';
@@ -24,6 +25,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
         ::-webkit-scrollbar-thumb:hover { background: #FFC107; }
       </style>
       <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+      <script>window.USER_ROLE = "${role}";</script>
     </head>
     <body class="bg-[#F8FAFC] text-slate-900">
       <div class="flex">
@@ -32,10 +34,12 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
         <div class="flex-1 ml-48 min-h-screen flex flex-col">
           <!-- Main Header -->
           <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
+            ${(title.toLowerCase() !== 'dashboard' && !title.toLowerCase().startsWith('bank soal')) ? `
             <div class="flex items-center gap-3">
                <div class="h-6 w-1 bg-[#FFC107] rounded-full"></div>
                <h1 class="text-lg md:text-xl font-bold text-[#1A237E] uppercase tracking-widest leading-tight">${title}</h1>
             </div>
+            ` : '<div class="flex-1"></div>'}
             
             <div class="flex items-center gap-8">
               <!-- Notification Center -->
@@ -64,13 +68,46 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
               </div>
 
               <!-- User Profile (Corner Right) -->
-              <div class="flex items-center gap-4 bg-slate-50 p-2 pr-6 rounded-full border border-slate-100 shadow-inner">
-                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[#1A237E] to-blue-600 flex items-center justify-center text-white font-black shadow-lg ring-2 ring-white">
-                  ${username.charAt(0).toUpperCase()}
-                </div>
-                <div class="text-left">
-                  <div class="text-xs md:text-sm font-bold text-[#1A237E] uppercase tracking-wide leading-none">${username}</div>
-                  <div class="text-[8px] text-[#FF5722] font-black uppercase tracking-[0.2em] mt-1">${role.replace('_', ' ')}</div>
+              <div x-data="{ openProfile: false }" class="relative">
+                <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-[#1A237E] to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-[#FFC107]">
+                  ${avatarUrl ? `<img src="${avatarUrl}" alt="${username}" class="w-full h-full object-cover">` : username.charAt(0).toUpperCase()}
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div x-show="openProfile" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" style="display:none;" class="absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div class="p-3">
+                    <div class="bg-slate-50 p-3 rounded-xl flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-full bg-[#1A237E] text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
+                        ${avatarUrl ? `<img src="${avatarUrl}" alt="${username}" class="w-full h-full object-cover">` : username.charAt(0).toUpperCase()}
+                      </div>
+                      <div class="flex flex-col overflow-hidden">
+                        <span class="font-bold text-slate-800 text-sm truncate">${username}</span>
+                        <span class="text-slate-500 text-xs truncate">${username.toLowerCase().replace(/\\s+/g, '')}@logoslab.com</span>
+                        <span class="text-[9px] font-black text-[#FF5722] mt-1 tracking-widest uppercase">${role.replace('_', ' ')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="border-t border-slate-100 my-1"></div>
+                  
+                  <div class="p-2 space-y-1">
+                    <a href="/dashboard/${role.toLowerCase().split('_')[0]}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                      <i class="bi bi-grid-1x2 text-lg"></i> Dashboard Utama
+                    </a>
+                    <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                      <i class="bi bi-person-gear text-lg"></i> Pengaturan Profil
+                    </a>
+                  </div>
+                  
+                  <div class="border-t border-slate-100 my-1"></div>
+                  
+                  <div class="p-2">
+                    <form action="/api/auth/logout" method="POST" class="m-0">
+                      <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors font-semibold">
+                        <i class="bi bi-box-arrow-right text-lg"></i> Keluar
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </div>
             </div>
@@ -88,6 +125,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
         </div>
       </div>
       ${showChatWidget ? FloatingChatWidget({ role, currentPage: widgetPageContext }) : ''}
+      ${ProjectChatDrawer()}
     </body>
     </html>
   `;

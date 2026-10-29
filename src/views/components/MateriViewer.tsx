@@ -14,7 +14,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
             <div class="text-[10px] font-black text-[#FFC107] uppercase tracking-widest mb-1">
               <span x-text="${projectVar}?.materiType === 'VIDEO' ? '🎬 MATERI VIDEO' : (${projectVar}?.materiType === 'MANUAL' ? '📋 MATERI MANUAL' : '📄 MATERI TEKS')"></span>
             </div>
-            <h2 class="text-xl md:text-2xl font-bold" x-text="${projectVar}?.title"></h2>
+            <h2 class="text-base md:text-lg font-bold" x-text="${projectVar}?.title"></h2>
           </div>
         </div>
         
@@ -24,7 +24,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
           <div x-show="${projectVar}?.materiType === 'TEKS' || ${projectVar}?.materiType === 'MANUAL'" class="flex items-center gap-2">
             <button 
               @click="${projectVar}?.materiType === 'MANUAL' ? speakAllSections() : toggleSpeech()"
-              class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-2 border border-white/20">
+              class="bg-white/10 hover:bg-white/20 text-white p-2 text-sm rounded-full font-bold text-xs transition-colors flex items-center gap-2 border border-white/20">
               <template x-if="isExtracting">
                  <span><i class="bi bi-hourglass-split"></i> Ekstrak Teks...</span>
               </template>
@@ -44,7 +44,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
             </button>
           </div>
 
-          <div class="bg-white/10 rounded-full px-4 py-2 flex items-center gap-2 border border-white/20">
+          <div class="bg-white/10 rounded-full p-2 text-sm flex items-center gap-2 border border-white/20">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FFC107]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <span class="font-mono font-bold text-sm" x-text="formatTime(timeSpentSeconds)">00:00</span>
           </div>
@@ -59,7 +59,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
           </button>
 
           <!-- Claimed Badge -->
-          <div x-show="isClaimed" class="bg-green-500 text-white px-4 py-2 rounded-full font-black uppercase tracking-widest text-xs shadow-inner flex items-center gap-2">
+          <div x-show="isClaimed" class="bg-green-500 text-white p-2 text-sm rounded-full font-black uppercase tracking-widest text-xs shadow-inner flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
             Selesai
           </div>
@@ -127,20 +127,20 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                      x-transition:leave-start="flip-in"
                      x-transition:leave-end="flip-out"
                      @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
-                     class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
+                     class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-6 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
                      :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
                    <div class="absolute inset-0 bg-[url('/public/assets/pattern-bg.png')] opacity-10"></div>
                    
                    <!-- Locked Overlay -->
                    <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#FFC107] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                      <span class="bg-[#1A237E] text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
+                      <span class="bg-[#1A237E] text-white p-2 text-sm rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
                    </div>
 
                    <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
                      <span class="inline-block bg-[#FF5722] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
-                     <h2 class="text-2xl md:text-4xl font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
-                     <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+                     <h2 class="text-lg md:text-lg font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
+                     <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 p-2 text-sm.5 text-sm rounded-lg rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
                        Buka Kartu
                      </button>
@@ -153,15 +153,15 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                      x-transition:enter-start="flip-start"
                      x-transition:enter-end="flip-in"
                      class="w-full h-full flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-                  <div class="bg-[#1A237E] text-white px-6 py-4 flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
+                  <div class="bg-[#1A237E] text-white p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
                     <div class="flex items-center gap-3 flex-1">
                       <button @click="flipped = false" class="shrink-0 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Tutup Kartu">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                       </button>
-                      <h2 class="text-xl md:text-2xl font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
+                      <h2 class="text-base md:text-lg font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
                     </div>
                     <!-- Speaker Button Per Section -->
-                    <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
+                    <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] p-2 text-sm rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
                       <template x-if="speakingIdx === idx && !isPaused">
                          <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Jeda</div>
                       </template>
@@ -173,20 +173,20 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                       </template>
                     </button>
                   </div>
-                  <div class="p-6 md:p-10 flex-1 text-slate-700 leading-relaxed text-sm md:text-base max-w-2xl mx-auto font-medium" style="white-space: pre-wrap;" x-html="applyTooltips(section.content)"></div>
+                  <div class="p-6 md:p-6 flex-1 text-slate-700 leading-relaxed text-sm md:text-base max-w-2xl mx-auto font-medium" style="white-space: pre-wrap;" x-html="applyTooltips(section.content)"></div>
                 </div>
               </div>
             </template>
             
             <!-- Quiz Slot at the end of Manual Material -->
             <div x-show="(${projectVar}?.questions || []).length > 0" class="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-              <div class="bg-indigo-900 text-[#FFC107] px-6 py-4 flex justify-between items-center font-black uppercase tracking-widest text-sm text-center justify-center">
+              <div class="bg-indigo-900 text-[#FFC107] p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center font-black uppercase tracking-widest text-sm text-center justify-center">
                  🎯 Kuis Evaluasi Materi
               </div>
-              <div class="p-6 md:p-10 text-center">
+              <div class="p-6 md:p-6 text-center">
                 <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + ${projectVar}?.questions?.length"></div>
                 
-                <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.question"></h3>
+                <h3 class="text-lg font-black text-[#1A237E] mb-8 leading-relaxed" x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.question"></h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <template x-for="opt in ['A','B','C','D']">
                     <button @click="checkAnswerQuiz(opt)"
@@ -216,6 +216,15 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                   </div>
                 </div>
               </div>
+            </div>
+            
+            <!-- Reflection Section -->
+            <div class="mt-16 w-full max-w-3xl bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-lg text-left">
+               <label class="block text-[#1A237E] font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
+               <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-[#1A237E] focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
+               <button @click="saveJournal()" class="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2" :class="{'opacity-50 cursor-not-allowed': !reflectionText.trim() || isJournalSaved}" :disabled="!reflectionText.trim() || isJournalSaved">
+                 <span x-text="isJournalSaved ? 'Tersimpan ke Jurnal! ✅' : 'Simpan ke Jurnal (+20 XP)'"></span>
+               </button>
             </div>
           </div>
           
@@ -268,6 +277,8 @@ export const MateriViewerScript = ({ contentVar = 'materiContents' }: { contentV
           selectedAnswer: null,
           showExplanation: false,
           isCorrect: false,
+          reflectionText: '',
+          isJournalSaved: false,
 
           initViewer() {
             // Start timer
@@ -688,6 +699,36 @@ export const MateriViewerScript = ({ contentVar = 'materiContents' }: { contentV
                   if(canvas) canvas.style.display = 'none';
                 }
               }());
+            }
+          },
+
+          async saveJournal() {
+            if (!this.reflectionText.trim() || this.isJournalSaved) return;
+            try {
+              const res = await fetch('/api/journals/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  referenceType: 'MATERIAL',
+                  referenceId: this.activeMateri.id,
+                  title: this.activeMateri.title,
+                  reflectionText: this.reflectionText
+                })
+              });
+              const json = await res.json();
+              if (json.success) {
+                this.isJournalSaved = true;
+                alert('Jurnal berhasil disimpan! Kamu mendapatkan ' + json.xpEarned + ' XP.');
+              } else {
+                if (json.error === 'Unauthorized') {
+                  alert('Silakan login terlebih dahulu untuk menyimpan jurnal.');
+                  window.location.href = '/login';
+                } else {
+                  alert('Gagal menyimpan jurnal.');
+                }
+              }
+            } catch (e) {
+              alert('Terjadi kesalahan jaringan.');
             }
           },
           

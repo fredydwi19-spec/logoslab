@@ -270,7 +270,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
            </div>
            <div>
-             <h2 class="text-2xl font-black text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
+             <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
              <div class="flex items-center gap-2">
                <span class="text-[10px] font-black bg-[#1A237E] text-white px-2 py-0.5 rounded uppercase tracking-widest" x-text="difficulty"></span>
                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="gridSize + 'x' + gridSize + ' GRID'"></span>
@@ -281,11 +281,11 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
         <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
           <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
             <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest">WAKTU</div>
-            <div class="text-xl font-black text-[#1A237E]" x-text="formatTime(timer)"></div>
+            <div class="text-base font-black text-[#1A237E]" x-text="formatTime(timer)"></div>
           </div>
           <div class="bg-[#1A237E] p-3 px-6 rounded-2xl border-b-4 border-[#FFC107] shadow-lg text-center">
             <div class="text-[8px] font-black text-blue-200 uppercase tracking-widest">SKOR</div>
-            <div class="text-xl font-black text-[#FFC107]" x-text="score"></div>
+            <div class="text-base font-black text-[#FFC107]" x-text="score"></div>
           </div>
         </div>
       </div>
@@ -293,7 +293,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Center: Crossword Grid (7 cols) -->
         <div class="lg:col-span-7 flex flex-col items-center">
-          <div class="bg-[#1A237E] p-4 sm:p-8 rounded-[3rem] shadow-2xl border-[10px] border-white/5 relative overflow-hidden flex items-center justify-center">
+          <div class="bg-[#1A237E] p-4 sm:p-5 rounded-[3rem] shadow-2xl border-[10px] border-white/5 relative overflow-hidden flex items-center justify-center">
              <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
              
              <div class="relative z-10 select-none">
@@ -329,7 +329,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
           </div>
           
           <div class="mt-6 flex gap-4">
-             <button @click="direction = (direction === 'ACROSS' ? 'DOWN' : 'ACROSS')" class="bg-white border-2 border-slate-100 px-6 py-3 rounded-2xl font-black text-[#1A237E] text-[10px] uppercase tracking-widest shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+             <button @click="direction = (direction === 'ACROSS' ? 'DOWN' : 'ACROSS')" class="bg-white border-2 border-slate-100 p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-black text-[#1A237E] text-[10px] uppercase tracking-widest shadow-sm hover:shadow-md transition-all flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
                 ARAH: <span x-text="direction"></span>
              </button>
@@ -391,19 +391,19 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
       <!-- Educational Modal -->
       <div x-show="showEduModal" style="display:none;" class="fixed inset-0 bg-[#1A237E]/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
         <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-[#FFC107] overflow-hidden animate-in zoom-in duration-300">
-          <div class="bg-[#1A237E] p-10 text-center relative overflow-hidden">
+          <div class="bg-[#1A237E] p-6 text-center relative overflow-hidden">
             <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="relative z-10">
               <div class="h-20 w-20 bg-[#FFC107] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#1A237E]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
               </div>
-              <h2 class="text-3xl font-black text-white uppercase tracking-tighter">Jawaban Benar!</h2>
-              <h3 class="text-4xl font-black text-[#FFC107] mt-2 italic uppercase" x-text="currentAnswer"></h3>
+              <h2 class="text-base font-black text-white uppercase tracking-tighter">Jawaban Benar!</h2>
+              <h3 class="text-lg font-black text-[#FFC107] mt-2 italic uppercase" x-text="currentAnswer"></h3>
             </div>
           </div>
-          <div class="p-10 space-y-8">
-            <div class="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-base text-center" x-text="currentExplanation"></div>
-            <button @click="closeEduModal()" class="w-full bg-[#1A237E] text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4 text-xs">
+          <div class="p-6 space-y-8">
+            <div class="bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-base text-center" x-text="currentExplanation"></div>
+            <button @click="closeEduModal()" class="w-full bg-[#1A237E] text-white py-2.5 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4 text-xs">
               LANJUTKAN MISI
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </button>
@@ -413,7 +413,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
 
       <!-- Summary Modal -->
       <div x-show="showSummary" style="display:none;" class="fixed inset-0 bg-[#1A237E]/95 backdrop-blur-2xl flex items-center justify-center z-[110] p-4">
-        <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-12 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
+        <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-6 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
           <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#FFC107] via-[#FF5722] to-[#FFC107]"></div>
           
           <div class="space-y-4">
@@ -433,7 +433,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
           </div>
 
           <div class="space-y-4">
-            <button @click="window.location.href='/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-xl hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
+            <button @click="window.location.href='/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-base hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
               SELESAI & KEMBALI
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
             </button>

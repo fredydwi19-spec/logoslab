@@ -196,7 +196,7 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
            </div>
            <div>
-             <h2 class="text-xl md:text-2xl font-bold text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
+             <h2 class="text-base md:text-lg font-bold text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
              <div class="flex items-center gap-2">
                <span class="text-[10px] font-black bg-[#1A237E] text-white px-2 py-0.5 rounded uppercase tracking-widest" x-text="difficulty"></span>
                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="gridSize + 'x' + gridSize + ' GRID'"></span>
@@ -207,11 +207,11 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
         <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
           <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
             <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">WAKTU</div>
-            <div class="text-xl md:text-2xl font-bold text-[#1A237E]" x-text="formatTime(timer)"></div>
+            <div class="text-base md:text-lg font-bold text-[#1A237E]" x-text="formatTime(timer)"></div>
           </div>
           <div class="bg-[#1A237E] p-3 px-6 rounded-2xl border-b-4 border-[#FFC107] shadow-lg text-center">
             <div class="text-xs md:text-sm font-medium text-blue-200 uppercase tracking-widest">SKOR</div>
-            <div class="text-xl md:text-2xl font-bold text-[#FFC107]" x-text="score"></div>
+            <div class="text-base md:text-lg font-bold text-[#FFC107]" x-text="score"></div>
           </div>
         </div>
       </div>
@@ -219,7 +219,7 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left: Word List -->
         <div class="lg:col-span-1 space-y-4">
-          <div class="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-xl relative overflow-hidden">
+          <div class="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-xl relative overflow-hidden">
             <div class="absolute top-0 right-0 p-4 opacity-5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
             </div>
@@ -248,7 +248,7 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
 
         <!-- Right: Game Grid -->
         <div class="lg:col-span-2">
-          <div class="bg-[#1A237E] p-4 sm:p-10 rounded-[3.5rem] shadow-2xl border-[12px] border-white/5 relative overflow-hidden flex items-center justify-center min-h-[450px]">
+          <div class="bg-[#1A237E] p-4 sm:p-6 rounded-[3.5rem] shadow-2xl border-[12px] border-white/5 relative overflow-hidden flex items-center justify-center min-h-[450px]">
             <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             
             <!-- Selection Layer (Canvas for smoother lines if needed, but we'll use CSS for now) -->
@@ -265,7 +265,7 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
                 <template x-for="(row, rIdx) in grid">
                   <template x-for="(char, cIdx) in row">
                     <div :data-row="rIdx" :data-col="cIdx"
-                         class="h-7 w-7 sm:h-9 sm:w-9 md:h-11 md:w-11 flex items-center justify-center font-black text-white text-[10px] sm:text-sm md:text-xl rounded-lg transition-all duration-150 cursor-pointer cell relative"
+                         class="h-7 w-7 sm:h-9 sm:w-9 md:h-11 md:w-11 flex items-center justify-center font-black text-white text-[10px] sm:text-sm md:text-base rounded-lg transition-all duration-150 cursor-pointer cell relative"
                          :class="getCellClass(rIdx, cIdx)">
                       <span class="relative z-10" x-text="char"></span>
                       <!-- Correct background for found words -->
@@ -282,19 +282,19 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
       <!-- Educational Modal -->
       <div x-show="showEduModal" style="display:none;" class="fixed inset-0 bg-[#1A237E]/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
         <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-[#FFC107] overflow-hidden animate-in zoom-in duration-300">
-          <div class="bg-[#1A237E] p-10 text-center relative overflow-hidden">
+          <div class="bg-[#1A237E] p-6 text-center relative overflow-hidden">
             <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="relative z-10">
               <div class="h-24 w-24 bg-[#FFC107] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#1A237E]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
               </div>
-              <h2 class="text-2xl md:text-3xl font-bold text-white uppercase tracking-tighter">Luar Biasa!</h2>
+              <h2 class="text-lg md:text-base font-bold text-white uppercase tracking-tighter">Luar Biasa!</h2>
               <p class="text-blue-200 font-medium uppercase tracking-[0.3em] text-xs mt-2">Wawasan Teologis Baru:</p>
-              <h3 class="text-3xl md:text-4xl font-bold text-[#FFC107] mt-2 italic" x-text="currentWord?.word"></h3>
+              <h3 class="text-base md:text-lg font-bold text-[#FFC107] mt-2 italic" x-text="currentWord?.word"></h3>
             </div>
           </div>
-          <div class="p-10 space-y-8">
-            <div class="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-lg text-center" x-text="currentWord?.explanation"></div>
+          <div class="p-6 space-y-8">
+            <div class="bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-lg text-center" x-text="currentWord?.explanation"></div>
             <button @click="closeEduModal()" class="w-full bg-[#1A237E] text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4">
               LANJUTKAN MISI
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -305,27 +305,27 @@ export const WordSearchGame = ({ projectVar = 'activeProject', gameDataVar = 'ga
 
       <!-- Summary Modal -->
       <div x-show="showSummary" style="display:none;" class="fixed inset-0 bg-[#1A237E]/95 backdrop-blur-2xl flex items-center justify-center z-[110] p-4">
-        <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-12 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
+        <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-6 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
           <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#FFC107] via-[#FF5722] to-[#FFC107]"></div>
           
           <div class="space-y-4">
             <div class="text-xs md:text-sm font-medium text-[#FF5722] uppercase tracking-[0.5em]">MISSION COMPLETED</div>
-            <h2 class="text-4xl md:text-5xl font-bold text-[#1A237E] uppercase tracking-tighter italic leading-none">PAKAR KATA!<br><span class="text-[#FFC107]">TERLATIH</span></h2>
+            <h2 class="text-lg md:text-5xl font-bold text-[#1A237E] uppercase tracking-tighter italic leading-none">PAKAR KATA!<br><span class="text-[#FFC107]">TERLATIH</span></h2>
           </div>
           
           <div class="grid grid-cols-2 gap-8 py-6">
             <div class="space-y-1">
               <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">TOTAL SKOR</div>
-              <div class="text-4xl md:text-5xl font-bold text-[#FF5722]" x-text="score"></div>
+              <div class="text-lg md:text-5xl font-bold text-[#FF5722]" x-text="score"></div>
             </div>
             <div class="space-y-1 border-l-2 border-slate-100">
               <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest">WAKTU</div>
-              <div class="text-4xl md:text-5xl font-bold text-[#1A237E]" x-text="formatTime(timer)"></div>
+              <div class="text-lg md:text-5xl font-bold text-[#1A237E]" x-text="formatTime(timer)"></div>
             </div>
           </div>
 
           <div class="space-y-4">
-            <button @click="window.location.href='/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-xl hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
+            <button @click="window.location.href = window.location.pathname.startsWith('/play/') ? '/' : '/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-base hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
               KEMBALI KE DASHBOARD
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
             </button>
