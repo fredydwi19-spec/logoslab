@@ -4,6 +4,13 @@ import { projects, questionBank, reviewsHistory, notifications, users, gameFillT
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 
+// Nilai minimal lulus level: angka bulat 1–100. Kosong = pakai nilai bawaan. Tidak valid = null.
+function parsePassPercentage(value: unknown, fallback: number): number | null {
+  if (value === undefined || value === null || value === "") return fallback;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= 100 ? n : null;
+}
+
 export const projectRoutes = new Elysia({ prefix: "/api/projects" })
   .use(
     jwt({
@@ -41,6 +48,11 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     const { title, description, instructions, gameType, type, materiType, deadline, idPembuat, idPakar, category, thumbnailUrl } = body as any;
 
+    const passPercentage = parsePassPercentage((body as any).passPercentage, 70);
+    if (passPercentage === null) {
+      return new Response(JSON.stringify({ error: "Nilai minimal lulus harus berupa angka bulat 1–100" }), { status: 400 });
+    }
+
     const [result] = await db.insert(projects).values({
       title,
       description,
@@ -53,6 +65,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       idPembuat: Number(idPembuat),
       idPakar: idPakar ? Number(idPakar) : null,
+      passPercentage,
       status: "DRAFT"
     });
 
@@ -529,6 +542,11 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     const { type, materiType } = body as any;
 
+    const passPercentage = parsePassPercentage((body as any).passPercentage, project.passPercentage);
+    if (passPercentage === null) {
+      return new Response(JSON.stringify({ error: "Nilai minimal lulus harus berupa angka bulat 1–100" }), { status: 400 });
+    }
+
     await db.update(projects).set({
       title,
       description,
@@ -540,7 +558,8 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
       thumbnailUrl: thumbnailUrl || project.thumbnailUrl,
       deadline: deadline ? new Date(deadline) : project.deadline,
       idPembuat: idPembuat ? Number(idPembuat) : project.idPembuat,
-      idPakar: idPakar ? Number(idPakar) : project.idPakar
+      idPakar: idPakar ? Number(idPakar) : project.idPakar,
+      passPercentage
     }).where(eq(projects.id, projectId));
 
     return { success: true, message: "Proyek berhasil diperbarui" };

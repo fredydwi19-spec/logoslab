@@ -707,7 +707,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
       </div>
 
       <!-- Create/Edit Modal -->
-      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-[150] p-4">
         <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-[#1A237E] flex flex-col overflow-hidden">
           <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
             <h3 class="font-black uppercase tracking-widest" x-text="(editMode ? 'Edit Proyek' : 'Penugasan Proyek Baru') + (modalType === 'MATERI' ? ' (Materi)' : ' (Game)')"></h3>
@@ -737,6 +737,11 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                     <option value="WORD_SEARCH">Word Search</option>
                     <option value="CROSSWORD">Crossword</option>
                   </select>
+                </div>
+                <div x-show="modalType === 'GAME'">
+                  <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Nilai Minimal Lulus Level (%)</label>
+                  <input type="number" name="passPercentage" min="1" max="100" step="1" value="70" :value="editProjectData?.passPercentage ?? 70" :required="modalType === 'GAME'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
+                  <p class="text-[10px] text-slate-400 mt-1">Pemain harus mencapai nilai ini untuk membuka level berikutnya.</p>
                 </div>
                 <div x-show="modalType === 'MATERI'">
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Jenis Materi</label>
