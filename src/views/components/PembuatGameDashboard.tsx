@@ -3,6 +3,7 @@ import { WordSearchEditor, WordSearchEditorScript } from "./WordSearchEditor";
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
 import { CrosswordEditor, CrosswordEditorScript } from "./CrosswordEditor";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
+import { AdventureEditor, AdventureEditorScript } from "./AdventureEditor";
 import { ProjectHeader } from "./ProjectHeader";
 
 export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, analytics }: { myProjects: any[], publishedProjects: any[], allUsers: any[], analytics?: any }) => {
@@ -903,7 +904,15 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               </div>
           </template>
 
-          <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6 mb-10">
+          <template x-if="activeProject?.gameType === 'ADVENTURE'">
+              <div class="mb-10">
+                 <div class="bg-white p-4 md:p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-xl">
+                    ${AdventureEditor({ projectVar: 'activeProject' })}
+                 </div>
+              </div>
+          </template>
+
+          <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD' && activeProject?.gameType !== 'ADVENTURE'" class="space-y-6 mb-10">
             <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 gap-4">
               <div class="flex items-center gap-3">
                 <div class="h-8 w-1.5 bg-primary rounded-full"></div>
@@ -1001,7 +1010,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             </div>
           </div>
 
-          <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6">
+          <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD' && activeProject?.gameType !== 'ADVENTURE'" class="space-y-6">
             <!-- Tab Level -->
             <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200">
               <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
@@ -1254,5 +1263,6 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
     ${WordSearchGameScript()}
     ${CrosswordEditorScript()}
     ${CrosswordGameScript()}
+    ${AdventureEditorScript()}
   `;
 };

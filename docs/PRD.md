@@ -90,10 +90,13 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
   - Pakar dan Ketua mereview dengan mencoba Preview, lalu memakai fitur revisi proyek yang sudah ada (accept/revisi + catatan).
   - **Progres pengerjaan:**
     - [x] Langkah 1: database (tabel scene + jenis game `ADVENTURE`), API simpan/ambil cerita, pemeriksa alur, cek saat Kirim ke Pakar, dan Ketua bisa membuat proyek Adventure
-    - [ ] Langkah 2: editor form untuk Pembuat Game (kartu scene, dropdown "menuju scene", pilih soal dari Bank Soal, pemeriksa otomatis, peta alur, tab level)
+    - [x] Langkah 2: editor form untuk Pembuat Game (kartu scene, dropdown "menuju scene", pilih soal dari Bank Soal, pemeriksa otomatis, peta alur, tab level)
+      - Tombol "+ Scene Cerita / + Scene Tantangan / + Scene Akhir"; kode scene dibuat otomatis (S1, S2, ...). Scene pertama otomatis menjadi scene awal dan bisa dipindah lewat pilihan "Scene awal".
+      - Pemeriksa alur memeriksa otomatis setiap kali cerita diubah dan menampilkan daftar masalah; "Peta Alur" menampilkan scene per langkah dari scene awal, beserta tujuan tiap pilihan.
+      - Perubahan disimpan sementara di browser sampai "Simpan ke Cloud" ditekan (sama seperti editor TTS).
     - [ ] Langkah 3: pemain di `/play` (scene per scene dari server, ending, nilai, ayat, ajakan Jurnal Refleksi)
     - [ ] Langkah 4: Preview untuk Pakar, Ketua, dan Simulasi Pembuat
-    - ⚠️ Sampai langkah 2 selesai, proyek Adventure belum punya editor di dashboard Pembuat Game.
+    - ⚠️ Sampai langkah 4 selesai, tombol Preview/Simulasi belum bisa memainkan Adventure, dan Pakar/Ketua belum bisa melihat isi cerita di dashboard.
 
 ## 06 Di Luar Cakupan (belum dibuat sekarang)
 - Forum tanya pakar (Expert Insight Forum)

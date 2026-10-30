@@ -48,6 +48,20 @@ export const adventureRoutes = new Elysia({ prefix: "/api/adventure" })
       errors: validateAdventure(scenes, project.passPercentage),
     };
   })
+  // Pemeriksa alur untuk editor: cek scene yang sedang diketik tanpa menyimpan (aturannya satu tempat di utils/adventure.ts)
+  .post("/:projectId/check", async ({ params: { projectId }, body, user, set }) => {
+    const [project] = await db.select().from(projects).where(eq(projects.id, Number(projectId)));
+    if (!project || project.gameType !== "ADVENTURE") {
+      set.status = 404;
+      return { error: "Game Adventure tidak ditemukan" };
+    }
+    if (!isProjectTeam(user, project)) {
+      set.status = 403;
+      return { error: "Hanya tim proyek yang bisa memeriksa cerita." };
+    }
+    const scenes = Array.isArray((body as any)?.scenes) ? (body as any).scenes.map(toAdventureScene) : [];
+    return { success: true, errors: validateAdventure(scenes, project.passPercentage) };
+  })
   // Simpan seluruh scene satu level (draf boleh belum lengkap; pemeriksa alur dicek lagi saat Kirim ke Pakar)
   .post("/:projectId/scenes", async ({ params: { projectId }, body, user, set }) => {
     const [project] = await db.select().from(projects).where(eq(projects.id, Number(projectId)));
