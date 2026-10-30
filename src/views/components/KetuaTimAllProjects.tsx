@@ -25,6 +25,9 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           editMode: false,
           editProjectData: null,
           showPreview: false,
+          previewLevel: 1,
+          previewQuestions: [],
+          gameLevelCount: 1,
           showAuditLog: false,
           currentQuestionIndex: 0,
           selectedAnswer: null,
@@ -95,6 +98,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           },
 
           statusLabel(p) {
+            if (!p) return '';
             if (p.status === 'PUBLISHED' && p.levelReviewStatus) return 'LEVEL BARU: ' + p.levelReviewStatus.replace(/_/g, ' ');
             return p.status.replace(/_/g, ' ');
           },
@@ -122,10 +126,12 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   const wsRes = await fetch('/api/word-search/' + id);
                   const wsJson = await wsRes.json();
                   if (wsJson.success) this.gameData = wsJson.data;
+                  this.gameLevelCount = wsJson.levelCount || 1;
                 } else if (this.activeProject.gameType === 'CROSSWORD') {
                   const cwRes = await fetch('/api/crossword/' + id);
                   const cwJson = await cwRes.json();
                   if (cwJson.success) this.gameData = cwJson.data;
+                  this.gameLevelCount = cwJson.levelCount || 1;
                 }
               } else {
                 alert('Gagal memuat proyek: ' + (json.error || 'Terjadi kesalahan'));
@@ -146,6 +152,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           },
 
           modalType: 'GAME',
+          availableCategories: ['Biblical Knowledge', 'Eksegesis & Hermeneutik', 'Biblical Theory', 'Homiletika', 'Apologetika', 'Lainnya'],
 
           openCreateModal(type = 'GAME') {
             this.editMode = false;
@@ -185,7 +192,40 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
             }
           },
 
-          previewGame() {
+          // --- Preview per level ---
+          previewLevelCount() {
+            const t = this.activeProject?.gameType;
+            if (t === 'WORD_SEARCH' || t === 'CROSSWORD') return Math.max(1, this.gameLevelCount || 1);
+            return Math.max(1, ...this.questions.map(q => Number(q.level) || 1));
+          },
+
+          // Level yang belum terbit pada game yang sudah terbit (sedang menambah level)
+          isNewPreviewLevel(level) {
+            return this.activeProject?.status === 'PUBLISHED' && level > (this.activeProject.publishedLevelCount || 0);
+          },
+
+          async selectPreviewLevel(level) {
+            this.previewLevel = level;
+            this.currentQuestionIndex = 0;
+            this.selectedAnswer = null;
+            this.showExplanation = false;
+            this.isCorrect = false;
+            this.userFTBAnswers = [];
+            const t = this.activeProject?.gameType;
+            if (t === 'WORD_SEARCH' || t === 'CROSSWORD') {
+              const base = t === 'WORD_SEARCH' ? '/api/word-search/' : '/api/crossword/';
+              const res = await fetch(base + this.activeProject.id + '?level=' + level);
+              const json = await res.json();
+              // Lepas komponen grid lama dulu agar grid level yang dipilih dimuat ulang
+              this.gameData = null;
+              await this.$nextTick();
+              this.gameData = json.success ? json.data : null;
+            } else {
+              this.previewQuestions = this.questions.filter(q => (Number(q.level) || 1) === level);
+            }
+          },
+
+          async previewGame() {
             if (this.activeProject?.type === 'MATERI') {
               const hasManualContent = this.activeProject?.materiType === 'MANUAL' && this.activeProject?.materialSections?.length > 0;
               const hasFileContent = this.activeProject?.materiType !== 'MANUAL' && this.materiContents.length > 0;
@@ -198,16 +238,13 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               return;
             }
 
-            if (this.activeProject?.gameType !== 'WORD_SEARCH' && this.questions.length === 0) {
-              alert("Belum ada soal untuk di-preview.");
-              return;
-            }
-            if (this.activeProject?.gameType === 'WORD_SEARCH' && (!this.gameData || !this.gameData.gridData)) {
-              alert("Data grid Word Search belum tersedia.");
-              return;
-            }
-            if (this.activeProject?.gameType === 'CROSSWORD' && (!this.gameData || !this.gameData.clues)) {
-              alert("Data Crossword belum tersedia.");
+            // Game: buka di level baru jika sedang menambah level, selain itu Level 1
+            const firstNewLevel = (this.activeProject.publishedLevelCount || 0) + 1;
+            const startLevel = this.activeProject.status === 'PUBLISHED' && firstNewLevel <= this.previewLevelCount() ? firstNewLevel : 1;
+            await this.selectPreviewLevel(startLevel);
+            const isGrid = this.activeProject?.gameType === 'WORD_SEARCH' || this.activeProject?.gameType === 'CROSSWORD';
+            if (isGrid ? !this.gameData : this.previewQuestions.length === 0) {
+              alert('Belum ada isi game untuk di-preview.');
               return;
             }
             this.currentQuestionIndex = 0;
@@ -221,7 +258,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           checkAnswerQuiz(opt) {
             if (this.showExplanation) return;
             this.selectedAnswer = opt;
-            this.isCorrect = opt === this.questions[this.currentQuestionIndex].correctAnswer;
+            this.isCorrect = opt === this.previewQuestions[this.currentQuestionIndex].correctAnswer;
             this.showExplanation = true;
           },
 
@@ -255,7 +292,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           },
 
           checkAnswerFTB() {
-            const q = this.questions[this.currentQuestionIndex];
+            const q = this.previewQuestions[this.currentQuestionIndex];
             const answers = q.answers || [];
             let allCorrect = true;
             answers.forEach((ans, i) => {
@@ -267,7 +304,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           },
 
           nextQuestion() {
-            if (this.currentQuestionIndex < this.questions.length - 1) {
+            if (this.currentQuestionIndex < this.previewQuestions.length - 1) {
               this.currentQuestionIndex++;
               this.selectedAnswer = null;
               this.showExplanation = false;
@@ -557,6 +594,15 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
             <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
           </div>
+          <div x-show="activeProject?.type === 'GAME' && previewLevelCount() > 1" class="flex flex-wrap items-center justify-center gap-2 bg-slate-100 px-4 py-3 border-b border-slate-200">
+            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
+            <template x-for="l in previewLevelCount()" :key="l">
+              <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-[#1A237E] text-[#FFC107]' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
+                <span x-text="'Level ' + l"></span>
+                <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-[#FF5722] text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
+              </button>
+            </template>
+          </div>
           <div class="p-8 flex-1 overflow-y-auto bg-slate-50 flex items-center justify-center">
             
             <!-- MATERI PREVIEW -->
@@ -672,25 +718,25 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   ${CrosswordGame({ projectVar: 'activeProject', gameDataVar: 'gameData', isReadOnly: 'true' })}
                 </div>
               </template>
-              <template x-if="activeProject?.gameType !== 'WORD_SEARCH'">
+              <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
                 <div>
-                  <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + questions.length"></div>
+                  <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
                   <template x-if="activeProject?.gameType === 'QUIZ'">
                     <div>
-                      <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="questions[currentQuestionIndex]?.question"></h3>
+                      <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <template x-for="opt in ['A','B','C','D']">
                           <button @click="checkAnswerQuiz(opt)"
                             :class="{
                               'border-yellow-400 bg-yellow-50': selectedAnswer === opt && !showExplanation,
-                              'border-green-500 bg-green-50': showExplanation && opt === questions[currentQuestionIndex].correctAnswer,
-                              'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== questions[currentQuestionIndex].correctAnswer,
+                              'border-green-500 bg-green-50': showExplanation && opt === previewQuestions[currentQuestionIndex]?.correctAnswer,
+                              'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== previewQuestions[currentQuestionIndex]?.correctAnswer,
                               'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
                             }"
                             class="border-4 p-5 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-3"
                             :disabled="showExplanation">
                             <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black bg-slate-100 shrink-0" x-text="opt"></span>
-                            <span x-text="questions[currentQuestionIndex]['option' + opt]"></span>
+                            <span x-text="previewQuestions[currentQuestionIndex]?.['option' + opt]"></span>
                           </button>
                         </template>
                       </div>
@@ -698,17 +744,17 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   </template>
                   <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
                     <div>
-                      <div class="text-xl font-bold text-[#1A237E] mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(questions[currentQuestionIndex])"></div>
+                      <div class="text-xl font-bold text-[#1A237E] mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(previewQuestions[currentQuestionIndex])"></div>
                       <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest">PERIKSA JAWABAN</button>
                     </div>
                   </template>
                   <div x-show="showExplanation" class="mt-6 p-5 rounded-2xl border-2 border-dashed text-left" :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
                     <p class="font-black text-sm uppercase" :class="isCorrect ? 'text-green-700' : 'text-red-700'" x-text="isCorrect ? 'Benar!' : 'Belum Tepat!'"></p>
-                    <p class="text-sm text-slate-600 mt-1 italic" x-text="questions[currentQuestionIndex]?.explanation"></p>
+                    <p class="text-sm text-slate-600 mt-1 italic" x-text="previewQuestions[currentQuestionIndex]?.explanation"></p>
                   </div>
                   <div class="flex gap-4 mt-6 justify-center">
                     <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="bg-slate-100 text-slate-700 px-6 py-2 rounded-xl font-black">← Prev</button>
-                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < questions.length - 1 ? 'Berikutnya →' : 'Selesai'"></button>
+                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < previewQuestions.length - 1 ? 'Berikutnya →' : 'Selesai'"></button>
                   </div>
                 </div>
               </template>
