@@ -185,7 +185,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           },
 
           async deleteProject(id) {
-            if (!confirm('Apakah Anda yakin ingin menghapus proyek ini secara permanen? Tindakan ini tidak dapat dibatalkan.')) return;
+            if (!confirm('Hapus proyek ini secara permanen? Semua data pemain yang terkait ikut terhapus: skor, pencapaian, progres baca, duel quiz, dan jurnal refleksi. Tindakan ini tidak dapat dibatalkan.')) return;
             const res = await fetch('/api/projects/' + id, { method: 'DELETE' });
             if (res.ok) window.location.reload();
             else {

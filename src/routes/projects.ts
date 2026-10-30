@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats } from "../db/schema";
 import { eq, and, desc, inArray, gte } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
@@ -615,19 +615,28 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
     if (!project) return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
 
-    // Delete dependent records first to avoid foreign key constraints
-    await db.delete(notifications).where(eq(notifications.projectId, projectId));
-    await db.delete(reviewsHistory).where(eq(reviewsHistory.projectId, projectId));
-    await db.delete(userScores).where(eq(userScores.projectId, projectId));
-    await db.delete(questionBank).where(eq(questionBank.projectId, projectId));
-    await db.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
-    await db.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
-    await db.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId));
-    await db.delete(materiContents).where(eq(materiContents.projectId, projectId));
-    await db.delete(materialSections).where(eq(materialSections.projectId, projectId));
-    await db.delete(materialGlossary).where(eq(materialGlossary.projectId, projectId));
-
-    await db.delete(projects).where(eq(projects.id, projectId));
+    // Hapus semua data yang merujuk proyek (termasuk data pemain) dalam satu transaksi,
+    // agar tidak ada yang terhapus sebagian jika salah satu langkah gagal
+    await db.transaction(async (tx) => {
+      await tx.delete(notifications).where(eq(notifications.projectId, projectId));
+      await tx.delete(reviewsHistory).where(eq(reviewsHistory.projectId, projectId));
+      await tx.delete(projectChats).where(eq(projectChats.projectId, projectId));
+      await tx.delete(userScores).where(eq(userScores.projectId, projectId));
+      await tx.delete(achievements).where(eq(achievements.projectId, projectId));
+      await tx.delete(materiReadProgress).where(eq(materiReadProgress.projectId, projectId));
+      await tx.delete(quizDuels).where(eq(quizDuels.quizId, projectId));
+      await tx.delete(userJournals).where(eq(userJournals.referenceId, projectId));
+      await tx.delete(gamePlayLogs).where(eq(gamePlayLogs.projectId, projectId));
+      await tx.delete(materialAccessLogs).where(eq(materialAccessLogs.projectId, projectId));
+      await tx.delete(questionBank).where(eq(questionBank.projectId, projectId));
+      await tx.delete(gameFillTheBlank).where(eq(gameFillTheBlank.projectId, projectId));
+      await tx.delete(gameWordSearch).where(eq(gameWordSearch.projectId, projectId));
+      await tx.delete(gameCrossword).where(eq(gameCrossword.projectId, projectId));
+      await tx.delete(materiContents).where(eq(materiContents.projectId, projectId));
+      await tx.delete(materialSections).where(eq(materialSections.projectId, projectId));
+      await tx.delete(materialGlossary).where(eq(materialGlossary.projectId, projectId));
+      await tx.delete(projects).where(eq(projects.id, projectId));
+    });
     return { success: true, message: "Proyek berhasil dihapus" };
   })
   // Unpublish Project (Ketua Tim)
