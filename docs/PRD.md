@@ -33,6 +33,8 @@
 - **Login & pendaftaran:** daftar dengan email + verifikasi lewat email, atau login dengan Google (semua peran).
 - **Manajemen proyek berstatus:** proyek game/materi bergerak dari DRAFT → review Pakar → review Ketua → PUBLISHED, dengan riwayat review dan notifikasi otomatis (Ketua, Pembuat, Pakar).
 - **Diskusi Proyek:** komentar per proyek atau per soal, bisa diubah menjadi tugas lalu ditandai selesai. Hanya Ketua serta Pembuat dan Pakar yang ditugaskan di proyek itu yang bisa membuka dan menulis. "Jadikan Catatan Revisi" hanya untuk Pakar dan Ketua. Ketik `@LogosAI` di awal pesan untuk jawaban AI.
+- **Statistik halaman depan:** "Pemain Terdaftar" (jumlah akun USER), "Total Permainan" (log permainan dari game yang masih ada), dan "Game Paling Sering Dimainkan" (persentase permainan per jenis game). Semua angka diambil langsung dari database tanpa angka tambahan atau angka karangan.
+- **Layar hasil game:** ikon, lencana persentase, judul ("Kamu Lulus!" / "Permainan Selesai"), dan pesan mengikuti nilai sebenarnya (sempurna, lulus, hampir lulus, belum lulus).
 - **Kelola data akun (API `/users`):** hanya Ketua Tim. Halaman publik hanya bisa melihat jumlah pengguna.
 - **Game Quiz, Fill the Blank, Word Search, Teka-Teki Silang:** editor untuk Pembuat Game, player untuk Pengguna.
 - **Bank Soal:** kumpulan soal Quiz/FTB/TTS, impor dari Excel, dan isi otomatis ke proyek game (Ketua, Pembuat Game).

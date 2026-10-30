@@ -153,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* --- Header Scroll Effect --- */
 function initHeaderScroll() {
   const header = document.getElementById('header');
+  if (!header) return; // halaman tanpa header ini tidak memakai efek gulir
   
   window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
@@ -206,41 +207,12 @@ function initRevealAnimations() {
 }
 
 /* --- Stats Counters --- */
-async function initCounters() {
-  const userCountEl = document.getElementById('user-count');
-  const visitCountEl = document.getElementById('visit-count');
-  
-  // 1. Handle Visit Count (Dummy / LocalStorage)
-  let visits = localStorage.getItem('logoslab_visits');
-  if (!visits) {
-    visits = 1250; // Base dummy number
-  } else {
-    visits = parseInt(visits) + 1;
-  }
-  localStorage.setItem('logoslab_visits', visits);
-  
-  if (visitCountEl) {
-    animateCounter(visitCountEl, 0, parseInt(visits), 2000);
-  }
-  
-  // 2. Fetch User Count from API
-  try {
-    const response = await fetch('/users/count');
-    if (response.ok) {
-      const data = await response.json();
-      if (userCountEl && data.count !== undefined) {
-        // Base users + actual users to make it look active
-        const totalUsers = 500 + data.count; 
-        animateCounter(userCountEl, 0, totalUsers, 2000);
-      }
-    } else {
-      // Fallback
-      if (userCountEl) userCountEl.innerText = "500+";
-    }
-  } catch (error) {
-    console.error("Failed to fetch user count:", error);
-    if (userCountEl) userCountEl.innerText = "500+";
-  }
+// Angka statistik dikirim server (data-count) dan hanya dianimasikan dari 0; tidak ada angka tambahan.
+function initCounters() {
+  document.querySelectorAll('.stat-card__number[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count, 10);
+    if (Number.isFinite(target) && target > 0) animateCounter(el, 0, target, 2000);
+  });
 }
 
 /* --- Utility: Animate Counter --- */
@@ -259,7 +231,7 @@ function animateCounter(element, start, end, duration) {
     if (progress < 1) {
       window.requestAnimationFrame(step);
     } else {
-      element.innerText = end.toLocaleString('id-ID') + (end >= 500 ? '+' : '');
+      element.innerText = end.toLocaleString('id-ID');
     }
   };
   

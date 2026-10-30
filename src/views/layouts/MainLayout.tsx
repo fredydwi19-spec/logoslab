@@ -8,7 +8,7 @@ export const MainLayout = ({ children, title = "Logos LAB — Edukasi Alkitab da
   <title>${title}</title>
   <link rel="icon" href="/public/assets/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="/public/css/style.css?v=3.2">
+  <link rel="stylesheet" href="/public/css/style.css?v=3.3">
   <link rel="stylesheet" href="/public/css/auth-modal.css?v=2.3">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -21,7 +21,7 @@ export const MainLayout = ({ children, title = "Logos LAB — Edukasi Alkitab da
 </head>
 <body class="bg-[#F8FAFC]">
   ${children}
-  <script src="/public/js/main.js?v=1.5"></script>
+  <script src="/public/js/main.js?v=1.7"></script>
 </body>
 </html>
 `;

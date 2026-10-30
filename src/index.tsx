@@ -68,7 +68,20 @@ const app = new Elysia()
       eq(projects.status, "PUBLISHED")
     ).limit(6);
 
-    const html = LandingPage({ games: publicGames, user });
+    // Statistik halaman depan: semua angka diambil dari database (tanpa angka tambahan)
+    const [playerRow] = await db.select({ total: sql<number>`count(*)` }).from(users).where(eq(users.role, "USER"));
+    const playsByType = await db.select({ gameType: projects.gameType, total: sql<number>`count(*)` })
+      .from(gamePlayLogs)
+      .innerJoin(projects, eq(gamePlayLogs.projectId, projects.id))
+      .groupBy(projects.gameType);
+    const stats = {
+      players: Number(playerRow?.total ?? 0),
+      // Hanya log yang proyeknya masih ada (log lama milik proyek terhapus tidak dihitung)
+      plays: playsByType.reduce((sum, r) => sum + Number(r.total), 0),
+      playsByType: playsByType.map(r => ({ gameType: r.gameType ?? "LAINNYA", total: Number(r.total) })).sort((a, b) => b.total - a.total),
+    };
+
+    const html = LandingPage({ games: publicGames, user, stats });
     
     return new Response(html, {
       headers: { "Content-Type": "text/html; charset=utf-8" }

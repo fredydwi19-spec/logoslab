@@ -275,15 +275,17 @@ export const PublicGamePlayer = () => {
 
             <!-- Result Screen -->
             <template x-if="gameFinished && !showLevelMap">
-               <div class="h-full flex flex-col items-center justify-center p-6 md:p-6 bg-gradient-to-br from-white to-blue-50 text-center">
-                  <div class="w-full max-w-2xl">
+               <!-- Bisa digulir: isi hasil (nilai, jurnal, tombol) lebih tinggi dari layar HP -->
+               <div class="h-full overflow-y-auto flex flex-col items-center p-6 md:p-6 bg-gradient-to-br from-white to-blue-50 text-center">
+                  <div class="w-full max-w-2xl my-auto">
                      <div class="mb-6 md:mb-10 relative inline-block">
-                        <div class="text-6xl md:text-8xl mb-4 animate-bounce"><i class="bi bi-trophy text-yellow-400"></i></div>
-                        <div class="absolute -top-4 -right-4 bg-highlight text-primary h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
+                        <!-- Ikon dan pesan mengikuti nilai sebenarnya -->
+                        <div class="text-6xl md:text-8xl mb-4" :class="levelResult?.passed ? 'animate-bounce' : ''"><i class="bi" :class="levelResult?.passed ? 'bi-trophy-fill text-highlight' : 'bi-arrow-repeat text-primary'"></i></div>
+                        <div x-show="levelResult && !levelResult.error" class="absolute -top-4 -right-4 bg-highlight text-primary h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white text-xs md:text-sm" x-text="(levelResult?.percent ?? 0) + '%'"></div>
                      </div>
                      
-                     <h2 class="text-base md:text-base font-bold text-primary uppercase tracking-widest mb-2">Permainan Selesai!</h2>
-                     <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
+                     <h2 class="text-base md:text-base font-bold text-primary uppercase tracking-widest mb-2" x-text="levelResult?.passed ? 'Kamu Lulus!' : 'Permainan Selesai'"></h2>
+                     <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12" x-text="resultMessage()"></p>
 
                      <!-- Hasil Level -->
                      <template x-if="levelResult">
@@ -403,6 +405,16 @@ export const PublicGamePlayer = () => {
           advFeedback: null,
           advPending: null,
           advHistory: [],
+
+          // Pesan layar hasil sesuai persentase nilai
+          resultMessage() {
+            const r = this.levelResult;
+            if (!r || r.error) return 'Hasil belum tersimpan';
+            if (r.percent === 100) return 'Sempurna! Semua benar';
+            if (r.passed) return 'Kerja bagus!';
+            if (r.percent >= r.passPercentage - 20) return 'Sedikit lagi, coba sekali lagi';
+            return 'Jangan menyerah, pelajari pembahasannya lalu coba lagi';
+          },
 
           levelCount() {
             return this.progress.levels.length;

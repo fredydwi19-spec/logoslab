@@ -1,6 +1,30 @@
 import { MainLayout } from "../layouts/MainLayout";
 
-export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
+type LandingStats = { players: number; plays: number; playsByType: { gameType: string; total: number }[] };
+
+const GAME_TYPE_LABELS: Record<string, string> = {
+  QUIZ: "Quiz", FILL_THE_BLANK: "Fill the Blank", WORD_SEARCH: "Word Search", CROSSWORD: "Teka-Teki Silang", ADVENTURE: "Adventure Studi Kasus",
+};
+
+// Persentase asli permainan per jenis game, dihitung dari log permainan
+const renderPlaysByType = (stats: LandingStats) => {
+  if (stats.plays === 0) return `<p class="engagement__footer">Belum ada permainan yang tercatat.</p>`;
+  return stats.playsByType.map(({ gameType, total }) => {
+    const percent = Math.round((total * 100) / stats.plays);
+    return `
+                  <div class="progress-group">
+                    <div class="progress-group__info">
+                      <span>${GAME_TYPE_LABELS[gameType] ?? gameType}</span>
+                      <span>${percent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-bar__fill" style="width: ${percent}%"></div>
+                    </div>
+                  </div>`;
+  }).join("");
+};
+
+export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, stats: LandingStats }) => {
   return MainLayout({
     title: "Logos LAB — Edukasi Alkitab dan Berpikir Kritis",
     children: `
@@ -332,48 +356,12 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
               <!-- Column 1: Engagement Platform -->
               <div class="engagement reveal">
                 <div class="engagement__header">
-                  <h2 class="engagement__title">Engagement Platform</h2>
+                  <h2 class="engagement__title">Game Paling Sering Dimainkan</h2>
                   <div class="engagement__line"></div>
                 </div>
-                <div class="engagement__list">
-                  <div class="progress-group">
-                    <div class="progress-group__info">
-                      <span>Games Interaktif</span>
-                      <span>85%</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div class="progress-bar__fill" style="width: 85%"></div>
-                    </div>
-                  </div>
-                  <div class="progress-group">
-                    <div class="progress-group__info">
-                      <span>Materi Video</span>
-                      <span>70%</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div class="progress-bar__fill" style="width: 70%"></div>
-                    </div>
-                  </div>
-                  <div class="progress-group">
-                    <div class="progress-group__info">
-                      <span>Membaca PDF</span>
-                      <span>55%</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div class="progress-bar__fill" style="width: 55%"></div>
-                    </div>
-                  </div>
-                  <div class="progress-group">
-                    <div class="progress-group__info">
-                      <span>Forum Diskusi</span>
-                      <span>40%</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div class="progress-bar__fill" style="width: 40%"></div>
-                    </div>
-                  </div>
+                <div class="engagement__list">${renderPlaysByType(stats)}
                 </div>
-                <p class="engagement__footer">Data menunjukkan bahwa metode gamifikasi sangat efektif dalam meningkatkan durasi belajar user.</p>
+                <p class="engagement__footer">Persentase dari seluruh permainan yang tercatat di Logos LAB.</p>
               </div>
 
               <!-- Column 2: Live Stats -->
@@ -384,12 +372,12 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                 </div>
                 <div class="live-stats__cards">
                   <div class="stat-card">
-                    <span class="stat-card__number" id="user-count">—</span>
-                    <span class="stat-card__label">Pengguna Terdaftar</span>
+                    <span class="stat-card__number" data-count="${stats.players}">${stats.players.toLocaleString("id-ID")}</span>
+                    <span class="stat-card__label">Pemain Terdaftar</span>
                   </div>
                   <div class="stat-card">
-                    <span class="stat-card__number" id="visit-count">—</span>
-                    <span class="stat-card__label">Total Kunjungan</span>
+                    <span class="stat-card__number" data-count="${stats.plays}">${stats.plays.toLocaleString("id-ID")}</span>
+                    <span class="stat-card__label">Total Permainan</span>
                   </div>
                 </div>
               </div>
