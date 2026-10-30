@@ -152,7 +152,9 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           },
 
           modalType: 'GAME',
+          // Klasifikasi minat proyek (sama dengan kategori di tabel game_interests)
           availableCategories: ['Biblical Knowledge', 'Eksegesis & Hermeneutik', 'Biblical Theory', 'Homiletika', 'Apologetika', 'Lainnya'],
+          selectedCategories: [],
 
           openCreateModal(type = 'GAME') {
             this.editMode = false;
