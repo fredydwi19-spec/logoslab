@@ -115,7 +115,8 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - Jangan mengubah kode lewat skrip tambal (`fix_*.cjs`) yang menimpa baris tertentu. Ubah file sumbernya langsung.
 - Data yang akan dihitung (skor, durasi, benar/salah) disimpan di kolom biasa, bukan sebagai teks JSON.
 - **Waktu "sekarang" ke kolom `timestamp`:** pakai `sql`NOW()`` dari `drizzle-orm`, jangan `new Date()`. Database menyimpan jam lokal (server +08:00), sedangkan Drizzle mengirim `Date` sebagai jam UTC, sehingga hasilnya meleset 8 jam dari `created_at` yang diisi MySQL. Untuk batas waktu, hitung juga di MySQL (contoh: `NOW() - INTERVAL 24 HOUR`).
-  - ⚠️ Masih memakai `new Date()`: `updatedAt` saat menyimpan soal ke Bank Soal (`src/routes/projects.ts`) dan `playedAt` log permainan (`src/index.tsx`). Keduanya tersimpan 8 jam lebih awal dari jam lokal.
+  - Kolom waktu yang punya nilai bawaan (`defaultNow()`), seperti `played_at` di `game_play_logs`, cukup tidak diisi saat insert.
+- ⚠️ Tabel `game_questions_bank` diisi setiap kali soal Fill the Blank proyek disimpan (`POST /api/projects/:id/questions`), tetapi tidak pernah dibaca oleh fitur mana pun. Tabel ini tidak punya kunci unik pada `content`, jadi soal yang sama tersimpan berkali-kali (per 30 Okt 2026: 53 baris, hanya 4 teks berbeda). Bank Soal di menu memakai `bank_soal_ftb`.
 - Jangan menambah library, framework, atau layanan baru tanpa memperbarui file ini.
 
 ## 08 Aturan Keamanan yang Sudah Diterapkan

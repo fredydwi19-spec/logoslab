@@ -755,10 +755,8 @@ const app = new Elysia()
     }
 
     // Insert to gamePlayLogs
-    await db.insert(gamePlayLogs).values({
-      projectId,
-      playedAt: new Date()
-    });
+    // played_at diisi MySQL (jam lokal), sama seperti kolom waktu lainnya
+    await db.insert(gamePlayLogs).values({ projectId });
 
     const pageHtml = `
       <!DOCTYPE html>

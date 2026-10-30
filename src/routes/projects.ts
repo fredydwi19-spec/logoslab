@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
 import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats, gameAdventureScenes } from "../db/schema";
-import { eq, and, desc, inArray, gte } from "drizzle-orm";
+import { eq, and, desc, inArray, gte, sql } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam, publicQuizQuestion, publicFtbQuestion, publicCrosswordClues } from "../utils/level";
 import { validateAdventure } from "../utils/adventure";
@@ -490,7 +490,7 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
              category: project.category || "General",
              difficulty: q.difficulty as any
            }).onDuplicateKeyUpdate({
-             set: { updatedAt: new Date() }
+             set: { updatedAt: sql`NOW()` }
            });
         }
       }
