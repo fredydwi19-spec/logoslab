@@ -68,7 +68,7 @@ export const ProjectHeader = ({ projectVar = 'activeProject', showAuditLogVar = 
               <div class="flex items-center justify-between bg-[#FFC107]/10 p-3 rounded-xl border border-[#FFC107]/20">
                 <div>
                    <div class="text-[8px] font-black text-[#FFC107] uppercase tracking-widest mb-0.5" x-text="${projectVar}?.type === 'MATERI' ? 'KONTEN MATERI' : 'TOTAL SOAL'"></div>
-                   <div class="text-base font-black text-white leading-none" x-text="${projectVar}?.type === 'MATERI' ? (materiContents ? materiContents.length : 0) : (questions ? questions.length : 0)"></div>
+                   <div class="text-base font-black text-white leading-none" x-text="${projectVar}?.type === 'MATERI' ? ($data.materiContents?.length || 0) : ($data.questions?.length || 0)"></div>
                 </div>
                 <div class="h-8 w-px bg-[#FFC107] opacity-30"></div>
                 <div class="text-right">
