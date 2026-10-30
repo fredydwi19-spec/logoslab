@@ -21,6 +21,9 @@ export const PublicGamePlayer = () => {
                         </div>
                      </div>
                      <div class="flex items-center gap-4 md:gap-6">
+                        <div x-show="streak >= 2" x-transition class="flex items-center gap-1 bg-accent text-white px-3 py-1 rounded-full text-xs font-black" :title="streak + ' jawaban benar beruntun'">
+                           <i class="bi bi-fire"></i><span x-text="streak"></span>
+                        </div>
                         <div class="text-right hidden sm:block">
                            <p class="text-[9px] font-medium uppercase opacity-60">Skor Saat Ini</p>
                            <div class="text-base md:text-lg font-bold text-highlight" x-text="currentScore"></div>
@@ -31,9 +34,23 @@ export const PublicGamePlayer = () => {
                      </div>
                   </div>
 
-                  <!-- Progress Bar -->
-                  <div class="h-2 w-full bg-slate-100 relative">
-                     <div class="h-full bg-accent transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
+                  <!-- Progres per soal: hijau benar, merah salah, kuning soal sekarang -->
+                  <div class="flex gap-1 w-full bg-white px-4 md:px-10 py-2 border-b border-slate-100">
+                     <template x-for="(q, qi) in questions" :key="qi">
+                        <div class="h-2 flex-1 rounded-full transition-colors duration-300"
+                             :class="answerLog[qi] === true ? 'bg-green-500' : (answerLog[qi] === false ? 'bg-red-500' : (qi === currentIndex ? 'bg-highlight' : 'bg-slate-200'))"></div>
+                     </template>
+                  </div>
+                  <!-- Hitung mundur Quiz (habis waktu = dianggap salah) -->
+                  <div x-show="activeGame?.gameType === 'QUIZ' && !showFeedback" class="w-full bg-white px-4 md:px-10 pb-2 flex items-center gap-3">
+                     <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-1000 ease-linear" :class="timeLeft <= 5 ? 'bg-red-500' : 'bg-primary'" :style="'width: ' + (timeLeft / QUIZ_SECONDS * 100) + '%'"></div>
+                     </div>
+                     <span class="text-xs font-black tabular-nums w-10 text-right" :class="timeLeft <= 5 ? 'text-red-600 anim-pulse' : 'text-primary'" x-text="timeLeft + 's'"></span>
+                  </div>
+                  <!-- Pop-up combo -->
+                  <div x-show="comboText" x-transition.opacity class="absolute left-1/2 -translate-x-1/2 top-28 md:top-32 z-30 bg-accent text-white px-5 py-2 rounded-full font-black uppercase tracking-widest text-sm shadow-xl anim-pop pointer-events-none">
+                     <i class="bi bi-fire"></i> <span x-text="comboText"></span>
                   </div>
                   
                   <!-- Question Body -->
@@ -50,8 +67,8 @@ export const PublicGamePlayer = () => {
                                   <button @click="selectAnswer(opt)" 
                                      :class="{
                                         'border-highlight bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
-                                        'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === quizFeedback?.correctAnswer,
-                                        'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== quizFeedback?.correctAnswer,
+                                        'border-green-500 bg-green-50 shadow-green-100 anim-pop': showFeedback && opt === quizFeedback?.correctAnswer,
+                                        'border-red-500 bg-red-50 shadow-red-100 anim-shake': showFeedback && selectedAnswer === opt && opt !== quizFeedback?.correctAnswer,
                                         'border-slate-100 bg-white hover:border-primary hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
                                      }"
                                      class="border-4 p-3 md:p-5 rounded-xl md:rounded-2xl text-left flex items-center gap-3 transition-all group disabled:cursor-default"
@@ -83,9 +100,9 @@ export const PublicGamePlayer = () => {
                         <div x-show="showFeedback" x-transition class="mt-8 md:mt-10 p-6 md:p-5 rounded-2xl md:rounded-2xl text-left border-4 border-dashed"
                              :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
                            <div class="flex items-center gap-3 mb-2 md:mb-3">
-                              <span class="text-base md:text-lg" x-text="isCorrect ? '✨' : '💡'"></span>
+                              <i class="bi text-base md:text-lg" :class="isCorrect ? 'bi-check-circle-fill text-green-600' : (timedOut ? 'bi-alarm-fill text-red-600' : 'bi-lightbulb-fill text-red-600')"></i>
                               <h4 class="font-black uppercase tracking-widest text-xs md:text-sm" :class="isCorrect ? 'text-green-800' : 'text-red-800'">
-                                 <span x-text="isCorrect ? 'Jawaban Kamu Tepat!' : 'Belum Tepat, Ini Penjelasannya:'"></span>
+                                 <span x-text="isCorrect ? (streak >= 2 ? 'Tepat! ' + streak + ' benar beruntun' : 'Jawaban Kamu Tepat!') : (timedOut ? 'Waktu Habis! Ini Penjelasannya:' : 'Belum Tepat, Ini Penjelasannya:')"></span>
                               </h4>
                            </div>
                            
@@ -310,6 +327,26 @@ export const PublicGamePlayer = () => {
                         </div>
                      </template>
 
+                     <!-- Pembahasan soal yang belum tepat -->
+                     <template x-if="(activeGame?.gameType === 'QUIZ' || activeGame?.gameType === 'FILL_THE_BLANK') && review.length > 0">
+                        <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-lg text-left">
+                           <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                              <h3 class="text-primary font-black uppercase tracking-widest text-xs" x-text="review.filter(r => !r.isCorrect).length ? 'Pembahasan soal yang belum tepat' : 'Semua jawaban tepat!'"></h3>
+                              <span class="text-[10px] font-black uppercase tracking-widest text-accent"><i class="bi bi-fire"></i> <span x-text="'Streak terbaik: ' + bestStreak"></span></span>
+                           </div>
+                           <div class="space-y-3 max-h-80 overflow-y-auto">
+                              <template x-for="(item, ri) in review.filter(r => !r.isCorrect)" :key="ri">
+                                 <div class="border-l-4 border-red-400 bg-red-50/50 rounded-r-xl p-3 text-sm">
+                                    <p class="font-bold text-primary" x-text="item.question"></p>
+                                    <p class="mt-1 text-red-700"><span class="font-black">Jawabanmu:</span> <span x-text="item.given"></span></p>
+                                    <p class="text-green-700"><span class="font-black">Jawaban benar:</span> <span x-text="item.correct"></span></p>
+                                    <p x-show="item.explanation" class="mt-1 text-slate-600 italic" x-text="item.explanation"></p>
+                                 </div>
+                              </template>
+                           </div>
+                        </div>
+                     </template>
+
                      <!-- Stats Grid -->
                      <div x-show="activeGame?.gameType === 'QUIZ' || activeGame?.gameType === 'FILL_THE_BLANK'" class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-highlight">
@@ -367,6 +404,14 @@ export const PublicGamePlayer = () => {
     <style>
       [x-cloak] { display: none !important; }
       .ftb-input::placeholder { color: #cbd5e1; opacity: 0.5; }
+      /* Animasi Quiz: benar meletup, salah bergetar, waktu hampir habis berdenyut */
+      @keyframes lgPop { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+      @keyframes lgShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+      @keyframes lgPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+      .anim-pop { animation: lgPop 0.35s ease-out; }
+      .anim-shake { animation: lgShake 0.4s ease-in-out; }
+      .anim-pulse { animation: lgPulse 1s ease-in-out infinite; }
+      @media (prefers-reduced-motion: reduce) { .anim-pop, .anim-shake, .anim-pulse { animation: none; } }
     </style>
     
     <script>
@@ -400,6 +445,17 @@ export const PublicGamePlayer = () => {
           finishedAttemptId: null,
           isCheckingAnswer: false,
           quizFeedback: null,
+          // Quiz lebih hidup: hitung mundur, streak, progres per soal, dan pembahasan di akhir
+          QUIZ_SECONDS: 30,
+          timeLeft: 30,
+          timerId: null,
+          timedOut: false,
+          streak: 0,
+          bestStreak: 0,
+          comboText: '',
+          comboTimer: null,
+          answerLog: [],
+          review: [],
           // Adventure: scene yang sedang dibuka, umpan balik tantangan, scene berikutnya, dan jejak keputusan
           advScene: null,
           advFeedback: null,
@@ -450,6 +506,13 @@ export const PublicGamePlayer = () => {
             this.userFTBAnswers = [];
             this.submissionResults = [];
             this.quizFeedback = null;
+            this.stopQuestionTimer();
+            this.timedOut = false;
+            this.streak = 0;
+            this.bestStreak = 0;
+            this.comboText = '';
+            this.answerLog = [];
+            this.review = [];
             this.advScene = null;
             this.advFeedback = null;
             this.advPending = null;
@@ -486,10 +549,12 @@ export const PublicGamePlayer = () => {
             this.showLevelMap = false;
             this.gameFinished = false;
             this.isPlaying = true;
+            if (type === 'QUIZ') this.startQuestionTimer();
           },
 
           // Akhir level: jawaban dikirim ke server untuk dinilai & disimpan (perlu login)
           async finishLevel(payload) {
+            this.stopQuestionTimer();
             this.gameFinished = true;
             const localPercent = this.maxScore > 0 ? Math.round(this.currentScore * 100 / this.maxScore) : 0;
             try {
@@ -619,16 +684,57 @@ export const PublicGamePlayer = () => {
             this.advFeedback = null;
           },
 
+          startQuestionTimer() {
+            this.stopQuestionTimer();
+            this.timeLeft = this.QUIZ_SECONDS;
+            this.timerId = setInterval(() => {
+              this.timeLeft--;
+              if (this.timeLeft <= 0) {
+                this.stopQuestionTimer();
+                this.selectAnswer(null); // waktu habis: dikirim tanpa jawaban, server mencatatnya salah
+              }
+            }, 1000);
+          },
+
+          stopQuestionTimer() {
+            if (this.timerId) clearInterval(this.timerId);
+            this.timerId = null;
+          },
+
+          // Catat hasil satu soal: progres, streak/combo, getar saat salah, dan bahan pembahasan akhir
+          recordResult(isCorrect, given, correct, explanation) {
+            const question = this.questions[this.currentIndex];
+            this.answerLog[this.currentIndex] = isCorrect;
+            this.review.push({ question: question.question || (question.parts || []).map(p => 'blank' in p ? '____' : p.text).join(''), given, correct, explanation, isCorrect });
+            if (isCorrect) {
+              this.streak++;
+              this.bestStreak = Math.max(this.bestStreak, this.streak);
+              if (this.streak >= 3) {
+                this.comboText = 'Combo x' + this.streak + '!';
+                clearTimeout(this.comboTimer);
+                this.comboTimer = setTimeout(() => { this.comboText = ''; }, 1500);
+              }
+            } else {
+              this.streak = 0;
+              if (navigator.vibrate) navigator.vibrate(150);
+            }
+          },
+
           async selectAnswer(opt) {
             if (this.showFeedback || this.isCheckingAnswer) return;
+            this.stopQuestionTimer();
+            this.timedOut = opt === null;
             this.selectedAnswer = opt;
             this.isCheckingAnswer = true;
             try {
-              const json = await this.sendAnswer(this.questions[this.currentIndex].id, opt);
+              const question = this.questions[this.currentIndex];
+              const json = await this.sendAnswer(question.id, opt);
               this.isCorrect = json.isCorrect;
               this.quizFeedback = { correctAnswer: json.correctAnswer, explanation: json.explanation };
               this.currentScore += json.scoreEarned;
               if (json.isCorrect) this.correctCount++; else this.wrongCount++;
+              const optionText = (letter) => letter ? letter + '. ' + question['option' + letter] : '';
+              this.recordResult(json.isCorrect, opt ? optionText(opt) : 'Waktu habis (tidak menjawab)', optionText(json.correctAnswer), json.explanation);
               this.showFeedback = true;
             } catch (e) {
               this.selectedAnswer = null;
@@ -665,6 +771,7 @@ export const PublicGamePlayer = () => {
               this.currentScore += json.scoreEarned;
               if(this.isCorrect) this.correctCount++; else this.wrongCount++;
               this.submissionResults = json.details;
+              this.recordResult(json.allCorrect, json.details.map(d => d.userAnswer || '(kosong)').join(', '), json.details.map(d => d.correctAnswer).join(', '), json.details.map(d => d.explanation).filter(Boolean).join(' '));
               this.showFeedback = true;
             } catch (e) {
               alert(e.message);
@@ -681,12 +788,15 @@ export const PublicGamePlayer = () => {
               this.userFTBAnswers = [];
               this.submissionResults = [];
               this.quizFeedback = null;
+              this.timedOut = false;
+              if (this.activeGame.gameType === 'QUIZ') this.startQuestionTimer();
             } else {
               this.finishLevel();
             }
           },
 
           quitGame() {
+            this.stopQuestionTimer();
             this.isPlaying = false;
             this.activeGame = null;
             if (window.location.pathname.startsWith('/play/')) {
