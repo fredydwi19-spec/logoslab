@@ -54,6 +54,7 @@ src/routes/                # Satu file per bagian fitur
   ai.ts                    #   Logos AI Assistant
 src/services/              # Logika bisnis yang dipakai bersama (dashboardService.ts)
 src/utils/mailer.ts        # Pengirim email
+src/views/components/AdventureEditor.tsx, AdventurePreview.tsx  # Editor cerita (Pembuat) dan Preview cerita (Pakar, Ketua, Simulasi Pembuat)
 src/utils/adventure.ts     # Aturan cerita Adventure: bentuk scene, pemeriksa alur, scene versi pemain
 src/utils/level.ts         # Fungsi bantu level (toLevel, findMissingLevel) dan versi soal tanpa kunci jawaban untuk pemain
 src/views/layouts/         # Kerangka halaman (Layout.tsx untuk dashboard, MainLayout.tsx untuk publik)
@@ -142,6 +143,7 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Grid Word Search & TTS per level:** `GET /api/word-search/:id?level=N` dan `GET /api/crossword/:id?level=N` (tanpa `level` = Level 1) mengembalikan `data` level itu dan `levelCount`. Simpan (`POST .../questions`) menyertakan `level`; satu baris tabel per level. Fungsi bantu nomor level ada di `src/utils/level.ts`.
 - **Game Adventure (`game_adventure_scenes`):** satu baris = satu scene (`scene_key` unik per proyek + level; jenis `STORY`/`CHALLENGE`/`ENDING`). Pilihan scene Cerita disimpan di kolom `choices` (JSON `[{ text, next }]`); tantangan memakai kolom soal biasa (`question`, `option_a`–`option_d`, `correct_answer`, `next_correct`, `next_wrong`); Akhir memakai `ending_score` (0–100), `verse`, `reflection`. Relasi ke `projects` memakai `ON DELETE CASCADE`.
   - `GET /api/adventure/:id?level=N` hanya untuk tim proyek (pemain dan pengunjung ditolak 403); mengembalikan `scenes`, `levelCount`, dan `errors` dari pemeriksa alur.
+  - **Preview tim** (`AdventurePreview.tsx`) memakai data lengkap dari `GET /api/adventure/:id?level=N` dan menjalankan alur langsung di browser. Ini aman karena endpoint itu hanya untuk tim proyek. Pemain di `/play` tetap memakai alur dari server.
   - `POST /api/adventure/:id/check` (`scenes`) menjalankan pemeriksa alur tanpa menyimpan (hanya tim proyek). Dipakai editor agar aturan pemeriksa hanya ditulis di satu tempat.
   - `POST /api/adventure/:id/scenes` (`level`, `scenes`) hanya Pembuat Game yang ditugaskan, mengganti seluruh scene level itu dalam satu transaksi. Draf yang belum lengkap boleh disimpan; balasannya berisi `errors`. Level terbit dikunci seperti jenis game lain.
   - **Pemeriksa alur** (`validateAdventure` di `src/utils/adventure.ts`): tepat satu scene awal (bukan Akhir), judul dan isi terisi, Cerita punya 2–4 pilihan, Tantangan lengkap dengan kunci, semua tujuan ada dan bukan dirinya sendiri, minimal satu Akhir, ada ending dengan nilai ≥ nilai minimal lulus, semua scene tercapai dari awal, dan tidak ada putaran yang tidak pernah sampai ke Akhir. **Kirim ke Pakar ditolak** jika ada level yang belum lolos pemeriksa.

@@ -97,8 +97,10 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
     - [x] Langkah 3: pemain di `/play` (scene per scene dari server, ending, nilai, ayat, ajakan Jurnal Refleksi)
       - Pemain membaca satu scene per layar, memilih respons, menjawab tantangan (langsung tampil benar/salah + penjelasan), dan melihat "Jejak keputusanmu". Di ending tampil nilai ending dan ayat; layar hasil memakai ajakan refleksi ending sebagai pertanyaan Jurnal.
       - Tombol Quiz Duel hanya muncul pada game Quiz.
-    - [ ] Langkah 4: Preview untuk Pakar, Ketua, dan Simulasi Pembuat
-    - ⚠️ Sampai langkah 4 selesai, tombol Preview/Simulasi belum bisa memainkan Adventure, dan Pakar/Ketua belum bisa melihat isi cerita di dashboard.
+    - [x] Langkah 4: Preview untuk Pakar, Ketua, dan Simulasi Pembuat
+      - Jendela Preview punya tab **Mainkan** (mencoba cerita seperti pemain, dengan kode scene, tujuan pilihan, tombol Mulai Ulang, dan jejak keputusan) dan **Semua Scene** (membaca seluruh isi cerita sekaligus: pilihan dan tujuannya, kunci tantangan, penjelasan, nilai ending, ayat, dan ajakan refleksi). Pakar tidak perlu memainkan setiap cabang satu per satu.
+      - Tab level berlaku seperti game lain; game terbit yang sedang menambah level langsung dibuka di level baru.
+      - Simulasi Pembuat memakai cerita yang sudah disimpan ke cloud.
     - ⚠️ Setiap kali halaman `/play` dibuka, satu sesi main (`level_attempts`) dibuat. Sesi yang tidak diselesaikan belum dibersihkan otomatis.
 
 ## 06 Di Luar Cakupan (belum dibuat sekarang)

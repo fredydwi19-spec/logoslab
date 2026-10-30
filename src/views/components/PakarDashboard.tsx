@@ -1,5 +1,6 @@
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
+import { AdventurePreview, AdventurePreviewScript } from "./AdventurePreview";
 import { ProjectHeader } from "./ProjectHeader";
 
 export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analytics }: {
@@ -169,6 +170,10 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                   const cwJson = await cwRes.json();
                   if (cwJson.success && cwJson.data) this.gameData = cwJson.data;
                   this.gameLevelCount = cwJson.levelCount || 1;
+                } else if (this.activeProject.gameType === 'ADVENTURE') {
+                  const advRes = await fetch('/api/adventure/' + id);
+                  const advJson = await advRes.json();
+                  if (advRes.ok) { this.gameData = advJson.scenes.length ? { scenes: advJson.scenes } : null; this.gameLevelCount = advJson.levelCount || 1; }
                 }
               } else {
                 alert('Gagal memuat proyek: ' + (json.error || 'Terjadi kesalahan'));
@@ -289,7 +294,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
           // --- Preview per level ---
           previewLevelCount() {
             const t = this.activeProject?.gameType;
-            if (t === 'WORD_SEARCH' || t === 'CROSSWORD') return Math.max(1, this.gameLevelCount || 1);
+            if (t === 'WORD_SEARCH' || t === 'CROSSWORD' || t === 'ADVENTURE') return Math.max(1, this.gameLevelCount || 1);
             return Math.max(1, ...this.questions.map(q => Number(q.level) || 1));
           },
 
@@ -306,7 +311,15 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             this.isCorrect = false;
             this.userFTBAnswers = [];
             const t = this.activeProject?.gameType;
-            if (t === 'WORD_SEARCH' || t === 'CROSSWORD') {
+            if (t === 'ADVENTURE') {
+              const res = await fetch('/api/adventure/' + this.activeProject.id + '?level=' + level);
+              const json = await res.json();
+              // Lepas komponen Preview lama dulu agar cerita level yang dipilih dimulai dari awal
+              this.gameData = null;
+              await this.$nextTick();
+              if (res.ok) this.gameLevelCount = Math.max(this.gameLevelCount || 1, json.levelCount || 1);
+              this.gameData = res.ok && json.scenes.length ? { scenes: json.scenes } : null;
+            } else if (t === 'WORD_SEARCH' || t === 'CROSSWORD') {
               const base = t === 'WORD_SEARCH' ? '/api/word-search/' : '/api/crossword/';
               const res = await fetch(base + this.activeProject.id + '?level=' + level);
               const json = await res.json();
@@ -336,7 +349,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             const firstNewLevel = (this.activeProject.publishedLevelCount || 0) + 1;
             const startLevel = this.activeProject.status === 'PUBLISHED' && firstNewLevel <= this.previewLevelCount() ? firstNewLevel : 1;
             await this.selectPreviewLevel(startLevel);
-            const isGrid = this.activeProject?.gameType === 'WORD_SEARCH' || this.activeProject?.gameType === 'CROSSWORD';
+            const isGrid = ['WORD_SEARCH', 'CROSSWORD', 'ADVENTURE'].includes(this.activeProject?.gameType);
             if (isGrid ? !this.gameData : this.previewQuestions.length === 0) {
               alert('Belum ada isi game untuk di-preview.');
               return;
@@ -1049,10 +1062,15 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             </template>
 
             <!-- GAME PREVIEW -->
-            <div x-show="activeProject?.type === 'GAME'" class="text-center w-full max-w-2xl space-y-6">
+            <div x-show="activeProject?.type === 'GAME'" class="text-center w-full max-w-2xl space-y-6" :class="activeProject?.gameType === 'ADVENTURE' ? 'self-start' : ''">
               <template x-if="activeProject?.gameType === 'WORD_SEARCH' && gameData">
                 <div class="w-full">
                   ${WordSearchGame({ projectVar: 'activeProject', gameDataVar: 'gameData' })}
+                </div>
+              </template>
+              <template x-if="activeProject?.gameType === 'ADVENTURE' && gameData">
+                <div class="w-full">
+                  ${AdventurePreview({})}
                 </div>
               </template>
               <template x-if="activeProject?.gameType === 'CROSSWORD' && gameData">
@@ -1060,7 +1078,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                   ${CrosswordGame({ projectVar: 'activeProject', gameDataVar: 'gameData', isReadOnly: 'true' })}
                 </div>
               </template>
-              <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
+              <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD' && activeProject?.gameType !== 'ADVENTURE'">
                 <div>
                   <div class="inline-block bg-primary text-highlight px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
                   <template x-if="activeProject?.gameType === 'QUIZ'">
@@ -1107,5 +1125,6 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
     </div>
     ${WordSearchGameScript()}
     ${CrosswordGameScript()}
+    ${AdventurePreviewScript()}
   `;
 };

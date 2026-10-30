@@ -3,6 +3,7 @@ import { WordSearchEditor, WordSearchEditorScript } from "./WordSearchEditor";
 import { WordSearchGame, WordSearchGameScript } from "./WordSearchGame";
 import { CrosswordEditor, CrosswordEditorScript } from "./CrosswordEditor";
 import { CrosswordGame, CrosswordGameScript } from "./CrosswordGame";
+import { AdventurePreview, AdventurePreviewScript } from "./AdventurePreview";
 import { AdventureEditor, AdventureEditorScript } from "./AdventureEditor";
 import { ProjectHeader } from "./ProjectHeader";
 
@@ -206,6 +207,10 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                     const cwJson = await cwRes.json();
                     if (cwJson.success) this.gameData = cwJson.data;
                     this.gameLevelCount = cwJson.levelCount || 1;
+                  } else if (this.activeProject.gameType === 'ADVENTURE') {
+                    const advRes = await fetch('/api/adventure/' + id);
+                    const advJson = await advRes.json();
+                    if (advRes.ok) { this.gameData = advJson.scenes.length ? { scenes: advJson.scenes } : null; this.gameLevelCount = advJson.levelCount || 1; }
                   }
                   this.checkLocalRecovery(id);
                   this.updateSaveIndicator('SYNCHRONIZED', 'bg-green-100 text-green-800');
@@ -407,7 +412,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             // --- Preview per level ---
             previewLevelCount() {
               const t = this.activeProject?.gameType;
-              if (t === 'WORD_SEARCH' || t === 'CROSSWORD') return Math.max(1, this.gameLevelCount || 1);
+              if (t === 'WORD_SEARCH' || t === 'CROSSWORD' || t === 'ADVENTURE') return Math.max(1, this.gameLevelCount || 1);
               return Math.max(1, ...this.questions.map(q => Number(q.level) || 1));
             },
 
@@ -424,7 +429,15 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               this.isCorrect = false;
               this.userFTBAnswers = [];
               const t = this.activeProject?.gameType;
-              if (t === 'WORD_SEARCH' || t === 'CROSSWORD') {
+              if (t === 'ADVENTURE') {
+                const res = await fetch('/api/adventure/' + this.activeProject.id + '?level=' + level);
+                const json = await res.json();
+                // Lepas komponen Preview lama dulu agar cerita level yang dipilih dimulai dari awal
+                this.gameData = null;
+                await this.$nextTick();
+                if (res.ok) this.gameLevelCount = Math.max(this.gameLevelCount || 1, json.levelCount || 1);
+                this.gameData = res.ok && json.scenes.length ? { scenes: json.scenes } : null;
+              } else if (t === 'WORD_SEARCH' || t === 'CROSSWORD') {
                 const base = t === 'WORD_SEARCH' ? '/api/word-search/' : '/api/crossword/';
                 const res = await fetch(base + this.activeProject.id + '?level=' + level);
                 const json = await res.json();
@@ -442,7 +455,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               const firstNewLevel = (this.activeProject.publishedLevelCount || 0) + 1;
               const startLevel = this.activeProject.status === 'PUBLISHED' && firstNewLevel <= this.previewLevelCount() ? firstNewLevel : 1;
               await this.selectPreviewLevel(startLevel);
-              const isGrid = this.activeProject?.gameType === 'WORD_SEARCH' || this.activeProject?.gameType === 'CROSSWORD';
+              const isGrid = ['WORD_SEARCH', 'CROSSWORD', 'ADVENTURE'].includes(this.activeProject?.gameType);
               if (isGrid ? !this.gameData : this.previewQuestions.length === 0) {
                 alert('Belum ada isi game untuk di-preview.');
                 return;
@@ -1160,7 +1173,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               </template>
             </div>
             <div class="p-0 flex-1 overflow-y-auto bg-slate-50 relative flex flex-col">
-               <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
+               <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD' && activeProject?.gameType !== 'ADVENTURE'">
                  <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none z-20">
                     <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="pointer-events-auto bg-white/80 hover:bg-white text-primary p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
@@ -1172,7 +1185,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                </template>
 
                <div class="text-center w-full flex-1 flex flex-col justify-center">
-                  <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
+                  <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD' && activeProject?.gameType !== 'ADVENTURE'">
                     <div class="inline-block mx-auto bg-primary text-highlight px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest mt-10" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
                   </template>
                   
@@ -1210,6 +1223,13 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                       <div class="mt-8 flex justify-center">
                         <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-accent text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-accent-hover transition-all">PERIKSA JAWABAN</button>
                       </div>
+                    </div>
+                  </template>
+
+                  <!-- Adventure Content -->
+                  <template x-if="showPreview && activeProject?.gameType === 'ADVENTURE' && gameData">
+                    <div class="w-full p-4 md:p-8">
+                       ${AdventurePreview({ note: 'Simulasi memakai cerita yang sudah disimpan ke cloud.' })}
                     </div>
                   </template>
 
@@ -1263,6 +1283,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
     ${WordSearchGameScript()}
     ${CrosswordEditorScript()}
     ${CrosswordGameScript()}
+    ${AdventurePreviewScript()}
     ${AdventureEditorScript()}
   `;
 };
