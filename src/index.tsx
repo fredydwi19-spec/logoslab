@@ -31,7 +31,6 @@ import { KetuaTimDashboard } from "./views/components/KetuaTimDashboard";
 import { PembuatGameDashboard } from "./views/components/PembuatGameDashboard";
 import { PembuatMateriDashboard } from "./views/components/PembuatMateriDashboard";
 import { PakarDashboard } from "./views/components/PakarDashboard";
-import { MemberDashboard } from "./views/components/MemberDashboard";
 import { UserDashboard } from "./views/components/UserDashboard";
 import { KetuaTimAllProjects } from "./views/components/KetuaTimAllProjects";
 import { MateriViewer, MateriViewerScript } from "./views/components/MateriViewer";
