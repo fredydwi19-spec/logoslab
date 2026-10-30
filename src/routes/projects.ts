@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats, gameAdventureScenes } from "../db/schema";
-import { eq, and, desc, inArray, gte, sql } from "drizzle-orm";
+import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats, gameAdventureScenes } from "../db/schema";
+import { eq, and, desc, inArray, gte } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam, publicQuizQuestion, publicFtbQuestion, publicCrosswordClues } from "../utils/level";
 import { validateAdventure } from "../utils/adventure";
@@ -482,17 +482,6 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
           level: toLevel(q.level)
         }));
         await db.insert(gameFillTheBlank).values(qValues as any);
-
-        // Logic for Bank Soal: Insert into gameQuestionsBank if not already there
-        for (const q of editableQuestions) {
-           await db.insert(gameQuestionsBank).values({
-             content: q.fullText,
-             category: project.category || "General",
-             difficulty: q.difficulty as any
-           }).onDuplicateKeyUpdate({
-             set: { updatedAt: sql`NOW()` }
-           });
-        }
       }
     }
 
