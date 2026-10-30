@@ -1,10 +1,54 @@
 import { MainLayout } from "../layouts/MainLayout";
+import { escapeHtml } from "../../utils/html";
 
 type LandingStats = { players: number; plays: number; playsByType: { gameType: string; total: number }[] };
 
 const GAME_TYPE_LABELS: Record<string, string> = {
   QUIZ: "Quiz", FILL_THE_BLANK: "Fill the Blank", WORD_SEARCH: "Word Search", CROSSWORD: "Teka-Teki Silang", ADVENTURE: "Adventure Studi Kasus",
 };
+
+const GAME_COVERS: Record<string, { icon: string; cover: string; iconColor: string }> = {
+  QUIZ: { icon: "bi-patch-question-fill", cover: "bg-primary", iconColor: "text-highlight" },
+  FILL_THE_BLANK: { icon: "bi-input-cursor-text", cover: "bg-accent", iconColor: "text-white" },
+  WORD_SEARCH: { icon: "bi-search", cover: "bg-highlight", iconColor: "text-primary" },
+  CROSSWORD: { icon: "bi-grid-3x3-gap-fill", cover: "bg-primary-dark", iconColor: "text-highlight" },
+  ADVENTURE: { icon: "bi-signpost-split-fill", cover: "bg-success", iconColor: "text-white" },
+};
+const coverOf = (type: string | null) => GAME_COVERS[type ?? ""] ?? { icon: "bi-controller", cover: "bg-primary", iconColor: "text-highlight" };
+
+const renderGameCard = (game: any) => {
+  const c = coverOf(game.gameType);
+  const levels = game.publishedLevelCount > 1 ? `<span class="bg-slate-100 px-2 py-1 rounded-lg"><i class="bi bi-layers"></i> ${game.publishedLevelCount} level</span>` : "";
+  return `
+                  <div class="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all hover:-translate-y-1 border border-slate-100 overflow-hidden group flex flex-col">
+                    <div class="h-40 relative overflow-hidden flex items-center justify-center ${game.thumbnailUrl ? "bg-slate-100" : c.cover}">
+                      ${game.thumbnailUrl
+                        ? `<img src="${escapeHtml(game.thumbnailUrl)}" alt="Sampul ${escapeHtml(game.title)}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">`
+                        : `<i class="bi ${c.icon} ${c.iconColor} absolute -right-6 -bottom-8 text-[9rem] opacity-15"></i><i class="bi ${c.icon} ${c.iconColor} text-6xl group-hover:scale-110 transition-transform"></i>`}
+                      <span class="absolute bottom-3 left-3 bg-white/95 text-[10px] font-black px-3 py-1 rounded-full text-primary shadow uppercase tracking-widest">${GAME_TYPE_LABELS[game.gameType] ?? "Game"}</span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                      <h3 class="text-lg font-black text-slate-800 mb-1 leading-tight line-clamp-2">${escapeHtml(game.title)}</h3>
+                      <p class="text-slate-500 text-sm mb-3 line-clamp-2">${escapeHtml(game.description || "Tidak ada deskripsi.")}</p>
+                      <div class="flex flex-wrap gap-2 mb-4 text-[11px] font-bold text-slate-500">${levels}</div>
+                      <a href="/play/${Number(game.id)}" class="mt-auto w-full py-3 rounded-xl bg-primary text-highlight font-black uppercase tracking-widest text-xs hover:bg-primary-dark transition-colors text-center flex items-center justify-center gap-2"><i class="bi bi-play-fill text-base"></i> Coba Main</a>
+                    </div>
+                  </div>`;
+};
+
+const renderMaterialCard = (m: any) => `
+                  <a href="/materi/${Number(m.id)}" class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 border border-slate-100 overflow-hidden flex flex-col group">
+                    <div class="h-32 bg-primary-dark relative flex items-center justify-center overflow-hidden">
+                      ${m.thumbnailUrl
+                        ? `<img src="${escapeHtml(m.thumbnailUrl)}" alt="Sampul ${escapeHtml(m.title)}" class="absolute inset-0 w-full h-full object-cover">`
+                        : `<i class="bi bi-book-half text-highlight text-5xl group-hover:scale-110 transition-transform"></i>`}
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                      <h3 class="font-black text-slate-800 leading-tight mb-1 line-clamp-2">${escapeHtml(m.title)}</h3>
+                      <p class="text-slate-500 text-sm line-clamp-2 mb-3">${escapeHtml(m.description || "")}</p>
+                      <span class="mt-auto text-accent font-black text-xs uppercase tracking-widest flex items-center gap-1">Baca materi <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                  </a>`;
 
 // Persentase asli permainan per jenis game, dihitung dari log permainan
 const renderPlaysByType = (stats: LandingStats) => {
@@ -24,7 +68,9 @@ const renderPlaysByType = (stats: LandingStats) => {
   }).join("");
 };
 
-export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, stats: LandingStats }) => {
+export const LandingPage = ({ games, materials, user, stats }: { games: any[], materials: any[], user?: any, stats: LandingStats }) => {
+  // Tombol utama: langsung main game terbaru (Level 1 bisa dimainkan tanpa login)
+  const tryHref = games.length > 0 ? `/play/${Number(games[0].id)}` : "#showcase";
   return MainLayout({
     title: "Logos LAB — Edukasi Alkitab dan Berpikir Kritis",
     children: `
@@ -40,7 +86,7 @@ export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, 
               ${user ? `
                 <div x-data="{ openProfile: false }" class="relative">
                   <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-primary to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-highlight">
-                    ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
+                    ${user.avatarUrl || user.profilePicture ? `<img src="${escapeHtml(user.avatarUrl || user.profilePicture)}" alt="${escapeHtml(user.name || user.username)}" class="w-full h-full object-cover">` : escapeHtml((user.name || user.username).charAt(0).toUpperCase())}
                   </button>
 
                   <div x-show="openProfile" style="display:none;" 
@@ -52,11 +98,11 @@ export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, 
                     <div class="p-3">
                       <div class="bg-slate-50 p-3 rounded-xl flex items-center gap-3">
                         <div class="w-12 h-12 rounded-full bg-primary text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
-                          ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
+                          ${user.avatarUrl || user.profilePicture ? `<img src="${escapeHtml(user.avatarUrl || user.profilePicture)}" alt="${escapeHtml(user.name || user.username)}" class="w-full h-full object-cover">` : escapeHtml((user.name || user.username).charAt(0).toUpperCase())}
                         </div>
                         <div class="flex flex-col overflow-hidden">
-                          <span class="font-bold text-slate-800 text-sm truncate">${user.name || user.username}</span>
-                          <span class="text-slate-500 text-xs truncate">${user.email || (user.username.toLowerCase().replace(/\s+/g, '') + '@logoslab.com')}</span>
+                          <span class="font-bold text-slate-800 text-sm truncate">${escapeHtml(user.name || user.username)}</span>
+                          ${user.email ? `<span class="text-slate-500 text-xs truncate">${escapeHtml(user.email)}</span>` : ""}
                           <span class="text-[9px] font-black text-accent mt-1 tracking-widest uppercase">${user.role.replace('_', ' ')}</span>
                         </div>
                       </div>
@@ -85,269 +131,97 @@ export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, 
               ` : `
                 <button id="btn-login-trigger" class="bg-accent hover:bg-accent-hover text-white p-2 text-sm.5 text-sm rounded-lg rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                  Masuk Workspace
+                  Masuk / Daftar
                 </button>
               `}
             </nav>
           </div>
         </header>
 
-        <!-- ========== HERO SECTION ========== -->
-        <section class="relative bg-gradient-to-br from-primary to-[#3949AB] text-white py-24 lg:py-32 overflow-hidden">
-          <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+        <!-- ========== HERO: ajakan bermain untuk mahasiswa ========== -->
+        <section class="relative bg-gradient-to-br from-primary to-primary-dark text-white py-20 lg:py-28 overflow-hidden">
+          <i class="bi bi-patch-question-fill absolute -left-10 top-10 text-[12rem] text-white opacity-5"></i>
+          <i class="bi bi-signpost-split-fill absolute -right-10 bottom-0 text-[14rem] text-white opacity-5"></i>
           <div class="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
-            <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold mb-8 border border-white/30">
-              <span class="text-highlight">✨</span> Platform Edukasi Interaktif
+            <div class="inline-flex items-center gap-2 bg-white/15 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 border border-white/25">
+              <i class="bi bi-controller text-highlight"></i> Game edukasi Alkitab untuk mahasiswa
             </div>
-            <h1 class="text-4xl md:text-4xl font-black leading-tight mb-6">
-              <span class="text-highlight">Edukasi Alkitab</span><br>dan Berpikir Kritis
+            <h1 class="text-4xl md:text-5xl font-black leading-tight mb-5">
+              Uji pemahaman Alkitabmu<br><span class="text-highlight">sambil bermain</span>
             </h1>
-            <p class="text-lg md:text-xl text-blue-100 max-w-2xl mb-10 leading-relaxed font-light">
-              ${user === null 
-                ? 'Bergabunglah sekarang untuk memainkan seluruh kuis Alkitab dan kumpulkan poin XP!' 
-                : `Selamat datang kembali, ${user.name}! Siap melanjutkan petualangan Alkitab hari ini?`}
+            <p class="text-lg md:text-xl text-white/80 max-w-2xl mb-8 leading-relaxed">
+              ${user
+                ? `Selamat datang kembali, ${escapeHtml(user.name)}! Lanjutkan levelmu dan kejar streak terbaikmu hari ini.`
+                : "Quiz berwaktu, teka-teki silang, cari kata, dan studi kasus bercabang. Naik level, kumpulkan XP, lalu tantang temanmu."}
             </p>
-            ${user === null 
-              ? `<button id="btn-login-trigger-hero" onclick="document.getElementById('btn-login-trigger').click()" class="bg-white text-primary hover:bg-slate-50 px-6 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
-                  Masuk / Daftar Sekarang
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>`
-              : `<a href="${getDashboardPath(user.role)}" class="bg-primary text-white hover:bg-blue-900 px-6 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
-                  Buka Dashboard Saya →
-                </a>`
-            }
+            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              ${user
+                ? (user.role === "USER"
+                  ? `<a href="/dashboard/games" class="bg-accent hover:bg-accent-hover text-white px-8 py-4 rounded-full font-black text-lg shadow-xl transition-all flex items-center justify-center gap-2"><i class="bi bi-play-fill"></i> Lanjutkan Bermain</a>`
+                  : `<a href="${getDashboardPath(user.role)}" class="bg-accent hover:bg-accent-hover text-white px-8 py-4 rounded-full font-black text-lg shadow-xl transition-all flex items-center justify-center gap-2"><i class="bi bi-grid-1x2-fill"></i> Buka Dashboard</a>`)
+                : `<a href="${tryHref}" class="bg-accent hover:bg-accent-hover text-white px-8 py-4 rounded-full font-black text-lg shadow-xl transition-all flex items-center justify-center gap-2"><i class="bi bi-play-fill"></i> Coba Main Sekarang</a>
+                   <button type="button" onclick="document.getElementById('btn-login-trigger').click()" class="bg-white/10 hover:bg-white/20 border-2 border-white/40 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">Daftar Gratis</button>`}
+            </div>
+            ${user ? "" : `<p class="mt-4 text-sm text-white/70"><i class="bi bi-check-circle-fill text-highlight"></i> Gratis, tanpa daftar: Level 1 setiap game langsung bisa dimainkan</p>`}
+            <div class="mt-10 flex flex-wrap justify-center gap-2 text-xs font-bold">
+              ${Object.entries(GAME_TYPE_LABELS).map(([type, label]) => `<span class="bg-white/10 border border-white/20 px-3 py-1.5 rounded-full flex items-center gap-1"><i class="bi ${coverOf(type).icon} text-highlight"></i> ${label}</span>`).join("")}
+            </div>
           </div>
         </section>
 
-        <!-- ========== SHOWCASE SECTION ========== -->
-        <section id="showcase" class="py-24 bg-slate-50">
+        <!-- ========== CARA BERMAIN ========== -->
+        <section class="py-16 bg-white">
           <div class="container mx-auto px-6">
-            <div class="text-center mb-16">
-              <h2 class="text-4xl font-black text-primary mb-4">🎮 Showcase Game Publik</h2>
-              <p class="text-slate-500 text-lg">Karya interaktif terbaik dari komunitas kreator Logos LAB</p>
+            <h2 class="text-3xl font-black text-primary text-center mb-10">Cara bermain</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              ${[
+                ["bi-grid-fill", "1. Pilih game", "Quiz, Fill the Blank, Word Search, Teka-Teki Silang, atau Adventure Studi Kasus."],
+                ["bi-stopwatch-fill", "2. Jawab dan pelajari", "Kejar waktu dan streak. Setiap jawaban langsung dibahas, jadi kamu belajar dari yang salah."],
+                ["bi-trophy-fill", "3. Naik level", "Lulus untuk membuka level berikutnya, kumpulkan XP, tulis refleksi, dan tantang temanmu duel."],
+              ].map(([icon, title, text]) => `
+              <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                <div class="h-12 w-12 rounded-xl bg-highlight text-primary flex items-center justify-center text-2xl mb-4"><i class="bi ${icon}"></i></div>
+                <h3 class="font-black text-primary text-lg mb-2">${title}</h3>
+                <p class="text-slate-600 text-sm leading-relaxed">${text}</p>
+              </div>`).join("")}
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              ${games.length === 0 ? 
-                `<div class="col-span-full text-center p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-                  <p class="text-slate-400 font-medium text-lg">Belum ada game yang dipublikasikan.</p>
-                 </div>` : 
-                games.slice(0, 3).map(game => `
-                  <div class="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-shadow border border-slate-100 overflow-hidden group flex flex-col">
-                    <div class="h-48 bg-gradient-to-tr from-slate-100 to-slate-50 flex flex-col items-center justify-center p-6 border-b border-slate-100 relative overflow-hidden">
-                      ${game.thumbnailUrl ? 
-                        `<img src="${game.thumbnailUrl}" alt="${game.title}" class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500">` : 
-                        `<span class="text-6xl mb-2 transform group-hover:scale-110 transition-transform">${getGameIcon(game.gameType)}</span>`
-                      }
-                      <span class="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-black px-3 py-1 rounded-full text-primary shadow-sm uppercase tracking-wider">
-                        ${game.gameType?.replace('_', ' ') || 'GAME'}
-                      </span>
-                    </div>
-                    <div class="p-6 flex-1 flex flex-col">
-                      <h3 class="text-xl font-bold text-slate-800 mb-2 leading-tight">${game.title}</h3>
-                      <p class="text-slate-500 text-sm mb-6 line-clamp-2 flex-1">${game.description || 'Tidak ada deskripsi.'}</p>
-                      ${user === null
-                        ? `<button onclick="document.getElementById('btn-login-trigger').click()" class="btn-play-game w-full py-2 rounded-xl bg-blue-50 text-primary font-bold hover:bg-primary hover:text-white transition-colors text-center inline-block">Coba Demo</button>`
-                        : `<a href="/play/${game.id}" class="btn-play-game w-full py-2 rounded-xl bg-blue-50 text-primary font-bold hover:bg-primary hover:text-white transition-colors text-center inline-block">Mainkan Sekarang</a>`
-                      }
-                    </div>
-                  </div>
-                `).join('')
-              }
+          </div>
+        </section>
+
+        <!-- ========== GAME PILIHAN ========== -->
+        <section id="showcase" class="py-20 bg-slate-50">
+          <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+              <h2 class="text-3xl md:text-4xl font-black text-primary mb-3">Game yang bisa kamu mainkan</h2>
+              <p class="text-slate-500 text-lg">Semua konten sudah diperiksa Pakar Teologi sebelum terbit</p>
             </div>
-            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${games.length === 0
+                ? `<div class="col-span-full text-center p-8 bg-white rounded-2xl border-2 border-dashed border-slate-200"><i class="bi bi-hourglass-split text-4xl text-slate-300"></i><p class="text-slate-500 font-bold mt-3">Game pertama sedang disiapkan tim Logos LAB. Kembali lagi segera!</p></div>`
+                : games.map(renderGameCard).join("")}
+            </div>
             ${user === null ? `
-            <div class="mt-16 text-center bg-blue-50 p-8 rounded-2xl border border-blue-100 max-w-3xl mx-auto">
-              <h3 class="text-xl font-bold text-primary mb-4">Ingin mengakses seluruh game & materi Alkitab serta mencatat poin XP?</h3>
-              <button onclick="document.getElementById('btn-login-trigger').click()" class="bg-accent hover:bg-accent-hover text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2">
-                Masuk / Daftar Sekarang
-              </button>
-            </div>
-            ` : ''}
+            <div class="mt-14 text-center bg-white p-8 rounded-2xl border border-slate-200 max-w-3xl mx-auto shadow-sm">
+              <h3 class="text-xl font-black text-primary mb-2">Mau skor dan XP-mu tersimpan?</h3>
+              <p class="text-slate-500 mb-5">Daftar gratis untuk membuka semua level, mengikuti duel, dan menulis jurnal refleksi.</p>
+              <button type="button" onclick="document.getElementById('btn-login-trigger').click()" class="bg-accent hover:bg-accent-hover text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all">Daftar / Masuk</button>
+            </div>` : ""}
           </div>
         </section>
 
-        <!-- ========== MATERI PEMBELAJARAN (RESTORED) ========== -->
-        <section class="section materi" id="materi">
-          <div class="container">
-            <div class="section__header reveal">
-              <h2 class="section__title">📚 Materi Pembelajaran</h2>
-              <p class="section__subtitle">Pelajari Alkitab melalui berbagai format yang mudah dipahami</p>
+${materials.length > 0 ? `        <!-- ========== MATERI TERBIT ========== -->
+        <section class="py-20 bg-white" id="materi">
+          <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+              <h2 class="text-3xl md:text-4xl font-black text-primary mb-3">Materi pembelajaran</h2>
+              <p class="text-slate-500 text-lg">Bacaan pendamping untuk memperdalam pemahamanmu</p>
             </div>
-            <div class="materi__grid">
-
-              <!-- PDF Card 1 -->
-              <div class="materi-card reveal">
-                <div class="materi-card__thumb">
-                  <div class="materi-card__placeholder materi-card__placeholder--pdf">📖</div>
-                  <div class="materi-card__overlay">
-                    <div class="materi-card__icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="materi-card__type-badge materi-card__type-badge--pdf">PDF</span>
-                </div>
-                <div class="materi-card__body">
-                  <h3 class="materi-card__title">Pengantar Perjanjian Baru</h3>
-                  <p class="materi-card__desc">Memahami konteks sejarah, penulis, dan tema utama setiap kitab dalam Perjanjian Baru.</p>
-                  <button class="materi-card__action materi-card__action--pdf" id="btn-baca-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                    </svg>
-                    Baca
-                  </button>
-                </div>
-              </div>
-
-              <!-- PDF Card 2 -->
-              <div class="materi-card reveal">
-                <div class="materi-card__thumb">
-                  <div class="materi-card__placeholder materi-card__placeholder--pdf">🧠</div>
-                  <div class="materi-card__overlay">
-                    <div class="materi-card__icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="materi-card__type-badge materi-card__type-badge--pdf">PDF</span>
-                </div>
-                <div class="materi-card__body">
-                  <h3 class="materi-card__title">Dasar Berpikir Kritis</h3>
-                  <p class="materi-card__desc">Panduan lengkap untuk mengembangkan kemampuan berpikir kritis dalam mempelajari teks Alkitab.</p>
-                  <button class="materi-card__action materi-card__action--pdf" id="btn-baca-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-                    </svg>
-                    Baca
-                  </button>
-                </div>
-              </div>
-
-              <!-- Video Card 1 -->
-              <div class="materi-card reveal">
-                <div class="materi-card__thumb">
-                  <div class="materi-card__placeholder materi-card__placeholder--video">🏛️</div>
-                  <div class="materi-card__overlay">
-                    <div class="materi-card__icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="materi-card__type-badge materi-card__type-badge--video">Video</span>
-                </div>
-                <div class="materi-card__body">
-                  <h3 class="materi-card__title">Sejarah Israel Kuno</h3>
-                  <p class="materi-card__desc">Perjalanan bangsa Israel dari masa Abraham hingga kehancuran Bait Allah kedua.</p>
-                  <button class="materi-card__action materi-card__action--video" id="btn-tonton-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    Tonton Video
-                  </button>
-                </div>
-              </div>
-
-              <!-- Video Card 2 -->
-              <div class="materi-card reveal">
-                <div class="materi-card__thumb">
-                  <div class="materi-card__placeholder materi-card__placeholder--video">✝️</div>
-                  <div class="materi-card__overlay">
-                    <div class="materi-card__icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <span class="materi-card__type-badge materi-card__type-badge--video">Video</span>
-                </div>
-                <div class="materi-card__body">
-                  <h3 class="materi-card__title">Perumpamaan Yesus</h3>
-                  <p class="materi-card__desc">Memahami makna mendalam di balik perumpamaan-perumpamaan yang diajarkan Yesus.</p>
-                  <button class="materi-card__action materi-card__action--video" id="btn-tonton-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    Tonton Video
-                  </button>
-                </div>
-              </div>
-
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${materials.map(renderMaterialCard).join("")}
             </div>
           </div>
         </section>
-
-        <!-- ========== PENJAMINAN MUTU SECTION ========== -->
-        <section class="py-24 bg-white relative overflow-hidden">
-          <div class="container mx-auto px-6 relative z-10">
-            <div class="flex flex-col lg:flex-row items-center gap-16">
-              <div class="lg:w-1/2">
-                <h2 class="text-4xl font-black text-primary mb-6 leading-tight">Sistem Penjaminan Mutu & Kolaborasi Lintas Peran</h2>
-                <p class="text-slate-600 text-lg leading-relaxed mb-8">
-                  Setiap konten di Logos LAB tidak diterbitkan sembarangan. Kami menerapkan sistem penjaminan mutu teologis berlapis untuk memastikan kebenaran, akurasi, dan relevansi.
-                </p>
-                <div class="flex flex-col gap-6">
-                  <div class="flex gap-4 items-start">
-                    <div class="bg-blue-100 text-blue-600 p-3 rounded-2xl"><i class="bi bi-pencil-square text-2xl"></i></div>
-                    <div>
-                      <h4 class="font-bold text-slate-800 text-lg">Kreator (Pembuat Game/Materi)</h4>
-                      <p class="text-slate-500 text-sm mt-1">Merancang soal interaktif dan konten edukasi dengan bantuan AI dan import Excel.</p>
-                    </div>
-                  </div>
-                  <div class="flex gap-4 items-start">
-                    <div class="bg-amber-100 text-amber-600 p-3 rounded-2xl"><i class="bi bi-shield-check text-2xl"></i></div>
-                    <div>
-                      <h4 class="font-bold text-slate-800 text-lg">Pakar (Reviewer Teologi)</h4>
-                      <p class="text-slate-500 text-sm mt-1">Menguji coba dan mengaudit setiap materi untuk memastikan tidak ada kesesatan pemahaman.</p>
-                    </div>
-                  </div>
-                  <div class="flex gap-4 items-start">
-                    <div class="bg-emerald-100 text-emerald-600 p-3 rounded-2xl"><i class="bi bi-check2-all text-2xl"></i></div>
-                    <div>
-                      <h4 class="font-bold text-slate-800 text-lg">Ketua Tim (Admin)</h4>
-                      <p class="text-slate-500 text-sm mt-1">Melakukan validasi final dan menerbitkan konten untuk dapat dinikmati publik secara gratis.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="lg:w-1/2 relative">
-                <div class="absolute inset-0 bg-gradient-to-tr from-blue-100 to-indigo-50 rounded-[3rem] transform rotate-3"></div>
-                <div class="bg-white p-5 rounded-[3rem] shadow-xl relative border border-slate-100">
-                  <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-6">
-                    <span class="text-xs font-black uppercase text-slate-400 tracking-widest">Workflow Engine</span>
-                    <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Secure</span>
-                  </div>
-                  <div class="flex flex-col gap-4">
-                    <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center">
-                      <span class="font-bold text-slate-700">1. Draft Created</span>
-                      <i class="bi bi-arrow-right text-slate-300"></i>
-                    </div>
-                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                      <span class="font-bold text-primary">2. Review Pakar</span>
-                      <span class="animate-pulse bg-blue-500 w-2 h-2 rounded-full"></span>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center opacity-70">
-                      <span class="font-bold text-slate-700">3. Finalisasi Ketua</span>
-                      <i class="bi bi-lock text-slate-300"></i>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center opacity-70">
-                      <span class="font-bold text-slate-700">4. Published</span>
-                      <i class="bi bi-globe text-slate-300"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
+` : ""}
         <!-- ========== ENGAGEMENT & STATS SECTION (RESTORED) ========== -->
         <section class="section stats-engagement" id="engagement">
           <div class="container">
@@ -385,6 +259,71 @@ export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, 
             </div>
           </div>
         </section>
+
+        <!-- ========== PENJAMINAN MUTU SECTION ========== -->
+        <section class="py-24 bg-white relative overflow-hidden">
+          <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+              <div class="lg:w-1/2">
+                <h2 class="text-4xl font-black text-primary mb-6 leading-tight">Setiap konten diperiksa sebelum kamu mainkan</h2>
+                <p class="text-slate-600 text-lg leading-relaxed mb-8">
+                  Setiap konten di Logos LAB tidak diterbitkan sembarangan. Kami menerapkan sistem penjaminan mutu teologis berlapis untuk memastikan kebenaran, akurasi, dan relevansi.
+                </p>
+                <div class="flex flex-col gap-6">
+                  <div class="flex gap-4 items-start">
+                    <div class="bg-blue-100 text-blue-600 p-3 rounded-2xl"><i class="bi bi-pencil-square text-2xl"></i></div>
+                    <div>
+                      <h4 class="font-bold text-slate-800 text-lg">Kreator (Pembuat Game/Materi)</h4>
+                      <p class="text-slate-500 text-sm mt-1">Merancang soal interaktif dan konten edukasi dengan bantuan AI dan import Excel.</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-4 items-start">
+                    <div class="bg-amber-100 text-amber-600 p-3 rounded-2xl"><i class="bi bi-shield-check text-2xl"></i></div>
+                    <div>
+                      <h4 class="font-bold text-slate-800 text-lg">Pakar (Reviewer Teologi)</h4>
+                      <p class="text-slate-500 text-sm mt-1">Menguji coba dan mengaudit setiap materi untuk memastikan tidak ada kesesatan pemahaman.</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-4 items-start">
+                    <div class="bg-emerald-100 text-emerald-600 p-3 rounded-2xl"><i class="bi bi-check2-all text-2xl"></i></div>
+                    <div>
+                      <h4 class="font-bold text-slate-800 text-lg">Ketua Tim (Admin)</h4>
+                      <p class="text-slate-500 text-sm mt-1">Melakukan validasi final dan menerbitkan konten untuk dapat dinikmati publik secara gratis.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="lg:w-1/2 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-blue-100 to-indigo-50 rounded-[3rem] transform rotate-3"></div>
+                <div class="bg-white p-5 rounded-[3rem] shadow-xl relative border border-slate-100">
+                  <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-6">
+                    <span class="text-xs font-black uppercase text-slate-400 tracking-widest">Alur terbit konten</span>
+                    <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Terjaga</span>
+                  </div>
+                  <div class="flex flex-col gap-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center">
+                      <span class="font-bold text-slate-700">1. Ditulis kreator</span>
+                      <i class="bi bi-arrow-right text-slate-300"></i>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                      <span class="font-bold text-primary">2. Diperiksa Pakar</span>
+                      <span class="animate-pulse bg-blue-500 w-2 h-2 rounded-full"></span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center opacity-70">
+                      <span class="font-bold text-slate-700">3. Disetujui Ketua</span>
+                      <i class="bi bi-lock text-slate-300"></i>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center opacity-70">
+                      <span class="font-bold text-slate-700">4. Terbit untukmu</span>
+                      <i class="bi bi-globe text-slate-300"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
 
         <!-- ========== BIBLE VERSE SECTION (RESTORED) ========== -->
         <section class="verse-section" id="verse">
@@ -473,17 +412,6 @@ export const LandingPage = ({ games, user, stats }: { games: any[], user?: any, 
     `
   });
 };
-
-function getGameIcon(type: string) {
-  switch(type) {
-    case 'QUIZ': return '🎯';
-    case 'FILL_THE_BLANK': return '🧩';
-    case 'WORD_SEARCH': return '🔎';
-    case 'CROSSWORD': return '📝';
-    case 'ADVENTURE': return '🧭';
-    default: return '🎮';
-  }
-}
 
 function getDashboardPath(role: string) {
   if (role === 'KETUA_TIM') return '/dashboard/ketua';

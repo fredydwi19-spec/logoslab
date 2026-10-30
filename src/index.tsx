@@ -63,10 +63,13 @@ const app = new Elysia()
       }
     }
 
-    // Ambil maksimal 6 proyek (GAME/MATERI) yang sudah PUBLISHED
-    const publicGames = await db.select().from(projects).where(
-      eq(projects.status, "PUBLISHED")
-    ).limit(6);
+    // Game dan materi terbit untuk halaman depan (terbaru lebih dulu)
+    const publicGames = await db.select().from(projects)
+      .where(and(eq(projects.status, "PUBLISHED"), eq(projects.type, "GAME")))
+      .orderBy(desc(projects.id)).limit(6);
+    const publicMaterials = await db.select().from(projects)
+      .where(and(eq(projects.status, "PUBLISHED"), eq(projects.type, "MATERI")))
+      .orderBy(desc(projects.id)).limit(4);
 
     // Statistik halaman depan: semua angka diambil dari database (tanpa angka tambahan)
     const [playerRow] = await db.select({ total: sql<number>`count(*)` }).from(users).where(eq(users.role, "USER"));
@@ -81,7 +84,7 @@ const app = new Elysia()
       playsByType: playsByType.map(r => ({ gameType: r.gameType ?? "LAINNYA", total: Number(r.total) })).sort((a, b) => b.total - a.total),
     };
 
-    const html = LandingPage({ games: publicGames, user, stats });
+    const html = LandingPage({ games: publicGames, materials: publicMaterials, user, stats });
     
     return new Response(html, {
       headers: { "Content-Type": "text/html; charset=utf-8" }
