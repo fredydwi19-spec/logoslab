@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
 import { projects, questionBank, gameFillTheBlank, gameWordSearch, gameCrossword, userScores, levelAttempts } from "../db/schema";
-import { eq, and, max, isNull, lt, or, sql } from "drizzle-orm";
+import { eq, and, max, isNull, lt, or, sql, inArray } from "drizzle-orm";
 import { publicQuizQuestion, publicFtbQuestion } from "../utils/level";
 import { publicAdventureScene, type AdventureScene } from "../utils/adventure";
 import { loadAdventureScenes } from "./adventure";
@@ -91,6 +91,52 @@ async function bestScore(userId: number, projectId: number, level: number): Prom
 
 const isPassed = (score: number, maxScore: number, passPercentage: number) =>
   maxScore > 0 && (score * 100) / maxScore >= passPercentage;
+
+// Ringkasan katalog game untuk satu pemain: jumlah level terbit, jumlah soal, dan level yang sudah lulus.
+// Dihitung dengan query gabungan (bukan per game) agar katalog tetap cepat walau game bertambah.
+export type CatalogInfo = { levelCount: number; questionCount: number | null; passedLevels: number; played: boolean };
+
+export async function buildCatalogInfo(games: Project[], userId: number): Promise<Map<number, CatalogInfo>> {
+  const info = new Map<number, CatalogInfo>();
+  if (games.length === 0) return info;
+  const ids = games.map(g => g.id);
+  const key = (projectId: number, level: number) => projectId + ":" + level;
+
+  // Nilai maksimal per level (jumlah poin soal, atau nilai grid; Adventure selalu 100)
+  const maxScores = new Map<string, number>();
+  const questionCounts = new Map<string, number>();
+  for (const table of [questionBank, gameFillTheBlank]) {
+    const rows = await db.select({ projectId: table.projectId, level: table.level, total: sql<number>`sum(${table.score})`, count: sql<number>`count(*)` })
+      .from(table).where(inArray(table.projectId, ids)).groupBy(table.projectId, table.level);
+    for (const r of rows) { maxScores.set(key(r.projectId, r.level), Number(r.total)); questionCounts.set(key(r.projectId, r.level), Number(r.count)); }
+  }
+  for (const table of [gameWordSearch, gameCrossword]) {
+    const rows = await db.select({ projectId: table.projectId, level: table.level, score: table.score }).from(table).where(inArray(table.projectId, ids));
+    for (const r of rows) maxScores.set(key(r.projectId, r.level), r.score);
+  }
+
+  // Nilai terbaik pemain per level
+  const bestRows = await db.select({ projectId: userScores.projectId, level: userScores.level, best: max(userScores.score) })
+    .from(userScores).where(and(eq(userScores.userId, userId), inArray(userScores.projectId, ids))).groupBy(userScores.projectId, userScores.level);
+  const best = new Map(bestRows.map(r => [key(r.projectId, r.level), r.best ?? 0]));
+
+  for (const game of games) {
+    let passedLevels = 0;
+    let questionCount = 0;
+    for (let level = 1; level <= game.publishedLevelCount; level++) {
+      const maxScore = game.gameType === "ADVENTURE" ? 100 : (maxScores.get(key(game.id, level)) ?? 0);
+      if (isPassed(best.get(key(game.id, level)) ?? 0, maxScore, game.passPercentage)) passedLevels++;
+      questionCount += questionCounts.get(key(game.id, level)) ?? 0;
+    }
+    info.set(game.id, {
+      levelCount: game.publishedLevelCount,
+      questionCount: game.gameType === "QUIZ" || game.gameType === "FILL_THE_BLANK" ? questionCount : null,
+      passedLevels,
+      played: bestRows.some(r => r.projectId === game.id),
+    });
+  }
+  return info;
+}
 
 // Peta level untuk pemain: hanya level yang sudah terbit. Level 1 selalu terbuka; level berikutnya terbuka jika level sebelumnya lulus.
 async function buildProgress(project: Project, userId: number | null) {

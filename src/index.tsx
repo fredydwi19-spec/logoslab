@@ -15,7 +15,7 @@ import { chatRoutes, projectChatRoutes } from "./routes/chat";
 import { userDashboardRoutes } from "./routes/userDashboard";
 import { quizDuelsRoutes } from "./routes/quizDuels";
 import { journalsRoutes } from "./routes/journals";
-import { levelRoutes, cleanupStaleAttempts } from "./routes/levels";
+import { levelRoutes, cleanupStaleAttempts, buildCatalogInfo } from "./routes/levels";
 import { adventureRoutes } from "./routes/adventure";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
@@ -216,7 +216,13 @@ const app = new Elysia()
         const userId = Number((user as any).id);
         const userNotifications = await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
         
-        const games = await db.select().from(projects).where(and(eq(projects.status, "PUBLISHED"), eq(projects.type, "GAME")));
+        const publishedGames = await db.select().from(projects).where(and(eq(projects.status, "PUBLISHED"), eq(projects.type, "GAME")));
+        // Info katalog: jumlah level & soal serta progres pemain ini
+        const catalogInfo = await buildCatalogInfo(publishedGames, userId);
+        const games = publishedGames.map(g => ({
+          id: g.id, title: g.title, description: g.description, gameType: g.gameType, thumbnailUrl: g.thumbnailUrl,
+          ...catalogInfo.get(g.id),
+        }));
 
         const htmlResponse = Layout({
           title: "Jelajah Game",
