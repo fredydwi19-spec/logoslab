@@ -3,7 +3,7 @@ import { db } from "../db/db";
 import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats } from "../db/schema";
 import { eq, and, desc, inArray, gte } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
-import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
+import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam, publicQuizQuestion, publicFtbQuestion, publicCrosswordClues } from "../utils/level";
 
 // Nilai minimal lulus level: angka bulat 1–100. Kosong = pakai nilai bawaan. Tidak valid = null.
 function parsePassPercentage(value: unknown, fallback: number): number | null {
@@ -195,6 +195,12 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
 
     if (!isTeam && (project.gameType === "QUIZ" || project.gameType === "FILL_THE_BLANK")) {
       questions = questions.filter(q => q.level <= project.publishedLevelCount);
+    }
+    // Pemain tidak menerima kunci jawaban; jawaban dicek lewat /api/projects/:id/levels/:level/answer
+    if (!isTeam) {
+      if (project.gameType === "QUIZ") questions = questions.map(publicQuizQuestion);
+      else if (project.gameType === "FILL_THE_BLANK") questions = questions.map(publicFtbQuestion);
+      else if (project.gameType === "CROSSWORD") questions = publicCrosswordClues(questions);
     }
 
     let materiContentsData: any[] = [];
@@ -473,59 +479,6 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
     }
 
     return { success: true, message: "Saved to cloud" };
-  })
-  // Submit Answer (User Gameplay)
-  .post("/:id/submit", async ({ params: { id }, body, user }) => {
-    const projectId = Number(id);
-    const { questionId, userAnswers } = body as any; // userAnswers: Array<string> matching the placeholders
-
-    const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
-    if (!project) return new Response(JSON.stringify({ error: "Project Not Found" }), { status: 404 });
-
-    if (project.gameType === "FILL_THE_BLANK") {
-      const [question] = await db.select().from(gameFillTheBlank).where(eq(gameFillTheBlank.id, questionId));
-      if (!question) return new Response(JSON.stringify({ error: "Question Not Found" }), { status: 404 });
-
-      const correctAnswers = JSON.parse(question.answers) as Array<{ word: string, explanation: string }>;
-      const results = correctAnswers.map((correct, index) => {
-        const userAnswer = userAnswers[index] || "";
-        const isCorrect = userAnswer.trim().toLowerCase() === correct.word.trim().toLowerCase();
-        return {
-          isCorrect,
-          correctAnswer: correct.word,
-          explanation: correct.explanation,
-          userAnswer
-        };
-      });
-
-      const allCorrect = results.every(r => r.isCorrect);
-      const scoreEarned = allCorrect ? question.score : 0;
-
-      // TODO: Accumulate score in user profile/project score if needed
-
-      return {
-        success: true,
-        allCorrect,
-        scoreEarned,
-        details: results
-      };
-    } else if (project.gameType === "QUIZ") {
-      const [question] = await db.select().from(questionBank).where(eq(questionBank.id, questionId));
-      if (!question) return new Response(JSON.stringify({ error: "Question Not Found" }), { status: 404 });
-
-      const isCorrect = userAnswers[0] === question.correctAnswer;
-      const scoreEarned = isCorrect ? question.score : 0;
-
-      return {
-        success: true,
-        isCorrect,
-        scoreEarned,
-        correctAnswer: question.correctAnswer,
-        explanation: question.explanation
-      };
-    }
-
-    return new Response(JSON.stringify({ error: "Unsupported Game Type" }), { status: 400 });
   })
   // AI Thumbnail Generation via Hugging Face FLUX
   .post("/generate-thumbnail", async ({ body }) => {

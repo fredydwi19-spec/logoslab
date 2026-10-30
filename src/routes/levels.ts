@@ -1,8 +1,9 @@
 import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
-import { projects, questionBank, gameFillTheBlank, gameWordSearch, gameCrossword, userScores } from "../db/schema";
-import { eq, and, max } from "drizzle-orm";
+import { projects, questionBank, gameFillTheBlank, gameWordSearch, gameCrossword, userScores, levelAttempts } from "../db/schema";
+import { eq, and, max, isNull } from "drizzle-orm";
+import { publicQuizQuestion, publicFtbQuestion } from "../utils/level";
 
 type Project = typeof projects.$inferSelect;
 
@@ -95,6 +96,26 @@ async function buildProgress(project: Project, userId: number | null) {
   return { passPercentage: project.passPercentage, levels, upcoming: !!project.levelReviewStatus, loggedIn: userId !== null };
 }
 
+async function loadPublishedGame(projectId: number): Promise<Project | null> {
+  const [project] = await db.select().from(projects).where(eq(projects.id, projectId));
+  return project && project.type === "GAME" && project.status === "PUBLISHED" ? project : null;
+}
+
+// Sesi main yang masih berjalan dan milik pemain ini (pengunjung tanpa login: sesi tanpa user)
+async function loadOpenAttempt(attemptId: string, projectId: number, level: number, userId: number | null) {
+  const project = await loadPublishedGame(projectId);
+  if (!project) return { status: 404, error: "Game tidak ditemukan" } as const;
+  const [attempt] = await db.select().from(levelAttempts).where(and(
+    eq(levelAttempts.id, attemptId),
+    eq(levelAttempts.projectId, projectId),
+    eq(levelAttempts.level, level),
+    userId === null ? isNull(levelAttempts.userId) : eq(levelAttempts.userId, userId),
+  ));
+  if (!attempt) return { status: 404, error: "Sesi main tidak ditemukan. Mulai ulang level ini." } as const;
+  if (attempt.finishedAt) return { status: 400, error: "Sesi main ini sudah selesai. Mulai ulang level untuk bermain lagi." } as const;
+  return { project, attempt };
+}
+
 export const levelRoutes = new Elysia({ prefix: "/api/projects" })
   .use(
     jwt({
@@ -108,26 +129,22 @@ export const levelRoutes = new Elysia({ prefix: "/api/projects" })
     return { user: payload as any };
   })
   .get("/:id/progress", async ({ params: { id }, user, set }) => {
-    const [project] = await db.select().from(projects).where(eq(projects.id, Number(id)));
-    if (!project || project.type !== "GAME" || project.status !== "PUBLISHED") {
+    const project = await loadPublishedGame(Number(id));
+    if (!project) {
       set.status = 404;
       return { error: "Game tidak ditemukan" };
     }
     return { success: true, data: await buildProgress(project, user?.id ?? null) };
   })
-  .post("/:id/levels/:level/finish", async ({ params: { id, level }, body, user, set }) => {
-    if (!user) {
-      set.status = 401;
-      return { error: "Silakan login untuk menyimpan skor dan membuka level berikutnya." };
-    }
-    const [project] = await db.select().from(projects).where(eq(projects.id, Number(id)));
-    if (!project || project.type !== "GAME" || project.status !== "PUBLISHED") {
+  // Mulai satu level: membuat sesi main dan mengirim soal tanpa kunci jawaban
+  .post("/:id/levels/:level/start", async ({ params: { id, level }, user, set }) => {
+    const project = await loadPublishedGame(Number(id));
+    if (!project) {
       set.status = 404;
       return { error: "Game tidak ditemukan" };
     }
-
     const levelNumber = Number(level);
-    const progress = await buildProgress(project, user.id);
+    const progress = await buildProgress(project, user?.id ?? null);
     const target = progress.levels.find(l => l.level === levelNumber);
     if (!target) {
       set.status = 400;
@@ -135,26 +152,122 @@ export const levelRoutes = new Elysia({ prefix: "/api/projects" })
     }
     if (!target.unlocked) {
       set.status = 403;
-      return { error: `Level ${levelNumber} masih terkunci. Selesaikan Level ${levelNumber - 1} dengan nilai minimal ${project.passPercentage}%.` };
+      return { error: user ? `Level ${levelNumber} masih terkunci. Selesaikan Level ${levelNumber - 1} dengan nilai minimal ${project.passPercentage}%.` : "Silakan login untuk membuka level berikutnya." };
     }
 
+    const attemptId = crypto.randomUUID();
+    await db.insert(levelAttempts).values({ id: attemptId, userId: user?.id ?? null, projectId: project.id, level: levelNumber, answers: "{}" });
+
     const content = await loadLevelContent(project, levelNumber);
-    const score = scoreAnswers(project, content, body);
-    await db.insert(userScores).values({ userId: user.id, projectId: project.id, score, level: levelNumber });
+    let questions: unknown[] = [];
+    if (project.gameType === "QUIZ" && "questions" in content) {
+      questions = (content.questions as (typeof questionBank.$inferSelect)[]).map(publicQuizQuestion);
+    } else if (project.gameType === "FILL_THE_BLANK" && "questions" in content) {
+      questions = (content.questions as (typeof gameFillTheBlank.$inferSelect)[]).map(publicFtbQuestion);
+    }
+    return { success: true, attemptId, level: levelNumber, maxScore: content.maxScore, questions };
+  })
+  // Cek satu jawaban. Quiz & FTB: hanya jawaban pertama yang dicatat. TTS: boleh mencoba lagi sampai benar.
+  .post("/:id/levels/:level/answer", async ({ params: { id, level }, body, user, set }) => {
+    const data = (body ?? {}) as any;
+    const session = await loadOpenAttempt(String(data.attemptId ?? ""), Number(id), Number(level), user?.id ?? null);
+    if ("error" in session) {
+      set.status = session.status;
+      return { error: session.error };
+    }
+    const { project, attempt } = session;
+    const content = await loadLevelContent(project, attempt.level);
+    const answers = JSON.parse(attempt.answers) as Record<string, unknown>;
+    const saveAnswers = () => db.update(levelAttempts).set({ answers: JSON.stringify(answers) }).where(eq(levelAttempts.id, attempt.id));
+
+    if (project.gameType === "QUIZ" && "questions" in content) {
+      const question = (content.questions as (typeof questionBank.$inferSelect)[]).find(q => q.id === Number(data.questionId));
+      if (!question) {
+        set.status = 404;
+        return { error: "Soal tidak ditemukan di level ini." };
+      }
+      if (!(question.id in answers)) {
+        answers[question.id] = normalize(data.answer);
+        await saveAnswers();
+      }
+      const isCorrect = answers[question.id] === question.correctAnswer;
+      return { success: true, isCorrect, scoreEarned: isCorrect ? question.score : 0, correctAnswer: question.correctAnswer, explanation: question.explanation };
+    }
+
+    if (project.gameType === "FILL_THE_BLANK" && "questions" in content) {
+      const question = (content.questions as (typeof gameFillTheBlank.$inferSelect)[]).find(q => q.id === Number(data.questionId));
+      if (!question) {
+        set.status = 404;
+        return { error: "Soal tidak ditemukan di level ini." };
+      }
+      if (!(question.id in answers)) {
+        answers[question.id] = (Array.isArray(data.answer) ? data.answer : []).map((a: unknown) => String(a ?? ""));
+        await saveAnswers();
+      }
+      const given = answers[question.id] as string[];
+      const expected = JSON.parse(question.answers) as { word: string; explanation: string }[];
+      const details = expected.map((a, i) => ({
+        isCorrect: normalize(given[i]) === normalize(a.word),
+        correctAnswer: a.word,
+        explanation: a.explanation,
+        userAnswer: given[i] ?? "",
+      }));
+      const allCorrect = details.length > 0 && details.every(d => d.isCorrect);
+      return { success: true, allCorrect, scoreEarned: allCorrect ? question.score : 0, details };
+    }
+
+    if (project.gameType === "CROSSWORD" && "row" in content && content.row) {
+      const clues = JSON.parse((content.row as typeof gameCrossword.$inferSelect).clues) as { answer: string; explanation?: string }[];
+      const clueIndex = Number(data.clueIndex);
+      const clue = clues[clueIndex];
+      if (!clue) {
+        set.status = 404;
+        return { error: "Pertanyaan TTS tidak ditemukan di level ini." };
+      }
+      const isCorrect = normalize(clue.answer) !== "" && normalize(data.answer) === normalize(clue.answer);
+      if (!isCorrect) return { success: true, isCorrect: false };
+      answers[clueIndex] = normalize(clue.answer);
+      await saveAnswers();
+      return { success: true, isCorrect: true, answer: clue.answer, explanation: clue.explanation ?? "" };
+    }
+
+    set.status = 400;
+    return { error: "Jenis game ini tidak memakai cek jawaban per soal." };
+  })
+  // Akhir level: nilai dihitung dari jawaban yang tercatat di sesi. Pemain yang login skornya disimpan.
+  .post("/:id/levels/:level/finish", async ({ params: { id, level }, body, user, set }) => {
+    const data = (body ?? {}) as any;
+    const session = await loadOpenAttempt(String(data.attemptId ?? ""), Number(id), Number(level), user?.id ?? null);
+    if ("error" in session) {
+      set.status = session.status;
+      return { error: session.error };
+    }
+    const { project, attempt } = session;
+    const answers = JSON.parse(attempt.answers) as Record<string, unknown>;
+    // Word Search: daftar kata memang terlihat oleh pemain, jadi kata yang ditemukan dikirim saat selesai
+    const foundWords = Array.isArray(data.foundWords) ? data.foundWords.map((w: unknown) => String(w ?? "")) : [];
+    if (project.gameType === "WORD_SEARCH") answers.foundWords = foundWords;
+
+    const content = await loadLevelContent(project, attempt.level);
+    const score = scoreAnswers(project, content, { answers, foundWords });
+    await db.update(levelAttempts)
+      .set({ answers: JSON.stringify(answers), score, finishedAt: new Date() })
+      .where(eq(levelAttempts.id, attempt.id));
 
     const percent = content.maxScore > 0 ? Math.round((score * 100) / content.maxScore) : 0;
     const passed = isPassed(score, content.maxScore, project.passPercentage);
-    const nextLevel = progress.levels.find(l => l.level === levelNumber + 1);
+    const result = { success: true, attemptId: attempt.id, score, maxScore: content.maxScore, percent, passPercentage: project.passPercentage, passed };
+    if (!user) return { ...result, needLogin: true };
+
+    const before = await buildProgress(project, user.id);
+    const target = before.levels.find(l => l.level === attempt.level);
+    await db.insert(userScores).values({ userId: user.id, projectId: project.id, score, level: attempt.level });
+    const nextLevel = before.levels.find(l => l.level === attempt.level + 1);
     return {
-      success: true,
-      score,
-      maxScore: content.maxScore,
-      percent,
-      passPercentage: project.passPercentage,
-      passed,
-      bestScore: Math.max(score, target.bestScore),
-      nextLevel: nextLevel && (passed || target.passed) ? levelNumber + 1 : null,
+      ...result,
+      bestScore: Math.max(score, target?.bestScore ?? 0),
+      nextLevel: nextLevel && (passed || target?.passed) ? attempt.level + 1 : null,
       isLastLevel: !nextLevel,
-      upcoming: progress.upcoming,
+      upcoming: before.upcoming,
     };
   });

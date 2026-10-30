@@ -303,3 +303,16 @@ export const userJournals = mysqlTable("user_journals", {
   reflectionText: text("reflection_text").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Satu sesi bermain satu level. Jawaban dinilai di server dan disimpan di sini,
+// sehingga kunci jawaban tidak perlu dikirim ke browser pemain.
+export const levelAttempts = mysqlTable("level_attempts", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  userId: bigint("user_id", { mode: 'number', unsigned: true }).references(() => users.id, { onDelete: 'cascade' }),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  level: int("level").notNull(),
+  answers: longtext("answers").notNull(),
+  score: int("score"),
+  finishedAt: timestamp("finished_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});

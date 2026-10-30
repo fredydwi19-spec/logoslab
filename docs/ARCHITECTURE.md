@@ -48,12 +48,12 @@ src/routes/                # Satu file per bagian fitur
   chat.ts                  #   Diskusi Proyek
   quizDuels.ts             #   Quiz Duel
   journals.ts              #   Jurnal Refleksi
-  levels.ts                #   Peta level pemain & penilaian skor per level
+  levels.ts                #   Peta level pemain, sesi main (mulai/cek jawaban/selesai) & penilaian skor per level
   userDashboard.ts         #   data dashboard pengguna
   ai.ts                    #   Logos AI Assistant
 src/services/              # Logika bisnis yang dipakai bersama (dashboardService.ts)
 src/utils/mailer.ts        # Pengirim email
-src/utils/level.ts         # Fungsi bantu nomor level (toLevel, findMissingLevel)
+src/utils/level.ts         # Fungsi bantu level (toLevel, findMissingLevel) dan versi soal tanpa kunci jawaban untuk pemain
 src/views/layouts/         # Kerangka halaman (Layout.tsx untuk dashboard, MainLayout.tsx untuk publik)
 src/views/components/      # Bagian tampilan: dashboard per peran, editor & player game, widget chat
 src/views/pages/           # Halaman penuh: Landing, Profil, Duel, Jurnal, Katalog game & materi
@@ -123,11 +123,17 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Isi game yang belum terbit:** detail proyek, Word Search, dan TTS hanya bisa dibuka anggota tim proyek jika belum terbit; pemain hanya menerima level yang sudah terbit.
 - **Level terbit dikunci:** simpan soal, simpan grid, dan Generate Soal menolak level ≤ `published_level_count` ("Level N sudah terbit dan dikunci").
 - **Tambah Level Baru:** hanya Pembuat Game pemilik proyek, hanya pada game `PUBLISHED`, dan tidak bisa dimulai dua kali.
-- **Skor level dihitung di server:** `POST /api/projects/:id/levels/:level/finish` menerima jawaban (Quiz: `answers {idSoal: "A"}`, FTB: `answers {idSoal: ["kata"]}`, Word Search: `foundWords`, TTS: `answers {indeksClue: "JAWABAN"}`), menilai di server, lalu menyimpan ke `user_scores` (kolom `level`). Angka skor dari browser diabaikan. Perlu login; level hanya bisa disimpan jika sudah terbit dan terbuka (Level 1, atau level sebelumnya lulus dengan nilai ≥ `pass_percentage`).
+- **Kunci jawaban tidak dikirim ke pemain:** untuk pemain dan pengunjung, `GET /api/projects/:id` mengirim Quiz tanpa `correctAnswer`/`explanation`, FTB tanpa `fullText`/`answers` (diganti `parts`: potongan teks dan kotak isian, plus `blankCount`), dan TTS tanpa `answer`/`explanation` (diganti `length`). `GET /api/crossword/:id` untuk pemain juga tanpa huruf di `gridData`. Anggota tim proyek tetap menerima data lengkap untuk editor dan Preview. Fungsi bantunya `publicQuizQuestion`, `publicFtbQuestion`, `publicCrosswordClues`, `publicCrosswordGrid` di `src/utils/level.ts`.
+- **Sesi main (`level_attempts`) dan skor dihitung di server:**
+  1. `POST /api/projects/:id/levels/:level/start` membuat sesi (`attemptId`, UUID) dan mengirim soal level itu (tanpa kunci). Level harus terbit dan terbuka (Level 1, atau level sebelumnya lulus dengan nilai ≥ `pass_percentage`); pengunjung tanpa login hanya Level 1.
+  2. `POST /api/projects/:id/levels/:level/answer` (`attemptId` + `questionId`/`clueIndex` + `answer`) mengecek satu jawaban dan membalas benar/salah. Quiz & FTB: hanya **jawaban pertama** yang dicatat (menjawab ulang tidak mengubahnya); kunci dan penjelasan baru dikirim setelah menjawab. TTS: boleh mencoba lagi; jawaban dan penjelasan hanya dikirim jika benar.
+  3. `POST /api/projects/:id/levels/:level/finish` (`attemptId`, Word Search menambah `foundWords`) menilai dari jawaban yang tercatat di sesi, lalu menutup sesi (tidak bisa dipakai lagi). Pemain login: skor disimpan ke `user_scores` (kolom `level`). Pengunjung: hasil dikirim dengan `needLogin: true` tanpa disimpan. Angka skor dari browser selalu diabaikan.
+  - Sesi hanya bisa dipakai pemiliknya (sesi pengunjung tidak bisa dipakai akun lain, dan sebaliknya).
 - **Peta level:** `GET /api/projects/:id/progress` (publik) mengembalikan tiap level terbit: `maxScore`, `bestScore`, `percent`, `passed`, `unlocked`, ditambah `upcoming` (ada level baru sedang direview). Tanpa login hanya Level 1 yang terbuka.
-- **Hapus proyek** (hanya Ketua) menghapus proyek beserta semua data yang merujuknya dalam satu transaksi database: isi game/materi, riwayat review, notifikasi, diskusi proyek, serta data pemain (`user_scores`, `achievements`, `materi_read_progress`, `quiz_duels`, `user_journals`, `game_play_logs`, `material_access_logs`). Jika satu langkah gagal, tidak ada yang terhapus. Jendela konfirmasi memperingatkan bahwa data pemain ikut terhapus. Tabel baru yang merujuk `projects` wajib ditambahkan ke daftar hapus ini.
+- **Hapus proyek** (hanya Ketua) menghapus proyek beserta semua data yang merujuknya dalam satu transaksi database: isi game/materi, riwayat review, notifikasi, diskusi proyek, serta data pemain (`user_scores`, `achievements`, `materi_read_progress`, `quiz_duels`, `user_journals`, `game_play_logs`, `material_access_logs`). Jika satu langkah gagal, tidak ada yang terhapus. Jendela konfirmasi memperingatkan bahwa data pemain ikut terhapus. Tabel baru yang merujuk `projects` wajib ditambahkan ke daftar hapus ini, kecuali relasinya sudah `ON DELETE CASCADE` (contoh: `level_attempts`).
 - `POST /api/crossword/:id/submit` dan `POST /api/word-search/:id/submit` tidak menyimpan skor (hanya membalas pesan). Satu-satunya jalan menyimpan skor game adalah endpoint `finish` di atas.
-- **Pemutar game publik (`/play/:id`, `PublicGamePlayer.tsx`):** memainkan Quiz, FTB, Word Search, dan TTS. Komponen Word Search/TTS mengirim event `game-level-finish` (berisi `foundWords` atau `answers`) saat selesai; pemutar meneruskannya ke endpoint `finish`.
+- **Pemutar game publik (`/play/:id`, `PublicGamePlayer.tsx`):** memainkan Quiz, FTB, Word Search, dan TTS lewat sesi main di atas. TTS mengecek setiap kata yang sudah terisi penuh ke endpoint `answer`. Komponen Word Search/TTS mengirim event `game-level-finish` saat selesai (Word Search berisi `foundWords`); pemutar meneruskannya ke endpoint `finish`.
+- **Quiz Duel:** `POST /api/duels/create` dan `POST /api/duels/:id/submit` hanya menerima `attemptId` dari sesi Quiz yang sudah selesai milik pemain itu. Skor diambil dari sesi, waktu dihitung dari mulai sampai selesai sesi. Duel memakai soal dari level sesi penantang.
 - **Simpan soal (`POST /api/projects/:id/questions`) dan Generate Soal (`POST /api/bank-soal/auto-generate`):** hanya Pembuat yang ditugaskan di proyek itu (Generate Soal juga boleh oleh Ketua).
 - **Kirim ke Pakar:** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah). Quiz & Fill the Blank: tiap level minimal 1 soal. Word Search & TTS: tiap level punya grid dengan minimal 1 kata/clue.
 - **Grid Word Search & TTS per level:** `GET /api/word-search/:id?level=N` dan `GET /api/crossword/:id?level=N` (tanpa `level` = Level 1) mengembalikan `data` level itu dan `levelCount`. Simpan (`POST .../questions`) menyertakan `level`; satu baris tabel per level. Fungsi bantu nomor level ada di `src/utils/level.ts`.

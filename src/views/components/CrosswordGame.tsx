@@ -46,6 +46,10 @@ export const CrosswordGameScript = () => `
           currentAnswer: '',
           showSummary: false,
           isReadOnly: isReadOnly,
+          // Di /play: huruf jawaban tidak dikirim ke browser, kata yang sudah terisi dicek ke server lewat sesi main ini
+          attemptId: gameData?.attemptId || null,
+          level: gameData?.level || 1,
+          checkingClues: {},
           
           init() {
             this.parseData();
@@ -151,14 +155,57 @@ export const CrosswordGameScript = () => `
             // Check both directions for the word passing through (r,c)
             ['ACROSS', 'DOWN'].forEach(dir => {
               const clue = this.findClueForCell(r, c, dir);
-              if (clue) {
-                const isCorrect = this.isWordCorrect(clue);
-                if (isCorrect && !clue.alreadyFound) {
-                  clue.alreadyFound = true;
-                  this.handleSuccess(clue);
-                }
+              if (!clue || clue.alreadyFound) return;
+              if (this.attemptId) {
+                if (this.isWordFilled(clue)) this.checkWordOnServer(clue);
+                return;
+              }
+              if (this.isWordCorrect(clue)) {
+                clue.alreadyFound = true;
+                this.handleSuccess(clue, clue.answer, clue.explanation);
               }
             });
+          },
+
+          clueLength(clue) {
+            return clue.answer ? clue.answer.length : (Number(clue.length) || 0);
+          },
+
+          wordCells(clue) {
+            const startR = parseInt(clue.startRow);
+            const startC = parseInt(clue.startCol);
+            return Array.from({ length: this.clueLength(clue) }, (_, i) => clue.direction === 'ACROSS' ? [startR, startC + i] : [startR + i, startC]);
+          },
+
+          isWordFilled(clue) {
+            return this.wordCells(clue).every(([r, c]) => this.userGrid[r] && this.userGrid[r][c]);
+          },
+
+          async checkWordOnServer(clue) {
+            const clueIndex = this.clues.indexOf(clue);
+            const word = this.wordCells(clue).map(([r, c]) => this.userGrid[r][c]).join('');
+            if (this.checkingClues[clueIndex] === word) return;
+            this.checkingClues[clueIndex] = word;
+            try {
+              const res = await fetch('/api/projects/' + this.activeProject.id + '/levels/' + this.level + '/answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ attemptId: this.attemptId, clueIndex, answer: word })
+              });
+              const json = await res.json();
+              if (res.ok && json.isCorrect && !clue.alreadyFound) {
+                clue.alreadyFound = true;
+                this.handleSuccess(clue, json.answer, json.explanation);
+              }
+            } catch (e) {
+              console.error('Gagal mengecek jawaban TTS:', e);
+            } finally {
+              delete this.checkingClues[clueIndex];
+            }
+          },
+
+          isCellInFoundClue(r, c) {
+            return this.clues.some(clue => clue.alreadyFound && this.wordCells(clue).some(([cr, cc]) => cr === r && cc === c));
           },
 
           findClueForCell(r, c, dir) {
@@ -166,7 +213,7 @@ export const CrosswordGameScript = () => `
               if (clue.direction !== dir) return false;
               const startR = parseInt(clue.startRow);
               const startC = parseInt(clue.startCol);
-              const len = clue.answer.length;
+              const len = this.clueLength(clue);
               
               if (dir === 'ACROSS') {
                 return r === startR && c >= startC && c < startC + len;
@@ -190,10 +237,10 @@ export const CrosswordGameScript = () => `
             return true;
           },
 
-          handleSuccess(clue) {
+          handleSuccess(clue, answer, explanation) {
             this.score += this.difficulty === 'EASY' ? 10 : this.difficulty === 'MEDIUM' ? 20 : 50;
-            this.currentExplanation = clue.explanation;
-            this.currentAnswer = clue.answer;
+            this.currentExplanation = explanation;
+            this.currentAnswer = answer;
             this.showEduModal = true;
             
             if (this.clues.every(c => c.alreadyFound)) {
@@ -225,9 +272,8 @@ export const CrosswordGameScript = () => `
           // Kirim jawaban clue yang sudah ditemukan ke pemutar level (/play); server yang menilai
           finishLevel() {
             clearInterval(this.timerInterval);
-            const answers = {};
-            this.clues.forEach((c, i) => { if (c.alreadyFound) answers[i] = c.answer; });
-            this.$dispatch('game-level-finish', { answers });
+            // Di /play jawaban yang benar sudah tercatat di sesi main server, jadi tidak perlu dikirim lagi
+            this.$dispatch('game-level-finish', {});
           },
 
           getCellStatus(r, c) {
@@ -237,6 +283,7 @@ export const CrosswordGameScript = () => `
             // In game, we only show correct/wrong when check button is pressed? 
             // Or live? Requirement says "Check Answer Button".
             // But let's check if the letter is correct for that cell.
+            if (this.grid[r][c].letter === undefined) return this.isCellInFoundClue(r, c) ? 'text-green-600' : 'text-[#1A237E]';
             if (this.grid[r][c].letter === char) return 'text-green-600';
             return 'text-red-600';
           },
@@ -250,7 +297,7 @@ export const CrosswordGameScript = () => `
             if (clue) {
                const startR = parseInt(clue.startRow);
                const startC = parseInt(clue.startCol);
-               const len = clue.answer.length;
+               const len = this.clueLength(clue);
                if (this.direction === 'ACROSS') {
                  return r === startR && c >= startC && c < startC + len;
                } else {

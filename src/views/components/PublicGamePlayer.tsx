@@ -50,14 +50,14 @@ export const PublicGamePlayer = () => {
                                   <button @click="selectAnswer(opt)" 
                                      :class="{
                                         'border-[#FFC107] bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
-                                        'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === questions[currentIndex]?.correctAnswer,
-                                        'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== questions[currentIndex]?.correctAnswer,
+                                        'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === quizFeedback?.correctAnswer,
+                                        'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== quizFeedback?.correctAnswer,
                                         'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
                                      }"
                                      class="border-4 p-3 md:p-5 rounded-xl md:rounded-2xl text-left flex items-center gap-3 transition-all group disabled:cursor-default"
                                      :disabled="showFeedback">
                                      <span class="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm transition-colors" 
-                                           :class="showFeedback && opt === questions[currentIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
+                                           :class="showFeedback && opt === quizFeedback?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
                                         <span x-text="opt"></span>
                                      </span>
                                      <span class="text-[#1A237E] font-semibold text-xs md:text-sm" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
@@ -91,7 +91,7 @@ export const PublicGamePlayer = () => {
                            
                            <div class="space-y-3">
                              <template x-if="activeGame?.gameType === 'QUIZ'">
-                               <p class="text-slate-700 font-bold italic text-sm md:text-base leading-relaxed" x-text="questions[currentIndex]?.explanation"></p>
+                               <p class="text-slate-700 font-bold italic text-sm md:text-base leading-relaxed" x-text="quizFeedback?.explanation"></p>
                              </template>
                              <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
                                <div class="space-y-3">
@@ -284,13 +284,15 @@ export const PublicGamePlayer = () => {
           reflectionText: '',
           isJournalSaved: false,
           // --- Level ---
-          allQuestions: [],
           progress: { passPercentage: 70, levels: [], upcoming: false, loggedIn: false },
           currentLevel: 1,
           showLevelMap: false,
           levelResult: null,
-          quizAnswers: {},
-          ftbAnswers: {},
+          // Sesi main di server: kunci jawaban tidak dikirim ke browser, tiap jawaban dicek ke server
+          attemptId: null,
+          finishedAttemptId: null,
+          isCheckingAnswer: false,
+          quizFeedback: null,
 
           levelCount() {
             return this.progress.levels.length;
@@ -325,10 +327,20 @@ export const PublicGamePlayer = () => {
             this.showFeedback = false;
             this.userFTBAnswers = [];
             this.submissionResults = [];
-            this.quizAnswers = {};
-            this.ftbAnswers = {};
+            this.quizFeedback = null;
             this.levelResult = null;
             this.gameData = null;
+            this.attemptId = null;
+            this.finishedAttemptId = null;
+
+            let session;
+            try {
+              const sRes = await fetch('/api/projects/' + this.activeGame.id + '/levels/' + level + '/start', { method: 'POST' });
+              session = await sRes.json();
+              if (!sRes.ok) { alert(session.error || 'Level ini belum bisa dimainkan.'); return; }
+            } catch (e) { alert('Terjadi kesalahan jaringan.'); return; }
+            this.attemptId = session.attemptId;
+            this.maxScore = session.maxScore || 0;
 
             const type = this.activeGame.gameType;
             if (type === 'WORD_SEARCH' || type === 'CROSSWORD') {
@@ -336,12 +348,11 @@ export const PublicGamePlayer = () => {
               const gRes = await fetch(base + this.activeGame.id + '?level=' + level);
               const gJson = await gRes.json();
               if (!gJson.success || !gJson.data) { alert('Data level ini tidak ditemukan.'); return; }
-              this.gameData = gJson.data;
-              this.maxScore = gJson.data.score || 0;
+              // TTS memakai sesi ini untuk mengecek jawaban ke server
+              this.gameData = { ...gJson.data, attemptId: session.attemptId, level };
             } else {
-              this.questions = this.allQuestions.filter(q => (q.level || 1) === level);
+              this.questions = session.questions || [];
               if (this.questions.length === 0) { alert('Level ini belum memiliki soal.'); return; }
-              this.maxScore = this.questions.reduce((acc, q) => acc + (q.score || this.getPoints(q.difficulty)), 0);
             }
 
             this.showLevelMap = false;
@@ -353,15 +364,11 @@ export const PublicGamePlayer = () => {
           async finishLevel(payload) {
             this.gameFinished = true;
             const localPercent = this.maxScore > 0 ? Math.round(this.currentScore * 100 / this.maxScore) : 0;
-            if (!this.progress.loggedIn) {
-              this.levelResult = { needLogin: true, percent: localPercent, passPercentage: this.progress.passPercentage };
-              return;
-            }
             try {
               const res = await fetch('/api/projects/' + this.activeGame.id + '/levels/' + this.currentLevel + '/finish', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload || {})
+                body: JSON.stringify({ ...(payload || {}), attemptId: this.attemptId })
               });
               const json = await res.json();
               if (!res.ok) {
@@ -371,7 +378,8 @@ export const PublicGamePlayer = () => {
               this.levelResult = json;
               this.currentScore = json.score;
               this.maxScore = json.maxScore;
-              await this.loadProgress();
+              this.finishedAttemptId = json.attemptId;
+              if (!json.needLogin) await this.loadProgress();
             } catch (e) {
               this.levelResult = { error: 'Terjadi kesalahan jaringan. Skor belum tersimpan.', percent: localPercent, passPercentage: this.progress.passPercentage };
             }
@@ -391,7 +399,6 @@ export const PublicGamePlayer = () => {
               const json = await res.json();
               if(json.success) {
                 this.activeGame = json.data;
-                this.allQuestions = json.data.questions || [];
                 this.reflectionText = '';
                 this.isJournalSaved = false;
 
@@ -424,33 +431,45 @@ export const PublicGamePlayer = () => {
              return points[diff] || 10;
           },
 
-          selectAnswer(opt) {
-            if(this.showFeedback) return;
-            this.selectedAnswer = opt;
-            this.quizAnswers[this.questions[this.currentIndex].id] = opt;
-            
-            if(opt === this.questions[this.currentIndex].correctAnswer) {
-               this.currentScore += (this.questions[this.currentIndex].score || this.getPoints(this.questions[this.currentIndex].difficulty));
-               this.correctCount++;
-               this.isCorrect = true;
-            } else {
-               this.wrongCount++;
-               this.isCorrect = false;
-            }
-            this.showFeedback = true;
+          // Kirim satu jawaban ke server; server membalas benar/salah, kunci, dan penjelasan
+          async sendAnswer(questionId, answer) {
+            const res = await fetch('/api/projects/' + this.activeGame.id + '/levels/' + this.currentLevel + '/answer', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ attemptId: this.attemptId, questionId, answer })
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Jawaban gagal dicek.');
+            return json;
           },
 
+          async selectAnswer(opt) {
+            if (this.showFeedback || this.isCheckingAnswer) return;
+            this.selectedAnswer = opt;
+            this.isCheckingAnswer = true;
+            try {
+              const json = await this.sendAnswer(this.questions[this.currentIndex].id, opt);
+              this.isCorrect = json.isCorrect;
+              this.quizFeedback = { correctAnswer: json.correctAnswer, explanation: json.explanation };
+              this.currentScore += json.scoreEarned;
+              if (json.isCorrect) this.correctCount++; else this.wrongCount++;
+              this.showFeedback = true;
+            } catch (e) {
+              this.selectedAnswer = null;
+              alert(e.message);
+            } finally {
+              this.isCheckingAnswer = false;
+            }
+          },
+
+          // Teks FTB dari server sudah dipecah: potongan teks dan kotak isian (tanpa jawaban)
           renderFTB(q) {
-            if(!q || !q.fullText) return '';
-            let text = q.fullText;
-            const answers = q.answers || [];
-            
-            const sortedAnswers = [...answers].sort((a, b) => b.word.length - a.word.length);
-            
-            sortedAnswers.forEach((ans, i) => {
-              const regex = new RegExp(ans.word, 'gi');
-              text = text.replace(regex, '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updatePublicFTB(' + i + ', this.value)">');
-            });
+            if(!q || !Array.isArray(q.parts)) return '';
+            const escapeHtml = (t) => String(t).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+            const text = q.parts.map(part => 'blank' in part
+              ? '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updatePublicFTB(' + Number(part.blank) + ', this.value)">'
+              : escapeHtml(part.text)
+            ).join('');
             
             window.updatePublicFTB = (idx, val) => {
               this.userFTBAnswers[idx] = val;
@@ -460,23 +479,21 @@ export const PublicGamePlayer = () => {
           },
 
           async checkAnswerFTB() {
+            if (this.isCheckingAnswer) return;
             const question = this.questions[this.currentIndex];
-            this.ftbAnswers[question.id] = [...this.userFTBAnswers];
-            const res = await fetch('/api/projects/' + this.activeGame.id + '/submit', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({
-                questionId: question.id,
-                userAnswers: this.userFTBAnswers
-              })
-            });
-            const json = await res.json();
-            if(json.success) {
+            const answer = Array.from({ length: question.blankCount || 0 }, (_, i) => this.userFTBAnswers[i] || '');
+            this.isCheckingAnswer = true;
+            try {
+              const json = await this.sendAnswer(question.id, answer);
               this.isCorrect = json.allCorrect;
               this.currentScore += json.scoreEarned;
               if(this.isCorrect) this.correctCount++; else this.wrongCount++;
               this.submissionResults = json.details;
               this.showFeedback = true;
+            } catch (e) {
+              alert(e.message);
+            } finally {
+              this.isCheckingAnswer = false;
             }
           },
 
@@ -487,8 +504,9 @@ export const PublicGamePlayer = () => {
               this.showFeedback = false;
               this.userFTBAnswers = [];
               this.submissionResults = [];
+              this.quizFeedback = null;
             } else {
-              this.finishLevel({ answers: this.activeGame.gameType === 'QUIZ' ? this.quizAnswers : this.ftbAnswers });
+              this.finishLevel();
             }
           },
 
@@ -505,12 +523,7 @@ export const PublicGamePlayer = () => {
               const res = await fetch('/api/duels/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  quizId: this.activeGame.id,
-                  score: this.currentScore,
-                  timeInSeconds: 0,
-                  questionIds: this.questions.map(q => q.id)
-                })
+                body: JSON.stringify({ attemptId: this.finishedAttemptId })
               });
               const json = await res.json();
               if (json.success) {
@@ -532,10 +545,7 @@ export const PublicGamePlayer = () => {
               const res = await fetch('/api/duels/' + this.duelId + '/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  score: this.currentScore,
-                  timeInSeconds: 0
-                })
+                body: JSON.stringify({ attemptId: this.finishedAttemptId })
               });
               const json = await res.json();
               if (json.success) {

@@ -1,8 +1,20 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
-import { users, projects, quizDuels } from "../db/schema";
-import { eq, or, desc, sql } from "drizzle-orm";
+import { users, projects, quizDuels, levelAttempts, questionBank } from "../db/schema";
+import { eq, or, desc, sql, and, isNotNull } from "drizzle-orm";
+
+// Skor duel diambil dari sesi main Quiz yang sudah selesai milik pemain ini (dinilai server), bukan dari angka kiriman browser
+async function loadFinishedQuizAttempt(attemptId: string, userId: number) {
+  const [row] = await db.select({ attempt: levelAttempts, gameType: projects.gameType })
+    .from(levelAttempts)
+    .innerJoin(projects, eq(levelAttempts.projectId, projects.id))
+    .where(and(eq(levelAttempts.id, attemptId), eq(levelAttempts.userId, userId), isNotNull(levelAttempts.finishedAt)));
+  if (!row || row.gameType !== "QUIZ") return null;
+  const { attempt } = row;
+  const timeInSeconds = Math.max(0, Math.round((attempt.finishedAt!.getTime() - (attempt.createdAt ?? attempt.finishedAt!).getTime()) / 1000));
+  return { ...attempt, score: attempt.score ?? 0, timeInSeconds };
+}
 
 export const quizDuelsRoutes = new Elysia({ prefix: "/api/duels" })
   .use(
@@ -23,16 +35,19 @@ export const quizDuelsRoutes = new Elysia({ prefix: "/api/duels" })
     }
   })
   .post("/create", async ({ body, user }) => {
-    const { quizId, score, timeInSeconds, questionIds } = body;
+    const attempt = await loadFinishedQuizAttempt(body.attemptId, user.id as number);
+    if (!attempt) return { success: false, error: "Selesaikan satu level Quiz dulu sebelum membuat duel." };
+    const questions = await db.select({ id: questionBank.id }).from(questionBank)
+      .where(and(eq(questionBank.projectId, attempt.projectId), eq(questionBank.level, attempt.level)));
     const duelId = crypto.randomUUID();
     
     await db.insert(quizDuels).values({
       id: duelId,
       challengerId: user.id as number,
-      quizId,
-      questionIds: JSON.stringify(questionIds),
-      challengerScore: score,
-      challengerTimeSec: timeInSeconds,
+      quizId: attempt.projectId,
+      questionIds: JSON.stringify(questions.map(q => q.id)),
+      challengerScore: attempt.score,
+      challengerTimeSec: attempt.timeInSeconds,
       status: "WAITING_OPPONENT",
     });
 
@@ -43,10 +58,7 @@ export const quizDuelsRoutes = new Elysia({ prefix: "/api/duels" })
     };
   }, {
     body: t.Object({
-      quizId: t.Number(),
-      score: t.Number(),
-      timeInSeconds: t.Number(),
-      questionIds: t.Array(t.Number())
+      attemptId: t.String()
     })
   })
   .get("/my-duels", async ({ user }) => {
@@ -117,13 +129,16 @@ export const quizDuelsRoutes = new Elysia({ prefix: "/api/duels" })
   })
   .post("/:id/submit", async ({ params, body, user }) => {
     const { id } = params;
-    const { score, timeInSeconds } = body;
     const userId = user.id as number;
 
     const [duel] = await db.select().from(quizDuels).where(eq(quizDuels.id, id));
     if (!duel) return { success: false, error: "Duel not found" };
     if (duel.status === "COMPLETED") return { success: false, error: "Duel already completed" };
     if (duel.challengerId === userId) return { success: false, error: "You cannot play against yourself" };
+
+    const attempt = await loadFinishedQuizAttempt(body.attemptId, userId);
+    if (!attempt || attempt.projectId !== duel.quizId) return { success: false, error: "Selesaikan Quiz duel ini dulu sebelum mengirim hasil." };
+    const { score, timeInSeconds } = attempt;
 
     let winnerId = null;
     const chalScore = duel.challengerScore || 0;
@@ -161,7 +176,6 @@ export const quizDuelsRoutes = new Elysia({ prefix: "/api/duels" })
     };
   }, {
     body: t.Object({
-      score: t.Number(),
-      timeInSeconds: t.Number()
+      attemptId: t.String()
     })
   });

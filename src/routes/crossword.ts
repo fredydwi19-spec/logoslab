@@ -3,7 +3,7 @@ import { db } from "../db/db";
 import { projects, gameCrossword, notifications, reviewsHistory, userScores } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
-import { toLevel, firstEditableLevel, isProjectTeam } from "../utils/level";
+import { toLevel, firstEditableLevel, isProjectTeam, publicCrosswordClues, publicCrosswordGrid } from "../utils/level";
 
 export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
   .use(
@@ -60,8 +60,9 @@ export const crosswordRoutes = new Elysia({ prefix: "/api/crossword" })
       levelCount,
       data: {
         ...gameData,
-        clues: JSON.parse(gameData.clues),
-        gridData: JSON.parse(gameData.gridData)
+        // Pemain tidak menerima huruf jawaban; jawaban dicek lewat /api/projects/:id/levels/:level/answer
+        clues: isTeam ? JSON.parse(gameData.clues) : publicCrosswordClues(JSON.parse(gameData.clues)),
+        gridData: isTeam ? JSON.parse(gameData.gridData) : publicCrosswordGrid(JSON.parse(gameData.gridData))
       } 
     };
   })

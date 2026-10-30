@@ -63,6 +63,7 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
   - [x] 6b: halaman `/play` menampilkan peta level (lulus ✓ / terbuka / terkunci 🔒 / "Segera hadir"), hasil per level (persentase, nilai minimal, tombol Level Berikutnya / Ulangi / Peta Level), dan TTS bisa dimainkan. Word Search & TTS punya tombol "Selesai & Lihat Hasil".
   - Pengunjung tanpa login hanya bisa memainkan Level 1; menyimpan skor dan membuka level berikutnya perlu login.
 - [x] Langkah 7: Preview per level untuk Pakar, Ketua, dan Simulasi Pembuat (tab level di jendela Preview; level yang belum terbit diberi label "Baru" dan Preview langsung dibuka di level baru tersebut; Word Search & TTS memuat grid sesuai level)
+- [x] **Kunci jawaban aman dari pemain:** kunci Quiz, FTB, dan TTS tidak lagi dikirim ke browser pemain. Setiap jawaban dicek ke server; tampilan tetap sama (benar/salah dan penjelasan langsung muncul per soal). Quiz & FTB hanya menghitung jawaban pertama, TTS boleh dicoba lagi sampai benar. Skor level dan skor Quiz Duel dihitung server dari sesi main, bukan dari angka kiriman browser.
 
 - [x] **Tampilan dashboard di HP — sidebar:** sidebar disembunyikan di layar kecil dan dibuka lewat tombol menu ☰.
 - [x] **Tampilan dashboard di HP — Semua Proyek:** banner tersusun ke bawah, tabel bisa digeser dengan petunjuk, badge status tidak terpecah.
