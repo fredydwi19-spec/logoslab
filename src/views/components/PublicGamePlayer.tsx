@@ -9,7 +9,7 @@ export const PublicGamePlayer = () => {
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
-            <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
+            <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD' && activeGame?.gameType !== 'ADVENTURE'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
                   <div class="bg-primary px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-highlight">
@@ -111,6 +111,102 @@ export const PublicGamePlayer = () => {
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                               </button>
                            </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </template>
+
+            <!-- Adventure Studi Kasus: satu scene per layar, alur ditentukan server -->
+            <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType === 'ADVENTURE' && advScene">
+               <div class="flex flex-col h-full">
+                  <div class="bg-primary px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-highlight">
+                     <div class="flex items-center gap-3 md:gap-4 min-w-0">
+                        <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
+                        <div class="min-w-0">
+                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-highlight truncate" x-text="activeGame?.title"></h3>
+                           <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="(levelCount() > 1 ? 'Level ' + currentLevel + ' · ' : '') + 'Langkah ' + (advHistory.length + 1)"></p>
+                        </div>
+                     </div>
+                     <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all" aria-label="Keluar">
+                        <i class="bi bi-x-lg"></i>
+                     </button>
+                  </div>
+
+                  <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50">
+                     <div class="w-full max-w-3xl mx-auto">
+                        <div class="bg-white rounded-2xl border-2 shadow-sm p-5 md:p-8"
+                             :class="{ 'border-blue-200': advScene.sceneType === 'STORY', 'border-highlight': advScene.sceneType === 'CHALLENGE', 'border-green-200': advScene.sceneType === 'ENDING' }">
+                           <span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest mb-3"
+                                 :class="{ 'bg-blue-100 text-blue-800': advScene.sceneType === 'STORY', 'bg-highlight text-primary': advScene.sceneType === 'CHALLENGE', 'bg-green-100 text-green-800': advScene.sceneType === 'ENDING' }">
+                              <i class="bi" :class="{ 'bi-book': advScene.sceneType === 'STORY', 'bi-patch-question': advScene.sceneType === 'CHALLENGE', 'bi-flag': advScene.sceneType === 'ENDING' }"></i>
+                              <span x-text="advScene.sceneType === 'STORY' ? 'Cerita' : (advScene.sceneType === 'CHALLENGE' ? 'Tantangan' : 'Akhir Cerita')"></span>
+                           </span>
+                           <h2 class="text-lg md:text-xl font-bold text-primary mb-3" x-text="advScene.title"></h2>
+                           <p class="text-sm md:text-base text-slate-700 leading-relaxed whitespace-pre-line" x-text="advScene.content"></p>
+
+                           <!-- Cerita: pilihan pemain -->
+                           <template x-if="advScene.sceneType === 'STORY'">
+                              <div class="mt-6 space-y-3">
+                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Apa yang akan kamu lakukan?</p>
+                                 <template x-for="(choice, ci) in advScene.choices" :key="ci">
+                                    <button type="button" @click="advChoose(ci)" :disabled="isCheckingAnswer" class="w-full text-left border-2 border-slate-200 bg-white hover:border-highlight hover:bg-yellow-50 rounded-xl p-4 text-sm font-semibold text-primary transition-all flex items-center gap-3 disabled:opacity-50">
+                                       <span class="h-8 w-8 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center font-black text-slate-500" x-text="ci + 1"></span>
+                                       <span x-text="choice"></span>
+                                    </button>
+                                 </template>
+                              </div>
+                           </template>
+
+                           <!-- Tantangan: soal pilihan ganda, jawaban dicek server -->
+                           <template x-if="advScene.sceneType === 'CHALLENGE'">
+                              <div class="mt-6">
+                                 <p class="font-bold text-primary mb-4" x-text="advScene.question"></p>
+                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <template x-for="opt in ['A', 'B', 'C', 'D']" :key="opt">
+                                       <button type="button" @click="advAnswer(opt)" :disabled="!!advFeedback || isCheckingAnswer"
+                                          class="border-2 p-3 rounded-xl text-left flex items-center gap-3 transition-all disabled:cursor-default"
+                                          :class="{
+                                             'border-green-500 bg-green-50': advFeedback && opt === advFeedback.correctAnswer,
+                                             'border-red-500 bg-red-50': advFeedback && advFeedback.selected === opt && opt !== advFeedback.correctAnswer,
+                                             'border-slate-200 bg-white hover:border-primary': !advFeedback
+                                          }">
+                                          <span class="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center font-bold text-sm" :class="advFeedback && opt === advFeedback.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 text-slate-500'" x-text="opt"></span>
+                                          <span class="text-sm font-semibold text-primary" x-text="advScene['option' + opt]"></span>
+                                       </button>
+                                    </template>
+                                 </div>
+                                 <div x-show="advFeedback" class="mt-5 p-4 rounded-xl border-2 border-dashed" :class="advFeedback?.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                                    <p class="font-black uppercase tracking-widest text-xs mb-1" :class="advFeedback?.isCorrect ? 'text-green-800' : 'text-red-800'" x-text="advFeedback?.isCorrect ? 'Jawaban kamu tepat!' : 'Belum tepat'"></p>
+                                    <p class="text-sm text-slate-700 italic" x-text="advFeedback?.explanation"></p>
+                                    <div class="mt-4 flex justify-end">
+                                       <button type="button" @click="advContinue()" class="bg-primary text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-xs hover:bg-primary-dark flex items-center gap-2">Lanjutkan Cerita <i class="bi bi-arrow-right"></i></button>
+                                    </div>
+                                 </div>
+                              </div>
+                           </template>
+
+                           <!-- Akhir cerita: nilai ending dan ayat -->
+                           <template x-if="advScene.sceneType === 'ENDING'">
+                              <div class="mt-6 space-y-4">
+                                 <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-4">
+                                    <div class="text-3xl font-black" :class="advScene.endingScore >= progress.passPercentage ? 'text-green-600' : 'text-accent'" x-text="advScene.endingScore"></div>
+                                    <div class="text-xs font-bold text-slate-500" x-text="'Nilai ending ini. Nilai minimal lulus: ' + progress.passPercentage"></div>
+                                 </div>
+                                 <blockquote class="border-l-4 border-highlight bg-yellow-50 rounded-r-xl p-4 text-sm font-semibold text-primary italic whitespace-pre-line" x-text="advScene.verse"></blockquote>
+                                 <button type="button" @click="finishLevel()" class="w-full bg-accent text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-accent-hover shadow-md">Lihat Hasil &amp; Tulis Refleksi</button>
+                              </div>
+                           </template>
+                        </div>
+
+                        <!-- Jejak keputusan pemain -->
+                        <div x-show="advHistory.length > 0" class="mt-4 text-xs text-slate-500">
+                           <p class="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-2">Jejak keputusanmu</p>
+                           <ol class="space-y-1 list-decimal pl-5">
+                              <template x-for="(step, si) in advHistory" :key="si">
+                                 <li><span class="font-bold text-slate-600" x-text="step.title"></span>: <span x-text="step.decision"></span></li>
+                              </template>
+                           </ol>
                         </div>
                      </div>
                   </div>
@@ -228,9 +324,18 @@ export const PublicGamePlayer = () => {
                         </div>
                      </div>
 
+                     <!-- Adventure: ending yang dicapai -->
+                     <template x-if="activeGame?.gameType === 'ADVENTURE' && advScene?.sceneType === 'ENDING'">
+                        <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 border-green-200 shadow-lg text-left">
+                           <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ending yang kamu capai</div>
+                           <div class="text-base font-bold text-primary" x-text="advScene.title"></div>
+                           <p class="mt-3 text-sm font-semibold text-primary italic whitespace-pre-line border-l-4 border-highlight pl-3" x-text="advScene.verse"></p>
+                        </div>
+                     </template>
+
                      <!-- Reflection Section -->
                      <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-lg text-left">
-                        <label class="block text-primary font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
+                        <label class="block text-primary font-bold text-sm mb-2" x-text="(activeGame?.gameType === 'ADVENTURE' && advScene?.reflection) ? advScene.reflection : 'Apa renungan atau hal berkesan yang kamu dapatkan hari ini?'"></label>
                         <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
                         <button @click="saveJournal()" class="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2" :class="{'opacity-50 cursor-not-allowed': !reflectionText.trim() || isJournalSaved}" :disabled="!reflectionText.trim() || isJournalSaved">
                           <span x-text="isJournalSaved ? 'Tersimpan ke Jurnal! ✅' : 'Simpan ke Jurnal (+20 XP)'"></span>
@@ -238,12 +343,12 @@ export const PublicGamePlayer = () => {
                      </div>
 
                      <div class="space-y-4">
-                        <template x-if="!duelId">
+                        <template x-if="!duelId && activeGame?.gameType === 'QUIZ'">
                           <button @click="createDuel()" class="w-full bg-accent text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-2xl hover:bg-accent-hover transition-all transform hover:scale-105 flex items-center justify-center gap-2">
                             <span>⚔️ Tantang Teman dengan Kuis Ini</span>
                           </button>
                         </template>
-                        <template x-if="duelId">
+                        <template x-if="duelId && activeGame?.gameType === 'QUIZ'">
                           <button @click="submitDuel()" class="w-full bg-green-500 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-2xl hover:bg-green-600 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
                             <span>Kirim Hasil Duel! ⚔️</span>
                           </button>
@@ -293,6 +398,11 @@ export const PublicGamePlayer = () => {
           finishedAttemptId: null,
           isCheckingAnswer: false,
           quizFeedback: null,
+          // Adventure: scene yang sedang dibuka, umpan balik tantangan, scene berikutnya, dan jejak keputusan
+          advScene: null,
+          advFeedback: null,
+          advPending: null,
+          advHistory: [],
 
           levelCount() {
             return this.progress.levels.length;
@@ -328,6 +438,10 @@ export const PublicGamePlayer = () => {
             this.userFTBAnswers = [];
             this.submissionResults = [];
             this.quizFeedback = null;
+            this.advScene = null;
+            this.advFeedback = null;
+            this.advPending = null;
+            this.advHistory = [];
             this.levelResult = null;
             this.gameData = null;
             this.attemptId = null;
@@ -343,7 +457,9 @@ export const PublicGamePlayer = () => {
             this.maxScore = session.maxScore || 0;
 
             const type = this.activeGame.gameType;
-            if (type === 'WORD_SEARCH' || type === 'CROSSWORD') {
+            if (type === 'ADVENTURE') {
+              this.advScene = session.scene;
+            } else if (type === 'WORD_SEARCH' || type === 'CROSSWORD') {
               const base = type === 'WORD_SEARCH' ? '/api/word-search/' : '/api/crossword/';
               const gRes = await fetch(base + this.activeGame.id + '?level=' + level);
               const gJson = await gRes.json();
@@ -441,6 +557,54 @@ export const PublicGamePlayer = () => {
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Jawaban gagal dicek.');
             return json;
+          },
+
+          // --- Adventure: setiap langkah dikirim ke server, server membalas scene berikutnya ---
+          async advSend(payload) {
+            const res = await fetch('/api/projects/' + this.activeGame.id + '/levels/' + this.currentLevel + '/answer', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ attemptId: this.attemptId, sceneKey: this.advScene.sceneKey, ...payload })
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Langkah cerita gagal diproses.');
+            return json;
+          },
+
+          async advChoose(index) {
+            if (this.isCheckingAnswer) return;
+            this.isCheckingAnswer = true;
+            try {
+              const json = await this.advSend({ choiceIndex: index });
+              this.advHistory.push({ title: this.advScene.title, decision: this.advScene.choices[index] });
+              this.advScene = json.scene;
+            } catch (e) {
+              alert(e.message);
+            } finally {
+              this.isCheckingAnswer = false;
+            }
+          },
+
+          async advAnswer(opt) {
+            if (this.advFeedback || this.isCheckingAnswer) return;
+            this.isCheckingAnswer = true;
+            try {
+              const json = await this.advSend({ answer: opt });
+              this.advFeedback = { selected: opt, ...json.result };
+              this.advPending = json.scene;
+              if (json.result.isCorrect) this.correctCount++; else this.wrongCount++;
+            } catch (e) {
+              alert(e.message);
+            } finally {
+              this.isCheckingAnswer = false;
+            }
+          },
+
+          advContinue() {
+            this.advHistory.push({ title: this.advScene.title, decision: this.advFeedback.isCorrect ? 'menjawab benar' : 'menjawab salah' });
+            this.advScene = this.advPending;
+            this.advPending = null;
+            this.advFeedback = null;
           },
 
           async selectAnswer(opt) {

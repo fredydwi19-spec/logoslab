@@ -4,6 +4,8 @@ import { db } from "../db/db";
 import { projects, questionBank, gameFillTheBlank, gameWordSearch, gameCrossword, userScores, levelAttempts } from "../db/schema";
 import { eq, and, max, isNull } from "drizzle-orm";
 import { publicQuizQuestion, publicFtbQuestion } from "../utils/level";
+import { publicAdventureScene, type AdventureScene } from "../utils/adventure";
+import { loadAdventureScenes } from "./adventure";
 
 type Project = typeof projects.$inferSelect;
 
@@ -28,8 +30,16 @@ async function loadLevelContent(project: Project, level: number) {
     const [row] = await db.select().from(gameCrossword).where(byLevel(gameCrossword));
     return { maxScore: row?.score ?? 0, row };
   }
+  if (project.gameType === "ADVENTURE") {
+    // Nilai level Adventure = nilai ending yang dicapai (0-100)
+    return { maxScore: 100, scenes: await loadAdventureScenes(project.id, level) };
+  }
   return { maxScore: 0 };
 }
+
+// Adventure: posisi pemain di cerita disimpan di sesi main (scene sekarang dan jalur yang sudah dilalui)
+type AdventureState = { current: string; path: string[] };
+const MAX_ADVENTURE_STEPS = 500;
 
 const normalize = (text: unknown) => String(text ?? "").trim().toUpperCase();
 
@@ -64,6 +74,11 @@ function scoreAnswers(project: Project, content: Awaited<ReturnType<typeof loadL
     const answers = body?.answers ?? {};
     const solvedCount = clues.filter((c, i) => normalize(c.answer) !== "" && normalize(answers[i]) === normalize(c.answer)).length;
     return clues.length ? Math.round(row.score * solvedCount / clues.length) : 0;
+  }
+  if (project.gameType === "ADVENTURE" && "scenes" in content) {
+    const state = body?.answers as AdventureState | undefined;
+    const scene = (content.scenes as AdventureScene[]).find(s => s.sceneKey === state?.current);
+    return scene?.sceneType === "ENDING" ? Math.max(0, Math.min(100, scene.endingScore ?? 0)) : 0;
   }
   return 0;
 }
@@ -155,17 +170,25 @@ export const levelRoutes = new Elysia({ prefix: "/api/projects" })
       return { error: user ? `Level ${levelNumber} masih terkunci. Selesaikan Level ${levelNumber - 1} dengan nilai minimal ${project.passPercentage}%.` : "Silakan login untuk membuka level berikutnya." };
     }
 
-    const attemptId = crypto.randomUUID();
-    await db.insert(levelAttempts).values({ id: attemptId, userId: user?.id ?? null, projectId: project.id, level: levelNumber, answers: "{}" });
-
     const content = await loadLevelContent(project, levelNumber);
+    // Adventure: sesi dimulai di scene awal; pemain hanya menerima scene yang sedang dibuka
+    const startScene = "scenes" in content ? (content.scenes as AdventureScene[]).find(s => s.isStart) : undefined;
+    if (project.gameType === "ADVENTURE" && !startScene) {
+      set.status = 400;
+      return { error: "Cerita level ini belum punya scene awal." };
+    }
+    const initialState: AdventureState | Record<string, never> = startScene ? { current: startScene.sceneKey, path: [startScene.sceneKey] } : {};
+
+    const attemptId = crypto.randomUUID();
+    await db.insert(levelAttempts).values({ id: attemptId, userId: user?.id ?? null, projectId: project.id, level: levelNumber, answers: JSON.stringify(initialState) });
+
     let questions: unknown[] = [];
     if (project.gameType === "QUIZ" && "questions" in content) {
       questions = (content.questions as (typeof questionBank.$inferSelect)[]).map(publicQuizQuestion);
     } else if (project.gameType === "FILL_THE_BLANK" && "questions" in content) {
       questions = (content.questions as (typeof gameFillTheBlank.$inferSelect)[]).map(publicFtbQuestion);
     }
-    return { success: true, attemptId, level: levelNumber, maxScore: content.maxScore, questions };
+    return { success: true, attemptId, level: levelNumber, maxScore: content.maxScore, questions, scene: startScene ? publicAdventureScene(startScene) : null };
   })
   // Cek satu jawaban. Quiz & FTB: hanya jawaban pertama yang dicatat. TTS: boleh mencoba lagi sampai benar.
   .post("/:id/levels/:level/answer", async ({ params: { id, level }, body, user, set }) => {
@@ -231,6 +254,43 @@ export const levelRoutes = new Elysia({ prefix: "/api/projects" })
       return { success: true, isCorrect: true, answer: clue.answer, explanation: clue.explanation ?? "" };
     }
 
+    if (project.gameType === "ADVENTURE" && "scenes" in content) {
+      // Pemain hanya bisa menjawab scene tempat ia berada; tujuan berikutnya ditentukan server
+      const scenes = content.scenes as AdventureScene[];
+      const state = answers as unknown as AdventureState;
+      const scene = scenes.find(s => s.sceneKey === state.current);
+      if (!scene || String(data.sceneKey ?? "") !== scene.sceneKey) {
+        set.status = 409;
+        return { error: "Posisi cerita tidak cocok. Mulai ulang level ini." };
+      }
+      let nextKey = "";
+      let result: { isCorrect: boolean; correctAnswer: string | null; explanation: string } | null = null;
+      if (scene.sceneType === "STORY") {
+        const choice = scene.choices[Number(data.choiceIndex)];
+        if (!choice) {
+          set.status = 400;
+          return { error: "Pilihan tidak ditemukan." };
+        }
+        nextKey = choice.next;
+      } else if (scene.sceneType === "CHALLENGE") {
+        const isCorrect = normalize(data.answer) === scene.correctAnswer;
+        result = { isCorrect, correctAnswer: scene.correctAnswer, explanation: scene.explanation };
+        nextKey = isCorrect ? scene.nextCorrect : scene.nextWrong;
+      } else {
+        set.status = 400;
+        return { error: "Cerita sudah sampai di akhir." };
+      }
+      const nextScene = scenes.find(s => s.sceneKey === nextKey);
+      if (!nextScene || state.path.length >= MAX_ADVENTURE_STEPS) {
+        set.status = 400;
+        return { error: "Alur cerita ini rusak. Hubungi tim pembuat." };
+      }
+      state.current = nextScene.sceneKey;
+      state.path.push(nextScene.sceneKey);
+      await saveAnswers();
+      return { success: true, result, scene: publicAdventureScene(nextScene) };
+    }
+
     set.status = 400;
     return { error: "Jenis game ini tidak memakai cek jawaban per soal." };
   })
@@ -249,6 +309,13 @@ export const levelRoutes = new Elysia({ prefix: "/api/projects" })
     if (project.gameType === "WORD_SEARCH") answers.foundWords = foundWords;
 
     const content = await loadLevelContent(project, attempt.level);
+    if (project.gameType === "ADVENTURE" && "scenes" in content) {
+      const current = (content.scenes as AdventureScene[]).find(s => s.sceneKey === (answers as unknown as AdventureState).current);
+      if (current?.sceneType !== "ENDING") {
+        set.status = 400;
+        return { error: "Cerita belum sampai di akhir." };
+      }
+    }
     const score = scoreAnswers(project, content, { answers, foundWords });
     await db.update(levelAttempts)
       .set({ answers: JSON.stringify(answers), score, finishedAt: new Date() })

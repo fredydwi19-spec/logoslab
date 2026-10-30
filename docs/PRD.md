@@ -94,9 +94,12 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
       - Tombol "+ Scene Cerita / + Scene Tantangan / + Scene Akhir"; kode scene dibuat otomatis (S1, S2, ...). Scene pertama otomatis menjadi scene awal dan bisa dipindah lewat pilihan "Scene awal".
       - Pemeriksa alur memeriksa otomatis setiap kali cerita diubah dan menampilkan daftar masalah; "Peta Alur" menampilkan scene per langkah dari scene awal, beserta tujuan tiap pilihan.
       - Perubahan disimpan sementara di browser sampai "Simpan ke Cloud" ditekan (sama seperti editor TTS).
-    - [ ] Langkah 3: pemain di `/play` (scene per scene dari server, ending, nilai, ayat, ajakan Jurnal Refleksi)
+    - [x] Langkah 3: pemain di `/play` (scene per scene dari server, ending, nilai, ayat, ajakan Jurnal Refleksi)
+      - Pemain membaca satu scene per layar, memilih respons, menjawab tantangan (langsung tampil benar/salah + penjelasan), dan melihat "Jejak keputusanmu". Di ending tampil nilai ending dan ayat; layar hasil memakai ajakan refleksi ending sebagai pertanyaan Jurnal.
+      - Tombol Quiz Duel hanya muncul pada game Quiz.
     - [ ] Langkah 4: Preview untuk Pakar, Ketua, dan Simulasi Pembuat
     - ⚠️ Sampai langkah 4 selesai, tombol Preview/Simulasi belum bisa memainkan Adventure, dan Pakar/Ketua belum bisa melihat isi cerita di dashboard.
+    - ⚠️ Setiap kali halaman `/play` dibuka, satu sesi main (`level_attempts`) dibuat. Sesi yang tidak diselesaikan belum dibersihkan otomatis.
 
 ## 06 Di Luar Cakupan (belum dibuat sekarang)
 - Forum tanya pakar (Expert Insight Forum)
