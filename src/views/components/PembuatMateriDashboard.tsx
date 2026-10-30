@@ -506,7 +506,16 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                     <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black tracking-widest border border-emerald-200" x-text="p.materiType"></span>
                   </td>
                   <td class="px-6 py-4">
-                    <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black tracking-widest border border-slate-200" x-text="p.status.replace(/_/g, ' ')"></span>
+                    <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black tracking-widest"
+                      :class="{
+                        'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'DRAFT',
+                        'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR' || p.status === 'REVIEW_KETUA',
+                        'bg-orange-100 text-[#E64A19] border border-orange-200': p.status === 'REVISI_PAKAR' || p.status === 'REVISI_KETUA',
+                        'bg-[#FFC107] text-[#1A237E] border border-[#FFC107]': p.status === 'ACCEPTED_PAKAR',
+                        'bg-green-100 text-green-800 border border-green-200': p.status === 'PUBLISHED',
+                        'bg-red-100 text-red-800 border border-red-200': p.status === 'UNPUBLISHED',
+                      }"
+                      x-text="p.status.replace(/_/g, ' ')"></span>
                   </td>
                   <td class="px-6 py-4 align-middle">
                     <div class="flex items-center justify-end gap-2">

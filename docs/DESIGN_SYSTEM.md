@@ -53,13 +53,13 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
 - **Tabel:** header tebal, baris bergaris tipis, bisa digeser ke samping di layar HP (`overflow-x-auto`). Di HP tampilkan petunjuk "Geser tabel ke samping →" di atas tabel (`md:hidden`). Badge di dalam tabel memakai `whitespace-nowrap` agar tidak terpecah dua baris.
 - **Judul halaman dashboard:** teks Primary, huruf besar, dengan garis vertikal Highlight #FFC107 di kirinya
 - **Badge status proyek:**
-  - `DRAFT` = abu-abu
-  - `REVIEW_PAKAR`, `REVIEW_KETUA` = biru
-  - `REVISI_PAKAR`, `REVISI_KETUA` = Warning
-  - `ACCEPTED_PAKAR` = Highlight (teks Primary)
-  - `PUBLISHED` = Success
-  - `UNPUBLISHED` = Error
-  - ⚠️ Tabel Semua Proyek (`KetuaTimAllProjects.tsx`) masih memakai warna lain: DRAFT kuning, PUBLISHED abu-abu, ACCEPTED_PAKAR hijau. Perlu diseragamkan.
+  - `DRAFT` = abu-abu (`bg-slate-100 text-slate-600 border-slate-200`)
+  - `REVIEW_PAKAR`, `REVIEW_KETUA` = biru (`bg-blue-100 text-blue-800 border-blue-200`)
+  - `REVISI_PAKAR`, `REVISI_KETUA` = Warning (`bg-orange-100 text-[#E64A19] border-orange-200`)
+  - `ACCEPTED_PAKAR` = Highlight (`bg-[#FFC107] text-[#1A237E]`)
+  - `PUBLISHED` = Success (`bg-green-100 text-green-800 border-green-200`)
+  - `UNPUBLISHED` = Error (`bg-red-100 text-red-800 border-red-200`)
+  - Kelas di atas dipakai sama persis di tabel proyek Ketua (`KetuaTimAllProjects.tsx`), Pakar, Pembuat Game, dan Pembuat Materi. Badge memakai `whitespace-nowrap` agar tidak terpecah.
   - Game terbit yang sedang menambah level tampil dengan label "LEVEL BARU: <status>" dan warna mengikuti status level baru tersebut (fungsi `statusLabel` dan `workflowStatus` di tiap dashboard).
 - **Level terkunci (sudah terbit):** tab level diberi ikon gembok (`bi-lock-fill`) atau tulisan "· terbit", dan di atas editor tampil kotak hijau "Level N sudah terbit dan sedang dimainkan, jadi tidak bisa diubah." Tombol simpan dan tambah soal disembunyikan di level itu.
 - **Peta level pemain (`/play`):** kartu per level dalam grid (1 kolom HP, 2 tablet, 3 desktop). Lulus = border hijau + ikon `bi-patch-check-fill` + tombol garis "Main Lagi"; terbuka = border Highlight + ikon `bi-unlock-fill` + tombol Accent "Mainkan"; terkunci = abu-abu transparan + ikon `bi-lock-fill` + syarat membuka; "Segera hadir" = kartu garis putus-putus dengan ikon `bi-hourglass-split`.

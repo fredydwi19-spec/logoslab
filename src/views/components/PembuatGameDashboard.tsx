@@ -768,13 +768,12 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                     <td class="px-6 py-5">
                       <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
                         :class="{
-                          'bg-yellow-100 text-yellow-800 border border-yellow-200': workflowStatus(p) === 'DRAFT',
-                          'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR',
-                          'bg-orange-100 text-orange-800 border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR',
-                          'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'ACCEPTED_PAKAR',
-                          'bg-indigo-100 text-indigo-800 border border-indigo-200': workflowStatus(p) === 'REVIEW_KETUA',
-                          'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'REVISI_KETUA',
-                          'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'UNPUBLISHED',
+                          'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'DRAFT',
+                          'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR' || workflowStatus(p) === 'REVIEW_KETUA',
+                          'bg-orange-100 text-[#E64A19] border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
+                          'bg-[#FFC107] text-[#1A237E] border border-[#FFC107]': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                          'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'PUBLISHED',
+                          'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'UNPUBLISHED',
                         }"
                         x-text="statusLabel(p)">
                       </span>
