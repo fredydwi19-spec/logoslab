@@ -2,7 +2,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
   return `
     <div x-data="materiViewerData()" x-init="initViewer()" class="h-full flex flex-col">
       <!-- Viewer Header -->
-      <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center shadow-md z-10 shrink-0">
+      <div class="bg-primary p-6 text-white flex justify-between items-center shadow-md z-10 shrink-0">
         <div class="flex items-center gap-4">
           <!-- Back Button -->
           <a href="/" onclick="if(window.history.length > 1) { window.history.back(); return false; }" class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors flex items-center justify-center" title="Kembali">
@@ -11,7 +11,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
             </svg>
           </a>
           <div>
-            <div class="text-[10px] font-black text-[#FFC107] uppercase tracking-widest mb-1">
+            <div class="text-[10px] font-black text-highlight uppercase tracking-widest mb-1">
               <span x-text="${projectVar}?.materiType === 'VIDEO' ? '🎬 MATERI VIDEO' : (${projectVar}?.materiType === 'MANUAL' ? '📋 MATERI MANUAL' : '📄 MATERI TEKS')"></span>
             </div>
             <h2 class="text-base md:text-lg font-bold" x-text="${projectVar}?.title"></h2>
@@ -45,7 +45,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
           </div>
 
           <div class="bg-white/10 rounded-full p-2 text-sm flex items-center gap-2 border border-white/20">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FFC107]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-highlight" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <span class="font-mono font-bold text-sm" x-text="formatTime(timeSpentSeconds)">00:00</span>
           </div>
           
@@ -53,7 +53,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
           <button 
             x-show="canClaim && !isClaimed" 
             @click="claimAchievement()"
-            class="bg-[#FF5722] text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#E64A19] transition-all transform hover:scale-105 flex items-center gap-2 animate-bounce">
+            class="bg-accent text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:bg-accent-hover transition-all transform hover:scale-105 flex items-center gap-2 animate-bounce">
             <span>Klaim Reward</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd" /></svg>
           </button>
@@ -68,7 +68,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
 
       <!-- Progress Bar (Teks / Manual) -->
       <div x-show="${projectVar}?.materiType === 'TEKS' || ${projectVar}?.materiType === 'MANUAL'" class="w-full h-1 bg-slate-200 z-20 shrink-0">
-        <div class="h-full bg-[#FF5722] transition-all" :style="\`width: \${scrollPercentage}%\`"></div>
+        <div class="h-full bg-accent transition-all" :style="\`width: \${scrollPercentage}%\`"></div>
       </div>
 
       <!-- Viewer Content Area -->
@@ -127,19 +127,19 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                      x-transition:leave-start="flip-in"
                      x-transition:leave-end="flip-out"
                      @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
-                     class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-6 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
+                     class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-6 md:p-16 bg-gradient-to-br from-primary to-blue-900 text-white"
                      :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
                    
                    <!-- Locked Overlay -->
                    <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#FFC107] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                      <span class="bg-[#1A237E] text-white p-2 text-sm rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-highlight mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                      <span class="bg-primary text-white p-2 text-sm rounded-full font-bold text-sm shadow-xl border border-highlight/30">Buka kartu sebelumnya terlebih dahulu</span>
                    </div>
 
                    <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
-                     <span class="inline-block bg-[#FF5722] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
+                     <span class="inline-block bg-accent text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
                      <h2 class="text-lg md:text-lg font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
-                     <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 p-2 text-sm.5 text-sm rounded-lg rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+                     <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-highlight text-sm font-bold animate-bounce bg-white/10 p-2 text-sm.5 text-sm rounded-lg rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
                        Buka Kartu
                      </button>
@@ -152,7 +152,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                      x-transition:enter-start="flip-start"
                      x-transition:enter-end="flip-in"
                      class="w-full h-full flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-                  <div class="bg-[#1A237E] text-white p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
+                  <div class="bg-primary text-white p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center min-h-[140px] border-b-4 border-highlight gap-4">
                     <div class="flex items-center gap-3 flex-1">
                       <button @click="flipped = false" class="shrink-0 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Tutup Kartu">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -160,7 +160,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                       <h2 class="text-base md:text-lg font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
                     </div>
                     <!-- Speaker Button Per Section -->
-                    <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] p-2 text-sm rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
+                    <button @click="speakSection(idx)" class="shrink-0 bg-accent hover:bg-accent-hover p-2 text-sm rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
                       <template x-if="speakingIdx === idx && !isPaused">
                          <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Jeda</div>
                       </template>
@@ -179,13 +179,13 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
             
             <!-- Quiz Slot at the end of Manual Material -->
             <div x-show="(${projectVar}?.questions || []).length > 0" class="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-              <div class="bg-indigo-900 text-[#FFC107] p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center font-black uppercase tracking-widest text-sm text-center justify-center">
+              <div class="bg-primary-dark text-highlight p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center font-black uppercase tracking-widest text-sm text-center justify-center">
                  🎯 Kuis Evaluasi Materi
               </div>
               <div class="p-6 md:p-6 text-center">
-                <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + ${projectVar}?.questions?.length"></div>
+                <div class="inline-block bg-primary text-highlight px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + ${projectVar}?.questions?.length"></div>
                 
-                <h3 class="text-lg font-black text-[#1A237E] mb-8 leading-relaxed" x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.question"></h3>
+                <h3 class="text-lg font-black text-primary mb-8 leading-relaxed" x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.question"></h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <template x-for="opt in ['A','B','C','D']">
                     <button @click="checkAnswerQuiz(opt)"
@@ -195,7 +195,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                         'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== (${projectVar}?.questions || [])[currentQuestionIndex]?.correctAnswer,
                         'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
                       }"
-                      class="border-4 p-5 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-3"
+                      class="border-4 p-5 rounded-2xl text-primary font-black transition-all text-left flex items-center gap-3"
                       :disabled="showExplanation">
                       <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black bg-slate-100 shrink-0" x-text="opt"></span>
                       <span x-text="(${projectVar}?.questions || [])[currentQuestionIndex]?.[ 'option' + opt ]"></span>
@@ -209,7 +209,7 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
                 </div>
                 
                 <div class="flex gap-4 mt-6 justify-center">
-                  <button @click="nextQuestion()" x-show="showExplanation && currentQuestionIndex < (${projectVar}?.questions || []).length - 1" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black">Berikutnya →</button>
+                  <button @click="nextQuestion()" x-show="showExplanation && currentQuestionIndex < (${projectVar}?.questions || []).length - 1" class="bg-primary text-white px-6 py-2 rounded-xl font-black">Berikutnya →</button>
                   <div x-show="showExplanation && currentQuestionIndex === (${projectVar}?.questions || []).length - 1" class="text-green-600 font-black flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Kuis Selesai! Gulir ke bawah untuk Klaim Reward.
                   </div>
@@ -219,8 +219,8 @@ export const MateriViewer = ({ projectVar = 'activeMateri', contentVar = 'materi
             
             <!-- Reflection Section -->
             <div class="mt-16 w-full max-w-3xl bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-lg text-left">
-               <label class="block text-[#1A237E] font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
-               <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-[#1A237E] focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
+               <label class="block text-primary font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
+               <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
                <button @click="saveJournal()" class="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2" :class="{'opacity-50 cursor-not-allowed': !reflectionText.trim() || isJournalSaved}" :disabled="!reflectionText.trim() || isJournalSaved">
                  <span x-text="isJournalSaved ? 'Tersimpan ke Jurnal! ✅' : 'Simpan ke Jurnal (+20 XP)'"></span>
                </button>
@@ -596,7 +596,7 @@ export const MateriViewerScript = ({ contentVar = 'materiContents' }: { contentV
                 // simple case-insensitive regex for whole word
                 const regex = new RegExp(\`\\\\b(\${g.word})\\\\b\`, 'gi');
                 html = html.replace(regex, (match) => {
-                  return \`<span class="relative group cursor-help font-bold text-[#FF5722] border-b-2 border-dotted border-[#FF5722] hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1A237E] text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
+                  return \`<span class="relative group cursor-help font-bold text-accent border-b-2 border-dotted border-accent hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-primary text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
                 });
              });
              return html;

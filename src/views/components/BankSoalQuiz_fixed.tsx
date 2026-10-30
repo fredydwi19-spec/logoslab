@@ -4,14 +4,14 @@
       <!-- Header -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="text-base md:text-lg font-bold text-[#1A237E] font-poppins">Bank Soal Quiz</h1>
+          <h1 class="text-base md:text-lg font-bold text-primary font-poppins">Bank Soal Quiz</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal Quiz secara global.</p>
         </div>
         <div class="flex gap-2">
           <button @click="openImportModal = true" class="p-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2">
             <span>ðŸ“¥</span> Import CSV
           </button>
-          <button @click="openFormModal()" class="p-2 text-sm bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md">
+          <button @click="openFormModal()" class="p-2 text-sm bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors text-sm font-bold flex items-center gap-2 shadow-md">
             <span>âž•</span> Tambah Soal
           </button>
         </div>
@@ -68,36 +68,36 @@
       <div x-show="showForm" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;" x-transition>
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
           <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 class="text-lg font-bold text-[#1A237E]" x-text="isEdit ? 'Edit Soal Quiz' : 'Tambah Soal Quiz'"></h3>
+            <h3 class="text-lg font-bold text-primary" x-text="isEdit ? 'Edit Soal Quiz' : 'Tambah Soal Quiz'"></h3>
             <button @click="showForm = false" class="text-slate-400 hover:text-red-500">&times;</button>
           </div>
           <div class="p-5 overflow-y-auto space-y-4">
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1">Pertanyaan</label>
-              <textarea x-model="formData.question" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none" rows="3" placeholder="Masukkan pertanyaan..."></textarea>
+              <textarea x-model="formData.question" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none" rows="3" placeholder="Masukkan pertanyaan..."></textarea>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Opsi A</label>
-                <input type="text" x-model="formData.optionA" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <input type="text" x-model="formData.optionA" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Opsi B</label>
-                <input type="text" x-model="formData.optionB" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <input type="text" x-model="formData.optionB" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Opsi C</label>
-                <input type="text" x-model="formData.optionC" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <input type="text" x-model="formData.optionC" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Opsi D</label>
-                <input type="text" x-model="formData.optionD" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <input type="text" x-model="formData.optionD" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Jawaban Benar</label>
-                <select x-model="formData.correctAnswer" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <select x-model="formData.correctAnswer" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
                   <option value="A">A</option>
                   <option value="B">B</option>
                   <option value="C">C</option>
@@ -106,7 +106,7 @@
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Tingkat Kesulitan</label>
-                <select x-model="formData.difficulty" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                <select x-model="formData.difficulty" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
                   <option value="MUDAH">Mudah</option>
                   <option value="SEDANG">Sedang</option>
                   <option value="SULIT">Sulit</option>
@@ -115,12 +115,12 @@
             </div>
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1">Penjelasan (Opsional)</label>
-              <textarea x-model="formData.explanation" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none" rows="2"></textarea>
+              <textarea x-model="formData.explanation" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none" rows="2"></textarea>
             </div>
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button @click="showForm = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitForm()" class="p-2 text-sm text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
+            <button @click="submitForm()" class="p-2 text-sm text-white bg-primary rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
           </div>
         </div>
       </div>
@@ -129,7 +129,7 @@
       <div x-show="openImportModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;" x-transition>
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
           <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 class="text-lg font-bold text-[#1A237E]">Import Bank Soal Quiz</h3>
+            <h3 class="text-lg font-bold text-primary">Import Bank Soal Quiz</h3>
             <button @click="openImportModal = false" class="text-slate-400 hover:text-red-500">&times;</button>
           </div>
           <div class="p-5 space-y-4">
@@ -148,7 +148,7 @@
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button @click="openImportModal = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="p-2 text-sm text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
+            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="p-2 text-sm text-white bg-accent rounded-lg hover:bg-accent-hover disabled:opacity-50 font-semibold text-sm">
               <span x-text="isImporting ? 'Mengimpor...' : 'Import'"></span>
             </button>
           </div>

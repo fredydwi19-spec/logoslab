@@ -303,14 +303,14 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
 
     <div class="space-y-8" x-data="pembuatMateriDashboard()">
       <!-- Header -->
-      <div class="flex items-center justify-between bg-[#1A237E] p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
+      <div class="flex items-center justify-between bg-primary p-6 rounded-xl shadow-lg border-b-4 border-highlight">
         <div class="flex items-center gap-4">
           <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
           <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight" x-text="activeProject ? 'Workspace Produksi Materi' : (menuTab === 'dashboard' ? 'Dashboard Analitik' : 'Manajemen Proyek')">Workspace Konten</h2>
         </div>
         <div class="flex items-center gap-4">
            <div class="flex gap-2" x-show="!activeProject && menuTab === 'projects'">
-             <a href="/dashboard/pembuat?tab=projects" class="bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Proyek Saya</a>
+             <a href="/dashboard/pembuat?tab=projects" class="bg-highlight text-primary px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Proyek Saya</a>
            </div>
         </div>
       </div>
@@ -320,14 +320,14 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
         <div class="space-y-6">
           <!-- SECTION 1: PUBLISHED MATERI METRICS (milik saya & seluruh platform) -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-gradient-to-r from-[#1A237E] to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+            <div class="bg-gradient-to-r from-primary to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
               <div>
                 <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Materi Saya Dipublish</p>
-                <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalStats.myPublishedMaterials"></h3>
+                <h3 class="text-4xl font-black text-highlight" x-text="analytics.globalStats.myPublishedMaterials"></h3>
               </div>
               <div class="text-5xl opacity-80"><i class="bi bi-journal-text"></i></div>
             </div>
-            <div class="bg-gradient-to-r from-[#FF5722] to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+            <div class="bg-gradient-to-r from-accent to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
               <div>
                 <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Materi Dipublish di Platform</p>
                 <h3 class="text-4xl font-black" x-text="analytics.globalStats.totalPublishedMaterials"></h3>
@@ -339,17 +339,17 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           <!-- SECTION 2: KEY PERFORMANCE INDEX (KPI Creator) -->
           <div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm">
             <div class="flex items-center gap-3 mb-6">
-              <span class="h-6 w-1.5 bg-[#1A237E] rounded-full"></span>
-              <h3 class="text-lg font-bold text-[#1A237E] uppercase tracking-widest">KPI Pembuat Materi</h3>
+              <span class="h-6 w-1.5 bg-primary rounded-full"></span>
+              <h3 class="text-lg font-bold text-primary uppercase tracking-widest">KPI Pembuat Materi</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Materi Dikerjakan</p>
-                <p class="text-2xl font-black text-[#1A237E]" x-text="analytics.creatorKpi.totalAssignedMaterials"></p>
+                <p class="text-2xl font-black text-primary" x-text="analytics.creatorKpi.totalAssignedMaterials"></p>
               </div>
               <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Materi Sedang Dikerjakan</p>
-                <p class="text-2xl font-black text-[#FF5722]" x-text="analytics.creatorKpi.activeMaterialsCount"></p>
+                <p class="text-2xl font-black text-accent" x-text="analytics.creatorKpi.activeMaterialsCount"></p>
               </div>
               <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Waktu Penyelesaian</p>
@@ -363,7 +363,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             <!-- Tabel Peringkat Kecepatan Pengerjaan -->
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" x-data="{ sortAsc: true }">
               <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
-                <h4 class="text-xs font-bold text-[#1A237E] uppercase tracking-widest">Peringkat Kecepatan Pengerjaan Materi</h4>
+                <h4 class="text-xs font-bold text-primary uppercase tracking-widest">Peringkat Kecepatan Pengerjaan Materi</h4>
                 <button @click="sortAsc = !sortAsc; analytics.creatorKpi.speedRankedMaterials.reverse()" class="text-[10px] bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-black uppercase tracking-tighter text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                   <i class="bi" :class="sortAsc ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up'"></i>
                   <span x-text="sortAsc ? 'Tercepat -> Terlambat' : 'Terlambat -> Tercepat'"></span>
@@ -378,9 +378,9 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                     <template x-for="(proj, idx) in analytics.creatorKpi.speedRankedMaterials" :key="proj.id">
                       <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                         <td class="p-3 pl-4">
-                          <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
+                          <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-highlight text-primary' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
                         </td>
-                        <td class="p-3 text-sm font-semibold text-[#1A237E]" x-text="proj.title"></td>
+                        <td class="p-3 text-sm font-semibold text-primary" x-text="proj.title"></td>
                         <td class="p-3 text-xs font-bold text-slate-500 text-right pr-4" x-text="proj.durationFormatted"></td>
                       </tr>
                     </template>
@@ -395,8 +395,8 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             <!-- Top Accessed Materials -->
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div class="flex items-center gap-3 mb-4">
-                <span class="h-6 w-1.5 bg-[#FF5722] rounded-full"></span>
-                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Materi Saya Paling Sering Diakses</h3>
+                <span class="h-6 w-1.5 bg-accent rounded-full"></span>
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Materi Saya Paling Sering Diakses</h3>
               </div>
               <div class="space-y-3">
                 <template x-if="analytics.popularityStats.topAccessedMaterials.length === 0">
@@ -423,7 +423,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
         <div class="flex flex-wrap items-center gap-3 w-full mb-6 p-4 bg-slate-50/80 rounded-xl border border-slate-200">
           <div class="flex flex-col gap-1 w-48 shrink-0">
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
-            <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+            <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
               <option value="">-- Pilih Kriteria --</option>
               <option value="title_materi">Judul Materi</option>
               <option value="type_materi">Jenis Materi</option>
@@ -435,11 +435,11 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
             
             <template x-if="filterKey === 'title_materi'">
-              <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
             </template>
 
             <template x-if="filterKey === 'type_materi'">
-              <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 <option value="">-- Pilih Jenis Materi --</option>
                 <option value="TEKS">TEKS</option>
                 <option value="VIDEO">VIDEO</option>
@@ -448,7 +448,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             </template>
 
             <template x-if="filterKey === 'status'">
-              <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 <option value="">-- Pilih Status --</option>
                 <option value="DRAFT">DRAFT</option>
                 <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
@@ -463,9 +463,9 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
 
             <template x-if="filterKey === 'deadline'">
               <div class="flex gap-2">
-                <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 <span class="self-center font-bold text-slate-400">-</span>
-                <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
               </div>
             </template>
 
@@ -475,7 +475,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
           </div>
           
           <div class="flex gap-2 ml-auto shrink-0 self-end">
-            <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+            <button @click="applyFilter()" class="bg-primary text-highlight py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2">
               TERAPKAN
             </button>
             <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
@@ -499,7 +499,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
               <template x-for="p in filteredActiveProjects()" :key="p.id">
                 <tr class="hover:bg-slate-50/50 transition-colors">
                   <td class="px-6 py-4">
-                    <p class="font-black text-[#1A237E] text-sm md:text-base mb-1" x-text="p.title"></p>
+                    <p class="font-black text-primary text-sm md:text-base mb-1" x-text="p.title"></p>
                     <p class="text-xs text-slate-400 font-semibold" x-text="'Deadline: ' + (p.deadline ? new Date(p.deadline).toLocaleDateString('id-ID') : '-')"></p>
                   </td>
                   <td class="px-6 py-4">
@@ -510,8 +510,8 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                       :class="{
                         'bg-slate-100 text-slate-600 border border-slate-200': p.status === 'DRAFT',
                         'bg-blue-100 text-blue-800 border border-blue-200': p.status === 'REVIEW_PAKAR' || p.status === 'REVIEW_KETUA',
-                        'bg-orange-100 text-[#E64A19] border border-orange-200': p.status === 'REVISI_PAKAR' || p.status === 'REVISI_KETUA',
-                        'bg-[#FFC107] text-[#1A237E] border border-[#FFC107]': p.status === 'ACCEPTED_PAKAR',
+                        'bg-orange-100 text-accent-hover border border-orange-200': p.status === 'REVISI_PAKAR' || p.status === 'REVISI_KETUA',
+                        'bg-highlight text-primary border border-highlight': p.status === 'ACCEPTED_PAKAR',
                         'bg-green-100 text-green-800 border border-green-200': p.status === 'PUBLISHED',
                         'bg-red-100 text-red-800 border border-red-200': p.status === 'UNPUBLISHED',
                       }"
@@ -522,7 +522,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
                       <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                       </button>
-                      <button x-show="p.status === 'DRAFT' || p.status === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
+                      <button x-show="p.status === 'DRAFT' || p.status === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-primary text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-primary-dark transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
                       <button x-show="['REVISI_PAKAR', 'REVISI_KETUA'].includes(p.status)" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">PERBAIKI</button>
                       <button x-show="['REVIEW_PAKAR', 'REVIEW_KETUA', 'ACCEPTED_PAKAR', 'PUBLISHED'].includes(p.status)" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
                     </div>
@@ -546,7 +546,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
         ${ProjectHeader({ projectVar: 'activeProject', projectType: 'MATERI' })}
 
         <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
-          <div class="bg-[#1A237E] p-6 text-white border-b-4 border-[#FFC107] flex justify-between items-center">
+          <div class="bg-primary p-6 text-white border-b-4 border-highlight flex justify-between items-center">
             <h3 class="font-black uppercase tracking-widest flex items-center gap-3">
               <span class="text-2xl">📝</span> Editor Konten
             </h3>
@@ -554,7 +554,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
               <button @click="showPreview = true" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 uppercase tracking-widest">
                 PREVIEW MATERI
               </button>
-              <button x-show="!isReadOnly()" @click="submitForReview()" class="bg-[#FF5722] hover:bg-[#E64A19] px-6 py-2 rounded-xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 uppercase tracking-widest">
+              <button x-show="!isReadOnly()" @click="submitForReview()" class="bg-accent hover:bg-accent-hover px-6 py-2 rounded-xl text-xs font-black shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 uppercase tracking-widest">
                 SUBMIT UNTUK REVIEW
               </button>
             </div>
@@ -567,17 +567,17 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
               <input type="file" multiple @change="handleFileUpload" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" :accept="activeProject?.materiType === 'TEKS' ? '.pdf,.ppt,.pptx,.png,.jpg,.jpeg' : '.mp4,.webm'">
               <div class="space-y-4">
                 <div class="w-16 h-16 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                  <span class="text-3xl text-[#1A237E]">↑</span>
+                  <span class="text-3xl text-primary">↑</span>
                 </div>
-                <h4 class="text-lg font-black text-[#1A237E]">Pilih file atau tarik ke sini</h4>
+                <h4 class="text-lg font-black text-primary">Pilih file atau tarik ke sini</h4>
                 <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest" x-text="activeProject?.materiType === 'TEKS' ? 'Mendukung: PDF, PPT, PNG, JPG (Maks 10MB)' : 'Mendukung: MP4, WebM (Maks 50MB)'"></p>
-                <div x-show="uploading" class="mt-4 text-[#FF5722] font-bold animate-pulse">Sedang mengunggah...</div>
+                <div x-show="uploading" class="mt-4 text-accent font-bold animate-pulse">Sedang mengunggah...</div>
               </div>
             </div>
             
             <template x-if="activeProject?.materiType === 'VIDEO'">
               <div class="mt-4 flex justify-center">
-                <button @click="addEmbedUrl()" class="text-[#1A237E] font-bold underline hover:text-indigo-900">Atau Tambahkan URL Embed (YouTube)</button>
+                <button @click="addEmbedUrl()" class="text-primary font-bold underline hover:text-primary-dark">Atau Tambahkan URL Embed (YouTube)</button>
               </div>
             </template>
           </div>
@@ -614,7 +614,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             <!-- Sections Area -->
             <div>
               <div class="flex justify-between items-center mb-6">
-                <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-lg">📚 Sub-Bab Materi</h4>
+                <h4 class="font-black text-primary uppercase tracking-widest text-lg">📚 Sub-Bab Materi</h4>
                 <div class="flex items-center gap-4">
                   <span x-show="savingSections" class="text-sm font-bold text-orange-500 animate-pulse">Menyimpan...</span>
                   <span x-show="!savingSections" class="text-sm font-bold text-green-500">Tersimpan ✓</span>
@@ -623,24 +623,24 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
               
               <div class="space-y-6">
                 <template x-for="(section, idx) in sections" :key="idx">
-                  <div class="bg-white rounded-2xl overflow-hidden border-2 border-[#FFC107] shadow-md">
-                    <div class="bg-[#1A237E] text-white px-4 py-3 flex justify-between items-center">
+                  <div class="bg-white rounded-2xl overflow-hidden border-2 border-highlight shadow-md">
+                    <div class="bg-primary text-white px-4 py-3 flex justify-between items-center">
                       <span class="font-black uppercase tracking-widest text-sm" x-text="'SUB-BAB ' + (idx + 1)"></span>
                       <button x-show="!isReadOnly()" @click="removeSection(idx)" class="text-white/60 hover:text-red-400 font-bold transition-colors">✕ Hapus</button>
                     </div>
                     <div class="p-4 md:p-6 space-y-4">
                       <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Judul Sub-Bab (Opsional)</label>
-                        <input type="text" x-model="section.subTitle" @input.debounce.2000ms="saveSections()" :disabled="isReadOnly()" class="w-full border-2 border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-[#1A237E] outline-none font-bold" placeholder="Contoh: Pendahuluan">
+                        <input type="text" x-model="section.subTitle" @input.debounce.2000ms="saveSections()" :disabled="isReadOnly()" class="w-full border-2 border-slate-200 rounded-xl px-4 py-2 text-sm focus:border-primary outline-none font-bold" placeholder="Contoh: Pendahuluan">
                       </div>
                       <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Isi Konten</label>
-                        <textarea x-model="section.content" @input.debounce.2000ms="saveSections()" :disabled="isReadOnly()" rows="8" class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm md:text-base leading-relaxed focus:border-[#1A237E] outline-none" placeholder="Ketik materi Anda di sini..."></textarea>
+                        <textarea x-model="section.content" @input.debounce.2000ms="saveSections()" :disabled="isReadOnly()" rows="8" class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm md:text-base leading-relaxed focus:border-primary outline-none" placeholder="Ketik materi Anda di sini..."></textarea>
                       </div>
                     </div>
                   </div>
                 </template>
-                <button x-show="!isReadOnly()" @click="addSection()" class="w-full bg-[#FF5722] hover:bg-[#E64A19] text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all border-b-4 border-orange-800 active:border-b-0 active:translate-y-1">
+                <button x-show="!isReadOnly()" @click="addSection()" class="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all border-b-4 border-orange-800 active:border-b-0 active:translate-y-1">
                   + TAMBAH SUB-BAB
                 </button>
               </div>
@@ -651,7 +651,7 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
             <!-- Glossary Area -->
             <div>
               <div class="flex justify-between items-center mb-6">
-                <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-lg flex items-center gap-2">
+                <h4 class="font-black text-primary uppercase tracking-widest text-lg flex items-center gap-2">
                   <span>📖</span> Glosarium (Istilah Sulit)
                 </h4>
                 <div class="flex items-center gap-4">
@@ -664,8 +664,8 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
               <div class="space-y-3">
                 <template x-for="(item, idx) in glossaryItems" :key="idx">
                   <div class="flex flex-col md:flex-row gap-3 items-start md:items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                    <input type="text" x-model="item.word" @input.debounce.2000ms="saveGlossary()" :disabled="isReadOnly()" placeholder="Kata/Istilah" class="w-full md:w-1/3 border-2 border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:border-[#FFC107] outline-none">
-                    <input type="text" x-model="item.definition" @input.debounce.2000ms="saveGlossary()" :disabled="isReadOnly()" placeholder="Definisi/Penjelasan Singkat" class="w-full border-2 border-slate-100 rounded-lg px-3 py-2 text-sm focus:border-[#FFC107] outline-none">
+                    <input type="text" x-model="item.word" @input.debounce.2000ms="saveGlossary()" :disabled="isReadOnly()" placeholder="Kata/Istilah" class="w-full md:w-1/3 border-2 border-slate-100 rounded-lg px-3 py-2 text-sm font-bold focus:border-highlight outline-none">
+                    <input type="text" x-model="item.definition" @input.debounce.2000ms="saveGlossary()" :disabled="isReadOnly()" placeholder="Definisi/Penjelasan Singkat" class="w-full border-2 border-slate-100 rounded-lg px-3 py-2 text-sm focus:border-highlight outline-none">
                     <button x-show="!isReadOnly()" @click="removeGlossary(idx)" class="shrink-0 bg-red-100 text-red-600 hover:bg-red-200 w-10 h-10 rounded-lg font-black transition-colors">✕</button>
                   </div>
                 </template>
@@ -680,9 +680,9 @@ export const PembuatMateriDashboard = ({ myProjects, publishedProjects, allUsers
 
       <!-- Preview Modal -->
       <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] backdrop-blur-sm p-4">
-        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
-          <div class="bg-[#1A237E] p-4 flex justify-between items-center text-white border-b-4 border-[#FFC107]">
-            <h3 class="font-black uppercase tracking-widest">Preview: <span x-text="activeProject?.title" class="text-[#FFC107]"></span></h3>
+        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-primary">
+          <div class="bg-primary p-4 flex justify-between items-center text-white border-b-4 border-highlight">
+            <h3 class="font-black uppercase tracking-widest">Preview: <span x-text="activeProject?.title" class="text-highlight"></span></h3>
             <button @click="showPreview = false" class="text-white/50 hover:text-white text-3xl font-black transition-colors">&times;</button>
           </div>
           <div class="flex-1 overflow-y-auto bg-slate-100 p-4 md:p-8 flex flex-col items-center gap-8">

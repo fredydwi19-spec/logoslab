@@ -26,12 +26,12 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
         style="box-shadow: 0 25px 60px rgba(26,35,126,0.25);"
       >
         <!-- Header -->
-        <div class="bg-[#1A237E] px-5 py-2.5 flex items-center justify-between border-b-4 border-[#FFC107] shrink-0">
+        <div class="bg-primary px-5 py-2.5 flex items-center justify-between border-b-4 border-highlight shrink-0">
           <div class="flex items-center gap-3">
             <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-8 w-auto bg-white rounded-lg p-1 shadow-sm" onerror="this.style.display='none'"/>
             <div>
               <div class="text-white font-black text-sm uppercase tracking-widest leading-none">Logos AI</div>
-              <div class="text-[#FFC107] text-[9px] font-bold uppercase tracking-[0.2em] mt-0.5">Assistant</div>
+              <div class="text-highlight text-[9px] font-bold uppercase tracking-[0.2em] mt-0.5">Assistant</div>
             </div>
           </div>
           <button
@@ -42,9 +42,9 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
         </div>
 
         <!-- Context Badge -->
-        <div class="bg-[#1A237E]/5 border-b border-slate-100 px-5 py-2 shrink-0">
-          <span class="text-[10px] text-[#1A237E] font-black uppercase tracking-widest opacity-60">📍</span>
-          <span class="text-[10px] text-[#1A237E] font-bold ml-1" x-text="currentPage"></span>
+        <div class="bg-primary/5 border-b border-slate-100 px-5 py-2 shrink-0">
+          <span class="text-[10px] text-primary font-black uppercase tracking-widest opacity-60">📍</span>
+          <span class="text-[10px] text-primary font-bold ml-1" x-text="currentPage"></span>
         </div>
 
         <!-- Message Area -->
@@ -56,9 +56,9 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
           <!-- Welcome message -->
           <template x-if="messages.length === 0">
             <div class="flex items-start gap-3">
-              <div class="h-8 w-8 rounded-full bg-[#1A237E] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
+              <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
               <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-2 text-sm max-w-[80%] shadow-sm">
-                <p class="text-[#1A237E] text-sm font-medium">Halo! Saya Logos AI Assistant 👋</p>
+                <p class="text-primary text-sm font-medium">Halo! Saya Logos AI Assistant 👋</p>
                 <p class="text-slate-500 text-xs mt-1">Saya siap membantu Anda di halaman <strong x-text="currentPage"></strong>. Apa yang ingin Anda tanyakan?</p>
               </div>
             </div>
@@ -70,7 +70,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
               <!-- User Bubble -->
               <template x-if="msg.role === 'user'">
                 <div class="flex justify-end">
-                  <div class="bg-[#1A237E] text-white rounded-2xl rounded-tr-none p-2 text-sm max-w-[80%] shadow-md">
+                  <div class="bg-primary text-white rounded-2xl rounded-tr-none p-2 text-sm max-w-[80%] shadow-md">
                     <p class="text-sm font-medium" x-text="msg.text"></p>
                   </div>
                 </div>
@@ -79,9 +79,9 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
               <!-- AI Bubble -->
               <template x-if="msg.role === 'ai'">
                 <div class="flex items-start gap-3">
-                  <div class="h-8 w-8 rounded-full bg-[#1A237E] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
+                  <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
                   <div class="flex flex-col gap-1 max-w-[80%]">
-                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3 shadow-sm prose prose-sm max-w-none text-justify text-[#1A237E] leading-relaxed [&>ol]:list-decimal [&>ol]:pl-5 [&>ul]:list-disc [&>ul]:pl-5 [&>p]:mb-2" x-html="parseMarkdown(msg.text)">
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3 shadow-sm prose prose-sm max-w-none text-justify text-primary leading-relaxed [&>ol]:list-decimal [&>ol]:pl-5 [&>ul]:list-disc [&>ul]:pl-5 [&>p]:mb-2" x-html="parseMarkdown(msg.text)">
                     </div>
                     <!-- Feedback Row: "Was this helpful?" -->
                     <div class="flex items-center gap-2 px-1" x-show="msg.feedback === null || msg.feedback !== null">
@@ -89,19 +89,19 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
                       <button
                         @click="giveFeedback(msg.id, 'up')"
                         :disabled="msg.feedback !== null"
-                        :class="msg.feedback === 'up' ? 'text-[#FFC107] scale-110' : 'text-slate-300 hover:text-[#FFC107]'"
+                        :class="msg.feedback === 'up' ? 'text-highlight scale-110' : 'text-slate-300 hover:text-highlight'"
                         class="transition-all transform text-base disabled:cursor-default"
                         :title="msg.feedback === 'up' ? 'Terima kasih!' : 'Ya, membantu'"
                       >👍</button>
                       <button
                         @click="giveFeedback(msg.id, 'down')"
                         :disabled="msg.feedback !== null"
-                        :class="msg.feedback === 'down' ? 'text-[#FF5722] scale-110' : 'text-slate-300 hover:text-[#FF5722]'"
+                        :class="msg.feedback === 'down' ? 'text-accent scale-110' : 'text-slate-300 hover:text-accent'"
                         class="transition-all transform text-base disabled:cursor-default"
                         :title="msg.feedback === 'down' ? 'Kami akan meningkatkan AI.' : 'Tidak membantu'"
                       >👎</button>
-                      <span x-show="msg.feedback === 'up'" class="text-[9px] text-[#FFC107] font-bold">Terima kasih! 🙏</span>
-                      <span x-show="msg.feedback === 'down'" class="text-[9px] text-[#FF5722] font-bold">Feedback dicatat.</span>
+                      <span x-show="msg.feedback === 'up'" class="text-[9px] text-highlight font-bold">Terima kasih! 🙏</span>
+                      <span x-show="msg.feedback === 'down'" class="text-[9px] text-accent font-bold">Feedback dicatat.</span>
                     </div>
                   </div>
                 </div>
@@ -111,12 +111,12 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
 
           <!-- Loading / Typing Indicator -->
           <div x-show="isLoading" style="display:none;" class="flex items-start gap-3">
-            <div class="h-8 w-8 rounded-full bg-[#1A237E] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
+            <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black shrink-0 shadow-md">AI</div>
             <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-2 text-sm shadow-sm">
               <div class="flex gap-1 items-center h-4">
-                <span class="h-2 w-2 bg-[#1A237E] rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
-                <span class="h-2 w-2 bg-[#1A237E] rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
-                <span class="h-2 w-2 bg-[#1A237E] rounded-full animate-bounce" style="animation-delay: 300ms;"></span>
+                <span class="h-2 w-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
+                <span class="h-2 w-2 bg-primary rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
+                <span class="h-2 w-2 bg-primary rounded-full animate-bounce" style="animation-delay: 300ms;"></span>
               </div>
             </div>
           </div>
@@ -124,7 +124,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
 
         <!-- Input Area -->
         <div class="p-4 bg-white border-t border-slate-100 shrink-0">
-          <div class="flex gap-2 items-end bg-slate-50 rounded-2xl border-2 border-slate-200 focus-within:border-[#1A237E] transition-colors p-2">
+          <div class="flex gap-2 items-end bg-slate-50 rounded-2xl border-2 border-slate-200 focus-within:border-primary transition-colors p-2">
             <textarea
               x-model="inputText"
               @keydown.enter.prevent="if (!$event.shiftKey) sendMessage()"
@@ -137,7 +137,7 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
             <button
               @click="sendMessage()"
               :disabled="isLoading || inputText.trim().length === 0"
-              class="shrink-0 h-9 w-9 rounded-xl bg-[#FF5722] hover:bg-[#E64A19] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-md"
+              class="shrink-0 h-9 w-9 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 shadow-md"
               title="Kirim pesan"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -154,14 +154,14 @@ export const FloatingChatWidget = ({ role, currentPage }: { role: string; curren
         <!-- Unread badge -->
         <div
           x-show="!isOpen && unreadCount > 0"
-          class="absolute -top-2 -right-2 h-5 w-5 bg-[#FFC107] rounded-full flex items-center justify-center z-10 shadow-lg animate-pulse"
+          class="absolute -top-2 -right-2 h-5 w-5 bg-highlight rounded-full flex items-center justify-center z-10 shadow-lg animate-pulse"
           style="display: none;"
         >
-          <span class="text-[#1A237E] text-[9px] font-black" x-text="unreadCount"></span>
+          <span class="text-primary text-[9px] font-black" x-text="unreadCount"></span>
         </div>
         <button
           @click="toggleWidget()"
-          class="h-12 w-12 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95"
+          class="h-12 w-12 rounded-full bg-accent hover:bg-accent-hover text-white shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 active:scale-95"
           style="box-shadow: 0 8px 30px rgba(255,87,34,0.5);"
           :title="isOpen ? 'Tutup AI Assistant' : 'Buka AI Assistant'"
           aria-label="Toggle Logos AI Assistant"

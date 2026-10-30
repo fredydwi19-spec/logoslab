@@ -283,7 +283,7 @@ export const CrosswordGameScript = () => `
             // In game, we only show correct/wrong when check button is pressed? 
             // Or live? Requirement says "Check Answer Button".
             // But let's check if the letter is correct for that cell.
-            if (this.grid[r][c].letter === undefined) return this.isCellInFoundClue(r, c) ? 'text-green-600' : 'text-[#1A237E]';
+            if (this.grid[r][c].letter === undefined) return this.isCellInFoundClue(r, c) ? 'text-green-600' : 'text-primary';
             if (this.grid[r][c].letter === char) return 'text-green-600';
             return 'text-red-600';
           },
@@ -322,27 +322,27 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
       <!-- Header Stats -->
       <div class="flex flex-col md:flex-row justify-between items-center gap-6">
         <div class="flex items-center gap-4">
-           <div class="h-14 w-14 bg-[#FFC107] rounded-2xl flex items-center justify-center shadow-xl transform rotate-3">
-             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+           <div class="h-14 w-14 bg-highlight rounded-2xl flex items-center justify-center shadow-xl transform rotate-3">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
            </div>
            <div>
-             <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-tighter" x-text="activeProject.title"></h2>
+             <h2 class="text-lg font-black text-primary uppercase tracking-tighter" x-text="activeProject.title"></h2>
              <div class="flex items-center gap-2">
-               <span class="text-[10px] font-black bg-[#1A237E] text-white px-2 py-0.5 rounded uppercase tracking-widest" x-text="difficulty"></span>
+               <span class="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded uppercase tracking-widest" x-text="difficulty"></span>
                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" x-text="gridSize + 'x' + gridSize + ' GRID'"></span>
              </div>
            </div>
         </div>
         
-        <button type="button" x-show="window.location.pathname.startsWith('/play/')" @click="finishLevel()" class="w-full md:w-auto bg-[#FF5722] text-white px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-[#E64A19] transition-all">Selesai &amp; Lihat Hasil</button>
+        <button type="button" x-show="window.location.pathname.startsWith('/play/')" @click="finishLevel()" class="w-full md:w-auto bg-accent text-white px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:bg-accent-hover transition-all">Selesai &amp; Lihat Hasil</button>
         <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
           <div class="bg-white p-3 px-6 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
             <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest">WAKTU</div>
-            <div class="text-base font-black text-[#1A237E]" x-text="formatTime(timer)"></div>
+            <div class="text-base font-black text-primary" x-text="formatTime(timer)"></div>
           </div>
-          <div class="bg-[#1A237E] p-3 px-6 rounded-2xl border-b-4 border-[#FFC107] shadow-lg text-center">
+          <div class="bg-primary p-3 px-6 rounded-2xl border-b-4 border-highlight shadow-lg text-center">
             <div class="text-[8px] font-black text-blue-200 uppercase tracking-widest">SKOR</div>
-            <div class="text-base font-black text-[#FFC107]" x-text="score"></div>
+            <div class="text-base font-black text-highlight" x-text="score"></div>
           </div>
         </div>
       </div>
@@ -350,7 +350,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Center: Crossword Grid (7 cols) -->
         <div class="lg:col-span-7 flex flex-col items-center">
-          <div class="bg-[#1A237E] p-4 sm:p-5 rounded-[3rem] shadow-2xl border-[10px] border-white/5 relative overflow-hidden flex items-center justify-center">
+          <div class="bg-primary p-4 sm:p-5 rounded-[3rem] shadow-2xl border-[10px] border-white/5 relative overflow-hidden flex items-center justify-center">
              <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
              
              <div class="relative z-10 select-none">
@@ -363,14 +363,14 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
                            :class="{
                              'bg-[#0D1240]': cell.isBlack,
                              'bg-white': !cell.isBlack && !isCellHighlighted(rIdx, cIdx),
-                             'bg-[#FFC107] scale-105 z-10 shadow-lg ring-2 ring-white': !cell.isBlack && isCellHighlighted(rIdx, cIdx),
-                             'ring-2 ring-[#FF5722] z-20': selectedCell.r === rIdx && selectedCell.c === cIdx
+                             'bg-highlight scale-105 z-10 shadow-lg ring-2 ring-white': !cell.isBlack && isCellHighlighted(rIdx, cIdx),
+                             'ring-2 ring-accent z-20': selectedCell.r === rIdx && selectedCell.c === cIdx
                            }">
                         
                         <!-- Number Label -->
                         <span x-show="cell.number" 
                               class="absolute top-0.5 left-0.5 text-[6px] md:text-[8px] font-black leading-none"
-                              :class="cell.isBlack ? 'text-white/20' : 'text-[#1A237E]'"
+                              :class="cell.isBlack ? 'text-white/20' : 'text-primary'"
                               x-text="cell.number"></span>
                         
                         <!-- Letter -->
@@ -386,7 +386,7 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
           </div>
           
           <div class="mt-6 flex gap-4">
-             <button @click="direction = (direction === 'ACROSS' ? 'DOWN' : 'ACROSS')" class="bg-white border-2 border-slate-100 p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-black text-[#1A237E] text-[10px] uppercase tracking-widest shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+             <button @click="direction = (direction === 'ACROSS' ? 'DOWN' : 'ACROSS')" class="bg-white border-2 border-slate-100 p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-black text-primary text-[10px] uppercase tracking-widest shadow-sm hover:shadow-md transition-all flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
                 ARAH: <span x-text="direction"></span>
              </button>
@@ -397,8 +397,8 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
         <div class="lg:col-span-5 space-y-6">
           <!-- Across Clues -->
           <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
-             <h3 class="text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-4 flex items-center gap-2">
-                <div class="h-2 w-2 bg-[#FFC107] rounded-full"></div>
+             <h3 class="text-[10px] font-black text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                <div class="h-2 w-2 bg-highlight rounded-full"></div>
                 Mendatar (Across)
              </h3>
              <div class="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
@@ -407,11 +407,11 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
                         class="p-3 rounded-xl border-2 cursor-pointer transition-all"
                         :class="{
                           'bg-green-50 border-green-100 opacity-60': clue.alreadyFound,
-                          'bg-slate-50 border-transparent hover:border-[#FFC107]': !clue.alreadyFound && !(selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'ACROSS'),
-                          'bg-yellow-50 border-[#FFC107]': !clue.alreadyFound && (selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'ACROSS')
+                          'bg-slate-50 border-transparent hover:border-highlight': !clue.alreadyFound && !(selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'ACROSS'),
+                          'bg-yellow-50 border-highlight': !clue.alreadyFound && (selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'ACROSS')
                         }">
                       <div class="flex gap-3">
-                         <span class="font-black text-[#1A237E] text-xs" x-text="clue.number + '.'"></span>
+                         <span class="font-black text-primary text-xs" x-text="clue.number + '.'"></span>
                          <span class="font-bold text-slate-600 text-[11px] leading-relaxed" x-text="clue.clue"></span>
                       </div>
                    </div>
@@ -421,8 +421,8 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
 
           <!-- Down Clues -->
           <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl overflow-hidden">
-             <h3 class="text-[10px] font-black text-[#1A237E] uppercase tracking-widest mb-4 flex items-center gap-2">
-                <div class="h-2 w-2 bg-[#FF5722] rounded-full"></div>
+             <h3 class="text-[10px] font-black text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                <div class="h-2 w-2 bg-accent rounded-full"></div>
                 Menurun (Down)
              </h3>
              <div class="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
@@ -431,11 +431,11 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
                         class="p-3 rounded-xl border-2 cursor-pointer transition-all"
                         :class="{
                           'bg-green-50 border-green-100 opacity-60': clue.alreadyFound,
-                          'bg-slate-50 border-transparent hover:border-[#FFC107]': !clue.alreadyFound && !(selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'DOWN'),
-                          'bg-yellow-50 border-[#FFC107]': !clue.alreadyFound && (selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'DOWN')
+                          'bg-slate-50 border-transparent hover:border-highlight': !clue.alreadyFound && !(selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'DOWN'),
+                          'bg-yellow-50 border-highlight': !clue.alreadyFound && (selectedCell.r == clue.startRow && selectedCell.c == clue.startCol && direction == 'DOWN')
                         }">
                       <div class="flex gap-3">
-                         <span class="font-black text-[#1A237E] text-xs" x-text="clue.number + '.'"></span>
+                         <span class="font-black text-primary text-xs" x-text="clue.number + '.'"></span>
                          <span class="font-bold text-slate-600 text-[11px] leading-relaxed" x-text="clue.clue"></span>
                       </div>
                    </div>
@@ -446,21 +446,21 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
       </div>
 
       <!-- Educational Modal -->
-      <div x-show="showEduModal" style="display:none;" class="fixed inset-0 bg-[#1A237E]/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-[#FFC107] overflow-hidden animate-in zoom-in duration-300">
-          <div class="bg-[#1A237E] p-6 text-center relative overflow-hidden">
+      <div x-show="showEduModal" style="display:none;" class="fixed inset-0 bg-primary/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-highlight overflow-hidden animate-in zoom-in duration-300">
+          <div class="bg-primary p-6 text-center relative overflow-hidden">
             <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="relative z-10">
-              <div class="h-20 w-20 bg-[#FFC107] rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#1A237E]" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+              <div class="h-20 w-20 bg-highlight rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
               </div>
               <h2 class="text-base font-black text-white uppercase tracking-tighter">Jawaban Benar!</h2>
-              <h3 class="text-lg font-black text-[#FFC107] mt-2 italic uppercase" x-text="currentAnswer"></h3>
+              <h3 class="text-lg font-black text-highlight mt-2 italic uppercase" x-text="currentAnswer"></h3>
             </div>
           </div>
           <div class="p-6 space-y-8">
-            <div class="bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 italic text-[#1A237E] font-bold leading-relaxed text-base text-center" x-text="currentExplanation"></div>
-            <button @click="closeEduModal()" class="w-full bg-[#1A237E] text-white py-2.5 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4 text-xs">
+            <div class="bg-slate-50 p-5 rounded-[2rem] border-2 border-slate-100 italic text-primary font-bold leading-relaxed text-base text-center" x-text="currentExplanation"></div>
+            <button @click="closeEduModal()" class="w-full bg-primary text-white py-2.5 rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-2xl transform active:scale-95 flex items-center justify-center gap-4 text-xs">
               LANJUTKAN MISI
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </button>
@@ -469,28 +469,28 @@ export const CrosswordGame = ({ projectVar = 'activeProject', gameDataVar = 'gam
       </div>
 
       <!-- Summary Modal -->
-      <div x-show="showSummary" style="display:none;" class="fixed inset-0 bg-[#1A237E]/95 backdrop-blur-2xl flex items-center justify-center z-[110] p-4">
+      <div x-show="showSummary" style="display:none;" class="fixed inset-0 bg-primary/95 backdrop-blur-2xl flex items-center justify-center z-[110] p-4">
         <div class="bg-white rounded-[4rem] w-full max-w-xl shadow-2xl border-[12px] border-white/10 overflow-hidden text-center p-6 py-16 space-y-10 animate-in slide-in-from-bottom duration-700 relative">
-          <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#FFC107] via-[#FF5722] to-[#FFC107]"></div>
+          <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-highlight via-accent to-highlight"></div>
           
           <div class="space-y-4">
-            <div class="text-[10px] font-black text-[#FF5722] uppercase tracking-[0.5em]">CROSSWORD COMPLETED</div>
-            <h2 class="text-6xl font-black text-[#1A237E] uppercase tracking-tighter italic leading-none">MASTER<br><span class="text-[#FFC107]">ALKITAB</span></h2>
+            <div class="text-[10px] font-black text-accent uppercase tracking-[0.5em]">CROSSWORD COMPLETED</div>
+            <h2 class="text-6xl font-black text-primary uppercase tracking-tighter italic leading-none">MASTER<br><span class="text-highlight">ALKITAB</span></h2>
           </div>
           
           <div class="grid grid-cols-2 gap-8 py-6">
             <div class="space-y-1">
               <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TOTAL SKOR</div>
-              <div class="text-6xl font-black text-[#FF5722]" x-text="score"></div>
+              <div class="text-6xl font-black text-accent" x-text="score"></div>
             </div>
             <div class="space-y-1 border-l-2 border-slate-100">
               <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">WAKTU</div>
-              <div class="text-6xl font-black text-[#1A237E]" x-text="formatTime(timer)"></div>
+              <div class="text-6xl font-black text-primary" x-text="formatTime(timer)"></div>
             </div>
           </div>
 
           <div class="space-y-4">
-            <button @click="window.location.href='/dashboard/user'" class="w-full bg-[#1A237E] text-[#FFC107] py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-base hover:bg-indigo-900 transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
+            <button @click="window.location.href='/dashboard/user'" class="w-full bg-primary text-highlight py-7 rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-base hover:bg-primary-dark transition-all shadow-[0_20px_50px_rgba(26,35,126,0.3)] flex items-center justify-center gap-4 group">
               SELESAI & KEMBALI
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
             </button>

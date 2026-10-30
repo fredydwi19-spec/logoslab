@@ -44,12 +44,12 @@ export const UserMaterialsPage = ({ materials }: { materials: any[] }) => {
       
       <!-- Filter Header -->
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-xl font-bold text-[#1A237E] mb-4">Pencarian Materi Belajar</h2>
+        <h2 class="text-xl font-bold text-primary mb-4">Pencarian Materi Belajar</h2>
         <div class="flex flex-col md:flex-row gap-4 items-end">
           
           <div class="w-full md:w-1/3">
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tipe Filter</label>
-            <select x-model="filterType" @change="filterValue = ''" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-[#1A237E] focus:ring-0 transition-colors font-semibold text-slate-700">
+            <select x-model="filterType" @change="filterValue = ''" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:ring-0 transition-colors font-semibold text-slate-700">
               <option value="ALL">Semua Materi</option>
               <option value="TITLE">Berdasarkan Judul</option>
               <option value="CATEGORY">Berdasarkan Kategori/Jenis</option>
@@ -58,12 +58,12 @@ export const UserMaterialsPage = ({ materials }: { materials: any[] }) => {
 
           <div class="w-full md:w-2/3" x-show="filterType === 'TITLE'">
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Cari Judul Materi</label>
-            <input type="text" x-model="filterValue" placeholder="Ketik judul materi..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-[#1A237E] focus:ring-0 transition-colors font-medium">
+            <input type="text" x-model="filterValue" placeholder="Ketik judul materi..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:ring-0 transition-colors font-medium">
           </div>
 
           <div class="w-full md:w-2/3" x-show="filterType === 'CATEGORY'">
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pilih Kategori</label>
-            <select x-model="filterValue" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-[#1A237E] focus:ring-0 transition-colors font-semibold text-slate-700">
+            <select x-model="filterValue" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:ring-0 transition-colors font-semibold text-slate-700">
               <option value="">Semua Kategori</option>
               <template x-for="cat in uniqueCategories">
                 <option :value="cat" x-text="cat.replace('_', ' ')"></option>
@@ -85,15 +85,15 @@ export const UserMaterialsPage = ({ materials }: { materials: any[] }) => {
               <template x-if="!item.thumbnailUrl">
                 <div class="text-7xl transform group-hover:scale-110 transition-transform" x-text="getMaterialIcon(item.materialType)"></div>
               </template>
-              <div class="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-black px-3 py-1.5 rounded-full text-[#1A237E] shadow-lg uppercase tracking-widest" x-text="item.materialType ? item.materialType.replace('_', ' ') : 'MATERI'"></div>
+              <div class="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-black px-3 py-1.5 rounded-full text-primary shadow-lg uppercase tracking-widest" x-text="item.materialType ? item.materialType.replace('_', ' ') : 'MATERI'"></div>
             </div>
             
             <div class="p-6 flex flex-col flex-1">
               <h3 class="text-lg font-black text-slate-800 mb-2 leading-tight line-clamp-2" x-text="item.title"></h3>
               <p class="text-sm text-slate-500 mb-6 flex-1 line-clamp-3 leading-relaxed" x-text="item.description || 'Tidak ada deskripsi.'"></p>
               
-              <a :href="'/play/' + item.id" class="w-full bg-[#1A237E] text-white text-center py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-indigo-900 transition-colors shadow-md flex items-center justify-center gap-2">
-                <i class="bi bi-book-fill text-base text-[#FFC107]"></i> Baca Materi
+              <a :href="'/play/' + item.id" class="w-full bg-primary text-white text-center py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-primary-dark transition-colors shadow-md flex items-center justify-center gap-2">
+                <i class="bi bi-book-fill text-base text-highlight"></i> Baca Materi
               </a>
             </div>
           </div>

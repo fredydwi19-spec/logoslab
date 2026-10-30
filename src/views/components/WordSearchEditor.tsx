@@ -238,9 +238,9 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
         <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-8">
           <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
           <template x-for="l in levelCount" :key="l">
-            <button type="button" @click="switchLevel(l)" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="level === l ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'" x-text="'Level ' + l + (l <= publishedLevelCount ? ' · terbit' : '')"></button>
+            <button type="button" @click="switchLevel(l)" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="level === l ? 'bg-primary text-highlight shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-primary'" x-text="'Level ' + l + (l <= publishedLevelCount ? ' · terbit' : '')"></button>
           </template>
-          <button type="button" x-show="canEdit()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
+          <button type="button" x-show="canEdit()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-accent text-accent hover:bg-accent hover:text-white transition-all">+ Tambah Level</button>
           <span class="sm:ml-auto text-[10px] text-slate-400 font-bold">Setiap level punya grid sendiri. Simpan ke cloud sebelum pindah level.</span>
         </div>
         <div x-show="isLocked()" class="flex items-center gap-3 bg-green-50 border-2 border-green-200 text-green-800 p-4 rounded-2xl text-xs font-bold mb-8">
@@ -249,20 +249,20 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
         </div>
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6">
           <div class="flex items-center gap-4">
-            <div class="h-12 w-12 bg-[#FFC107] rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#1A237E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <div class="h-12 w-12 bg-highlight rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
             <div>
-              <h2 class="text-base md:text-lg font-bold text-[#1A237E] uppercase tracking-tighter leading-none">Editor Word Search</h2>
+              <h2 class="text-base md:text-lg font-bold text-primary uppercase tracking-tighter leading-none">Editor Word Search</h2>
               <p class="text-slate-400 text-xs md:text-sm font-medium uppercase tracking-[0.2em] mt-2">Generate tantangan pencarian kata teologis</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-3 w-full xl:w-auto">
-            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-[#1A237E] text-[#FFC107] p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-indigo-900 transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
+            <button @click="generateGrid()" class="flex-1 xl:flex-none bg-primary text-highlight p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-primary-dark transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1">
                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                GENERATE GRID
             </button>
-            <button x-show="!isLocked()" @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-[#FF5722] text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#E64A19] transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
+            <button x-show="!isLocked()" @click="saveToServer()" :disabled="isSaving" class="flex-1 xl:flex-none bg-accent text-white p-2 text-sm.5 text-sm rounded-lg rounded-2xl font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-accent-hover transition-all shadow-xl flex items-center justify-center gap-2 border-b-4 border-orange-950 active:border-b-0 active:translate-y-1 disabled:opacity-50">
                <span x-text="isSaving ? 'SAVING...' : 'SIMPAN KE CLOUD'"></span>
             </button>
           </div>
@@ -276,7 +276,7 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
               <div class="grid grid-cols-3 gap-4">
                 <template x-for="diff in ['EASY', 'MEDIUM', 'HARD']">
                   <button @click="difficulty = diff; updateGridSize()" 
-                          :class="difficulty === diff ? 'bg-[#1A237E] text-[#FFC107] border-[#1A237E]' : 'bg-white text-slate-400 border-slate-200'"
+                          :class="difficulty === diff ? 'bg-primary text-highlight border-primary' : 'bg-white text-slate-400 border-slate-200'"
                           class="py-2 rounded-xl border-2 font-black text-xs transition-all uppercase tracking-widest shadow-sm"
                           x-text="diff"></button>
                 </template>
@@ -290,8 +290,8 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
 
             <div class="space-y-4">
               <div class="flex justify-between items-center">
-                <h3 class="text-sm md:text-base font-semibold text-[#1A237E] uppercase tracking-widest">Daftar Kata Teologis</h3>
-                <button @click="addWord()" class="text-[#FF5722] font-semibold text-xs md:text-sm uppercase tracking-widest flex items-center gap-1 hover:underline">
+                <h3 class="text-sm md:text-base font-semibold text-primary uppercase tracking-widest">Daftar Kata Teologis</h3>
+                <button @click="addWord()" class="text-accent font-semibold text-xs md:text-sm uppercase tracking-widest flex items-center gap-1 hover:underline">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                   Tambah Baris
                 </button>
@@ -303,14 +303,14 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
                     <div class="flex gap-3">
                       <div class="flex-1">
                         <input type="text" x-model="item.word" @input="item.word = item.word.toUpperCase()" placeholder="KATA (CONTOH: IMAN)" 
-                               class="w-full border-b-2 border-slate-100 focus:border-[#1A237E] outline-none py-2 font-black text-[#1A237E] placeholder:text-slate-300">
+                               class="w-full border-b-2 border-slate-100 focus:border-primary outline-none py-2 font-black text-primary placeholder:text-slate-300">
                       </div>
                       <button @click="removeWord(index)" class="text-slate-300 hover:text-red-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                       </button>
                     </div>
                     <textarea x-model="item.explanation" placeholder="Penjelasan Teologis..." 
-                              class="w-full bg-slate-50 rounded-lg p-3 text-xs font-medium text-slate-600 outline-none focus:ring-1 ring-[#1A237E] h-16 resize-none" rows="3"></textarea>
+                              class="w-full bg-slate-50 rounded-lg p-3 text-xs font-medium text-slate-600 outline-none focus:ring-1 ring-primary h-16 resize-none" rows="3"></textarea>
                   </div>
                 </template>
               </div>
@@ -319,14 +319,14 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
 
           <!-- Right: Grid Preview -->
           <div class="space-y-6">
-            <div class="bg-[#1A237E] p-4 sm:p-5 rounded-[2.5rem] shadow-2xl border-4 border-[#FFC107] relative overflow-hidden flex items-center justify-center min-h-[400px] md:min-h-[500px]">
+            <div class="bg-primary p-4 sm:p-5 rounded-[2.5rem] shadow-2xl border-4 border-highlight relative overflow-hidden flex items-center justify-center min-h-[400px] md:min-h-[500px]">
               <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
               
               <div x-show="grid.length > 0" class="relative z-10 w-full flex justify-center">
-                <div class="grid gap-1 bg-[#1A237E]/50 p-2 rounded-xl" :style="'grid-template-columns: repeat(' + gridSize + ', minmax(0, 1fr))'">
+                <div class="grid gap-1 bg-primary/50 p-2 rounded-xl" :style="'grid-template-columns: repeat(' + gridSize + ', minmax(0, 1fr))'">
                   <template x-for="(row, rIdx) in grid">
                     <template x-for="(char, cIdx) in row">
-                      <div class="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 bg-white/10 border border-white/20 rounded flex items-center justify-center font-black text-white text-[10px] sm:text-xs md:text-lg transition-all hover:bg-[#FFC107] hover:text-[#1A237E] cursor-default"
+                      <div class="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 bg-white/10 border border-white/20 rounded flex items-center justify-center font-black text-white text-[10px] sm:text-xs md:text-lg transition-all hover:bg-highlight hover:text-primary cursor-default"
                            x-text="char"></div>
                     </template>
                   </template>
@@ -342,7 +342,7 @@ export const WordSearchEditor = ({ projectVar = 'activeProject' }: { projectVar?
             </div>
 
             <div class="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100">
-               <h4 class="text-[10px] font-black text-[#FF5722] uppercase tracking-widest mb-2 flex items-center gap-2">
+               <h4 class="text-[10px] font-black text-accent uppercase tracking-widest mb-2 flex items-center gap-2">
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                  Tips Pembuatan
                </h4>

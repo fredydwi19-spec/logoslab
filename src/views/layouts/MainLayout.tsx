@@ -16,6 +16,7 @@ export const MainLayout = ({ children, title = "Logos LAB — Edukasi Alkitab da
       corePlugins: { preflight: false }
     }
   </script>
+  <script src="/public/js/tailwind-config.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-[#F8FAFC]">

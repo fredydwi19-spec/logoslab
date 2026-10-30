@@ -6,7 +6,7 @@ export const Navbar = ({ user }: { user: any }) => {
     <nav class="header__nav">
       ${isLoggedIn ? `
         <div x-data="{ openProfile: false }" class="relative">
-          <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-[#1A237E] to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-[#FFC107]">
+          <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-primary to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-highlight">
             ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
           </button>
 
@@ -18,13 +18,13 @@ export const Navbar = ({ user }: { user: any }) => {
             
             <div class="p-3">
               <div class="bg-slate-50 p-3 rounded-xl flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-[#1A237E] text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
+                <div class="w-12 h-12 rounded-full bg-primary text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
                   ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
                 </div>
                 <div class="flex flex-col overflow-hidden">
                   <span class="font-bold text-slate-800 text-sm truncate">${user.name || user.username}</span>
                   <span class="text-slate-500 text-xs truncate">${user.email || (user.username.toLowerCase().replace(/\s+/g, '') + '@logoslab.com')}</span>
-                  <span class="text-[9px] font-black text-[#FF5722] mt-1 tracking-widest uppercase">${user.role ? user.role.replace('_', ' ') : 'MEMBER'}</span>
+                  <span class="text-[9px] font-black text-accent mt-1 tracking-widest uppercase">${user.role ? user.role.replace('_', ' ') : 'MEMBER'}</span>
                 </div>
               </div>
             </div>
@@ -32,10 +32,10 @@ export const Navbar = ({ user }: { user: any }) => {
             <div class="border-t border-slate-100 my-1"></div>
             
             <div class="p-2 space-y-1">
-              <a href="/dashboard/${rolePath}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+              <a href="/dashboard/${rolePath}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium">
                 <i class="bi bi-grid-1x2 text-lg"></i> Dashboard Utama
               </a>
-              <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+              <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium">
                 <i class="bi bi-person-gear text-lg"></i> Pengaturan Profil
               </a>
             </div>

@@ -713,6 +713,7 @@ const app = new Elysia()
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${project.title} - Logos Lab</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="/public/js/tailwind-config.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
       </head>
@@ -765,6 +766,7 @@ const app = new Elysia()
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${project.title} - Logos Lab</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="/public/js/tailwind-config.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
       </head>
@@ -808,6 +810,7 @@ const app = new Elysia()
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Arena Duel - Logos Lab</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="/public/js/tailwind-config.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
       </head>

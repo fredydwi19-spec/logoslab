@@ -5,25 +5,25 @@ export const PublicGamePlayer = () => {
   return `
     <div x-data="publicGamePlayerData()" @game-level-finish="finishLevel($event.detail)">
       <!-- Game Modal Player -->
-      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-[#1A237E]/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-6">
+      <div x-show="isPlaying" x-cloak x-transition class="fixed inset-0 bg-primary/95 flex items-center justify-center z-[9999] backdrop-blur-xl p-4 md:p-6">
          <!-- Game Container -->
          <div class="bg-white w-full max-w-5xl h-[95vh] md:h-[90vh] rounded-[2rem] md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative border-4 md:border-8 border-white/20">
             
             <template x-if="isPlaying && !gameFinished && !showLevelMap && activeGame?.gameType !== 'WORD_SEARCH' && activeGame?.gameType !== 'CROSSWORD'">
                <div class="flex flex-col h-full">
                   <!-- Game Header -->
-                  <div class="bg-[#1A237E] px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                  <div class="bg-primary px-6 md:px-10 py-2.5 md:py-6 text-white flex justify-between items-center border-b-4 border-highlight">
                      <div class="flex items-center gap-3 md:gap-4">
                         <img src="/public/assets/Logo-LogosLAB.png" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div>
-                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-[#FFC107]" x-text="activeGame?.title"></h3>
+                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-highlight" x-text="activeGame?.title"></h3>
                            <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="(levelCount() > 1 ? 'Level ' + currentLevel + ' · ' : '') + 'Soal ' + (currentIndex + 1) + ' dari ' + questions.length"></p>
                         </div>
                      </div>
                      <div class="flex items-center gap-4 md:gap-6">
                         <div class="text-right hidden sm:block">
                            <p class="text-[9px] font-medium uppercase opacity-60">Skor Saat Ini</p>
-                           <div class="text-base md:text-lg font-bold text-[#FFC107]" x-text="currentScore"></div>
+                           <div class="text-base md:text-lg font-bold text-highlight" x-text="currentScore"></div>
                         </div>
                         <button @click="quitGame()" class="bg-white/10 hover:bg-red-500 text-white p-2 md:p-3 rounded-full transition-all">
                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -33,34 +33,34 @@ export const PublicGamePlayer = () => {
 
                   <!-- Progress Bar -->
                   <div class="h-2 w-full bg-slate-100 relative">
-                     <div class="h-full bg-[#FF5722] transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
+                     <div class="h-full bg-accent transition-all duration-500" :style="'width: ' + ((currentIndex + 1) / questions.length * 100) + '%'"></div>
                   </div>
                   
                   <!-- Question Body -->
                   <div class="flex-1 overflow-y-auto p-6 md:p-6 bg-slate-50 flex items-center justify-center relative">
                      <div class="w-full max-w-3xl text-center">
-                        <div class="inline-block bg-[#1A237E] text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-medium uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
+                        <div class="inline-block bg-primary text-white px-4 py-1 rounded-full text-[9px] md:text-[10px] font-medium uppercase tracking-widest mb-4 md:mb-6" x-text="questions[currentIndex]?.difficulty + ' (+' + (questions[currentIndex]?.score || getPoints(questions[currentIndex]?.difficulty)) + ' POIN)'"></div>
                         
                         <!-- Quiz Content -->
                         <template x-if="activeGame?.gameType === 'QUIZ'">
                           <div>
-                            <h2 class="text-base md:text-lg font-bold text-[#1A237E] mb-4 md:mb-8 leading-relaxed" x-text="questions[currentIndex]?.question"></h2>
+                            <h2 class="text-base md:text-lg font-bold text-primary mb-4 md:mb-8 leading-relaxed" x-text="questions[currentIndex]?.question"></h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                <template x-for="opt in ['A', 'B', 'C', 'D']">
                                   <button @click="selectAnswer(opt)" 
                                      :class="{
-                                        'border-[#FFC107] bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
+                                        'border-highlight bg-yellow-50 scale-105': selectedAnswer === opt && !showFeedback,
                                         'border-green-500 bg-green-50 shadow-green-100': showFeedback && opt === quizFeedback?.correctAnswer,
                                         'border-red-500 bg-red-50 shadow-red-100': showFeedback && selectedAnswer === opt && opt !== quizFeedback?.correctAnswer,
-                                        'border-slate-100 bg-white hover:border-[#1A237E] hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
+                                        'border-slate-100 bg-white hover:border-primary hover:shadow-xl hover:-translate-y-1': !showFeedback && selectedAnswer !== opt
                                      }"
                                      class="border-4 p-3 md:p-5 rounded-xl md:rounded-2xl text-left flex items-center gap-3 transition-all group disabled:cursor-default"
                                      :disabled="showFeedback">
                                      <span class="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm transition-colors" 
-                                           :class="showFeedback && opt === quizFeedback?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] group-hover:text-[#1A237E] text-slate-400'">
+                                           :class="showFeedback && opt === quizFeedback?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-highlight group-hover:text-primary text-slate-400'">
                                         <span x-text="opt"></span>
                                      </span>
-                                     <span class="text-[#1A237E] font-semibold text-xs md:text-sm" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
+                                     <span class="text-primary font-semibold text-xs md:text-sm" x-text="questions[currentIndex] ? questions[currentIndex]['option' + opt] : ''"></span>
                                   </button>
                                </template>
                             </div>
@@ -70,11 +70,11 @@ export const PublicGamePlayer = () => {
                         <!-- Fill The Blank Content -->
                         <template x-if="activeGame?.gameType === 'FILL_THE_BLANK'">
                           <div class="flex flex-col items-center">
-                            <div class="text-lg md:text-base font-medium text-[#1A237E] mb-10 leading-relaxed bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
+                            <div class="text-lg md:text-base font-medium text-primary mb-10 leading-relaxed bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[3rem] shadow-inner border-2 border-slate-100 w-full" 
                                  x-html="renderFTB(questions[currentIndex])"></div>
                             
                             <div class="mt-4" x-show="!showFeedback">
-                              <button @click="checkAnswerFTB()" class="bg-[#FF5722] text-white px-10 py-2.5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-[#E64A19] transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
+                              <button @click="checkAnswerFTB()" class="bg-accent text-white px-10 py-2.5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-accent-hover transition-all transform hover:scale-105">PERIKSA JAWABAN</button>
                             </div>
                           </div>
                         </template>
@@ -97,7 +97,7 @@ export const PublicGamePlayer = () => {
                                <div class="space-y-3">
                                  <template x-for="(res, ridx) in submissionResults" :key="ridx">
                                    <div class="text-xs md:text-sm font-bold border-l-4 pl-4 py-1" :class="res.isCorrect ? 'border-green-400 bg-green-100/30' : 'border-red-400 bg-red-100/30'">
-                                     <span class="text-[#1A237E] uppercase tracking-tighter" x-text="res.correctAnswer"></span>: 
+                                     <span class="text-primary uppercase tracking-tighter" x-text="res.correctAnswer"></span>: 
                                      <span class="text-slate-500 italic" x-text="res.explanation"></span>
                                    </div>
                                  </template>
@@ -106,7 +106,7 @@ export const PublicGamePlayer = () => {
                            </div>
                            
                            <div class="mt-4 md:mt-6 flex justify-end">
-                              <button @click="nextQuestion()" class="bg-[#1A237E] text-white px-6 md:px-8 py-2 md:py-2 rounded-full font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
+                              <button @click="nextQuestion()" class="bg-primary text-white px-6 md:px-8 py-2 md:py-2 rounded-full font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg flex items-center gap-2 text-xs md:text-sm">
                                  <span x-text="currentIndex === questions.length - 1 ? 'LIHAT HASIL AKHIR' : 'SOAL BERIKUTNYA'"></span>
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                               </button>
@@ -134,11 +134,11 @@ export const PublicGamePlayer = () => {
             <!-- Peta Level -->
             <template x-if="showLevelMap">
                <div class="flex flex-col h-full">
-                  <div class="bg-[#1A237E] px-6 md:px-10 py-4 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+                  <div class="bg-primary px-6 md:px-10 py-4 text-white flex justify-between items-center border-b-4 border-highlight">
                      <div class="flex items-center gap-3 min-w-0">
                         <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-8 md:h-10 w-auto bg-white p-1 rounded-lg" />
                         <div class="min-w-0">
-                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-[#FFC107] truncate" x-text="activeGame?.title"></h3>
+                           <h3 class="text-xs md:text-sm font-bold uppercase tracking-widest text-highlight truncate" x-text="activeGame?.title"></h3>
                            <p class="text-[9px] font-medium opacity-60 uppercase tracking-widest" x-text="'Peta Level · Lulus dengan nilai minimal ' + progress.passPercentage + '%'"></p>
                         </div>
                      </div>
@@ -153,16 +153,16 @@ export const PublicGamePlayer = () => {
                      </template>
                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <template x-for="lv in progress.levels" :key="lv.level">
-                           <div class="bg-white rounded-2xl p-5 border-2 shadow-sm flex flex-col gap-3" :class="lv.passed ? 'border-green-300' : (lv.unlocked ? 'border-[#FFC107]' : 'border-slate-200 opacity-70')">
+                           <div class="bg-white rounded-2xl p-5 border-2 shadow-sm flex flex-col gap-3" :class="lv.passed ? 'border-green-300' : (lv.unlocked ? 'border-highlight' : 'border-slate-200 opacity-70')">
                               <div class="flex items-center justify-between">
-                                 <span class="text-sm font-black text-[#1A237E] uppercase tracking-widest" x-text="'Level ' + lv.level"></span>
-                                 <span class="text-xl" :class="lv.passed ? 'text-green-600' : (lv.unlocked ? 'text-[#FF5722]' : 'text-slate-400')">
+                                 <span class="text-sm font-black text-primary uppercase tracking-widest" x-text="'Level ' + lv.level"></span>
+                                 <span class="text-xl" :class="lv.passed ? 'text-green-600' : (lv.unlocked ? 'text-accent' : 'text-slate-400')">
                                     <i class="bi" :class="lv.passed ? 'bi-patch-check-fill' : (lv.unlocked ? 'bi-unlock-fill' : 'bi-lock-fill')"></i>
                                  </span>
                               </div>
                               <div class="text-xs font-bold text-slate-500" x-show="lv.bestScore > 0" x-text="'Nilai terbaik: ' + lv.percent + '%'"></div>
                               <div class="text-xs font-bold text-slate-400" x-show="!lv.unlocked" x-text="progress.loggedIn ? 'Lulus Level ' + (lv.level - 1) + ' dengan nilai ≥ ' + progress.passPercentage + '% untuk membuka' : 'Login untuk membuka level ini'"></div>
-                              <button x-show="lv.unlocked" @click="startLevel(lv.level)" class="mt-auto w-full py-2.5 rounded-xl font-black uppercase tracking-widest text-xs transition-all" :class="lv.passed ? 'bg-white border-2 border-[#1A237E] text-[#1A237E] hover:bg-slate-50' : 'bg-[#FF5722] text-white hover:bg-[#E64A19] shadow-md'" x-text="lv.passed ? 'Main Lagi' : 'Mainkan'"></button>
+                              <button x-show="lv.unlocked" @click="startLevel(lv.level)" class="mt-auto w-full py-2.5 rounded-xl font-black uppercase tracking-widest text-xs transition-all" :class="lv.passed ? 'bg-white border-2 border-primary text-primary hover:bg-slate-50' : 'bg-accent text-white hover:bg-accent-hover shadow-md'" x-text="lv.passed ? 'Main Lagi' : 'Mainkan'"></button>
                            </div>
                         </template>
                         <template x-if="progress.upcoming">
@@ -183,17 +183,17 @@ export const PublicGamePlayer = () => {
                   <div class="w-full max-w-2xl">
                      <div class="mb-6 md:mb-10 relative inline-block">
                         <div class="text-6xl md:text-8xl mb-4 animate-bounce"><i class="bi bi-trophy text-yellow-400"></i></div>
-                        <div class="absolute -top-4 -right-4 bg-[#FFC107] text-[#1A237E] h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
+                        <div class="absolute -top-4 -right-4 bg-highlight text-primary h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center font-bold shadow-xl ring-4 ring-white">100</div>
                      </div>
                      
-                     <h2 class="text-base md:text-base font-bold text-[#1A237E] uppercase tracking-widest mb-2">Permainan Selesai!</h2>
+                     <h2 class="text-base md:text-base font-bold text-primary uppercase tracking-widest mb-2">Permainan Selesai!</h2>
                      <p class="text-slate-400 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm mb-8 md:mb-12">Kerja bagus!</p>
 
                      <!-- Hasil Level -->
                      <template x-if="levelResult">
-                        <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 shadow-lg" :class="levelResult.passed ? 'border-green-300' : 'border-[#FFC107]'">
+                        <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 shadow-lg" :class="levelResult.passed ? 'border-green-300' : 'border-highlight'">
                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1" x-text="levelCount() > 1 ? 'Hasil Level ' + currentLevel : 'Hasil Permainan'"></div>
-                           <div class="text-4xl font-black" :class="levelResult.passed ? 'text-green-600' : 'text-[#FF5722]'" x-text="levelResult.percent + '%'"></div>
+                           <div class="text-4xl font-black" :class="levelResult.passed ? 'text-green-600' : 'text-accent'" x-text="levelResult.percent + '%'"></div>
                            <div class="text-xs font-bold text-slate-500 mt-1" x-text="'Nilai minimal lulus: ' + levelResult.passPercentage + '%'"></div>
                            <template x-if="levelResult.needLogin">
                               <p class="mt-3 text-sm font-bold text-amber-700">Skor belum tersimpan. Login untuk menyimpan skor dan membuka level berikutnya.</p>
@@ -205,18 +205,18 @@ export const PublicGamePlayer = () => {
                               <p class="mt-3 text-sm font-black" :class="levelResult.passed ? 'text-green-700' : 'text-slate-600'" x-text="levelResult.passed ? (levelResult.nextLevel ? 'Lulus! Level ' + levelResult.nextLevel + ' sekarang terbuka.' : (levelResult.upcoming ? 'Lulus! Level berikutnya segera hadir.' : 'Lulus! Semua level selesai.')) : 'Belum lulus. Coba lagi untuk mencapai nilai minimal.'"></p>
                            </template>
                            <div class="mt-5 flex flex-col sm:flex-row gap-3">
-                              <button x-show="levelResult.nextLevel" @click="startLevel(levelResult.nextLevel)" class="flex-1 bg-[#FF5722] text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-[#E64A19] shadow-md">Level Berikutnya</button>
-                              <button @click="startLevel(currentLevel)" class="flex-1 bg-white border-2 border-[#1A237E] text-[#1A237E] py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-50">Ulangi Level</button>
-                              <button x-show="levelCount() > 1" @click="openLevelMap()" class="flex-1 bg-[#1A237E] text-[#FFC107] py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-indigo-900">Peta Level</button>
+                              <button x-show="levelResult.nextLevel" @click="startLevel(levelResult.nextLevel)" class="flex-1 bg-accent text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-accent-hover shadow-md">Level Berikutnya</button>
+                              <button @click="startLevel(currentLevel)" class="flex-1 bg-white border-2 border-primary text-primary py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-50">Ulangi Level</button>
+                              <button x-show="levelCount() > 1" @click="openLevelMap()" class="flex-1 bg-primary text-highlight py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-primary-dark">Peta Level</button>
                            </div>
                         </div>
                      </template>
 
                      <!-- Stats Grid -->
                      <div x-show="activeGame?.gameType === 'QUIZ' || activeGame?.gameType === 'FILL_THE_BLANK'" class="grid grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
-                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-[#FFC107]">
+                        <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-highlight">
                            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Total Skor</div>
-                           <div class="text-base md:text-lg font-bold text-[#1A237E]"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
+                           <div class="text-base md:text-lg font-bold text-primary"><span x-text="currentScore"></span><span class="text-xs md:text-sm opacity-30"> / <span x-text="maxScore"></span></span></div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border-b-4 border-green-500">
                            <div class="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-1">Benar</div>
@@ -230,8 +230,8 @@ export const PublicGamePlayer = () => {
 
                      <!-- Reflection Section -->
                      <div class="mb-8 w-full bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-lg text-left">
-                        <label class="block text-[#1A237E] font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
-                        <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-[#1A237E] focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
+                        <label class="block text-primary font-bold text-sm mb-2">Apa renungan atau hal berkesan yang kamu dapatkan hari ini?</label>
+                        <textarea x-model="reflectionText" class="w-full h-24 p-4 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-0 text-sm font-medium transition-colors" placeholder="Tuliskan renungan pribadimu..."></textarea>
                         <button @click="saveJournal()" class="mt-4 w-full bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2" :class="{'opacity-50 cursor-not-allowed': !reflectionText.trim() || isJournalSaved}" :disabled="!reflectionText.trim() || isJournalSaved">
                           <span x-text="isJournalSaved ? 'Tersimpan ke Jurnal! ✅' : 'Simpan ke Jurnal (+20 XP)'"></span>
                         </button>
@@ -239,7 +239,7 @@ export const PublicGamePlayer = () => {
 
                      <div class="space-y-4">
                         <template x-if="!duelId">
-                          <button @click="createDuel()" class="w-full bg-[#FF5722] text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-2xl hover:bg-[#E64A19] transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+                          <button @click="createDuel()" class="w-full bg-accent text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-2xl hover:bg-accent-hover transition-all transform hover:scale-105 flex items-center justify-center gap-2">
                             <span>⚔️ Tantang Teman dengan Kuis Ini</span>
                           </button>
                         </template>
@@ -248,7 +248,7 @@ export const PublicGamePlayer = () => {
                             <span>Kirim Hasil Duel! ⚔️</span>
                           </button>
                         </template>
-                        <button @click="quitGame()" class="w-full bg-[#1A237E] text-[#FFC107] py-2.5 md:py-2.5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-indigo-900 transition-all shadow-xl transform hover:-translate-y-1">TUTUP HASIL</button>
+                        <button @click="quitGame()" class="w-full bg-primary text-highlight py-2.5 md:py-2.5 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.1em] md:tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl transform hover:-translate-y-1">TUTUP HASIL</button>
                      </div>
                   </div>
                </div>
@@ -467,7 +467,7 @@ export const PublicGamePlayer = () => {
             if(!q || !Array.isArray(q.parts)) return '';
             const escapeHtml = (t) => String(t).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
             const text = q.parts.map(part => 'blank' in part
-              ? '<input type="text" class="ftb-input border-b-4 border-[#FFC107] outline-none text-center px-4 py-1 text-[#FF5722] bg-[#1A237E]/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updatePublicFTB(' + Number(part.blank) + ', this.value)">'
+              ? '<input type="text" class="ftb-input border-b-4 border-highlight outline-none text-center px-4 py-1 text-accent bg-primary/5 rounded-t-xl w-32 mx-2 font-black" placeholder="..." onchange="window.updatePublicFTB(' + Number(part.blank) + ', this.value)">'
               : escapeHtml(part.text)
             ).join('');
             

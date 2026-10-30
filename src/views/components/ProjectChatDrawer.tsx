@@ -135,7 +135,7 @@ export const ProjectChatDrawer = () => {
            :class="isOpen ? 'translate-x-0' : 'translate-x-full'">
            
            <!-- Header -->
-           <div class="bg-[#1A237E] p-4 flex justify-between items-center text-white border-b-4 border-[#FFC107]">
+           <div class="bg-primary p-4 flex justify-between items-center text-white border-b-4 border-highlight">
               <div>
                  <h2 class="font-black tracking-widest uppercase text-sm">Diskusi Proyek</h2>
                  <p class="text-xs text-yellow-200" x-text="targetName"></p>
@@ -148,7 +148,7 @@ export const ProjectChatDrawer = () => {
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Checklist Revisi (Actionable)</h3>
               <template x-for="chat in chats.filter(c => c.isActionable)" :key="chat.id">
                  <div class="flex items-start gap-2 mb-2 p-2 rounded bg-yellow-50 border border-yellow-200">
-                    <input type="checkbox" :checked="chat.isResolved" @change="toggleResolve(chat.id, chat.isResolved)" class="mt-1 shrink-0 accent-[#FF5722]">
+                    <input type="checkbox" :checked="chat.isResolved" @change="toggleResolve(chat.id, chat.isResolved)" class="mt-1 shrink-0 accent-accent">
                     <div class="flex-1 text-xs text-slate-700" :class="chat.isResolved ? 'line-through text-slate-400' : ''" x-text="chat.message"></div>
                  </div>
               </template>
@@ -174,7 +174,7 @@ export const ProjectChatDrawer = () => {
                     
                     <!-- Chat Bubble -->
                     <div class="p-3 rounded-2xl max-w-[85%] text-sm shadow-sm"
-                         :class="chat.senderRole === userRole ? 'bg-[#1A237E] text-white rounded-br-sm' : (chat.senderName === 'Logos AI' ? 'bg-purple-50 text-purple-900 border border-purple-200 rounded-bl-sm' : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm')">
+                         :class="chat.senderRole === userRole ? 'bg-primary text-white rounded-br-sm' : (chat.senderName === 'Logos AI' ? 'bg-purple-50 text-purple-900 border border-purple-200 rounded-bl-sm' : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm')">
                        <template x-if="chat.senderName === 'Logos AI'">
                           <p x-html="formatAiMessage(chat.message)" style="white-space: pre-wrap;"></p>
                        </template>
@@ -196,8 +196,8 @@ export const ProjectChatDrawer = () => {
               <form @submit.prevent="sendMessage()" class="flex flex-col gap-2">
                  <div class="text-[10px] text-slate-400 italic mb-1">💡 Hint: Ketik <span class="font-bold text-purple-600">@LogosAI</span> di awal pesan untuk bantuan AI.</div>
                  <div class="flex gap-2">
-                    <input type="text" x-model="newMessage" placeholder="Ketik pesan..." class="flex-1 border-2 border-slate-200 rounded-lg py-2 px-3 text-sm outline-none focus:border-[#1A237E]" />
-                    <button type="submit" class="bg-[#FF5722] text-white p-2 rounded-lg font-bold shadow-md hover:bg-[#E64A19] disabled:opacity-50" :disabled="!newMessage.trim() || isLoading">
+                    <input type="text" x-model="newMessage" placeholder="Ketik pesan..." class="flex-1 border-2 border-slate-200 rounded-lg py-2 px-3 text-sm outline-none focus:border-primary" />
+                    <button type="submit" class="bg-accent text-white p-2 rounded-lg font-bold shadow-md hover:bg-accent-hover disabled:opacity-50" :disabled="!newMessage.trim() || isLoading">
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
                     </button>
                  </div>

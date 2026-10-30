@@ -43,12 +43,12 @@ export const DuelHubPage = ({ username, userId }: { username: string; userId: nu
     </script>
     
     <div x-data="duelHub()" class="space-y-6">
-      <div class="bg-gradient-to-r from-[#1A237E] to-blue-800 rounded-[2rem] p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="bg-gradient-to-r from-primary to-blue-800 rounded-[2rem] p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-black mb-2 flex items-center gap-2">⚔️ Buat Tantangan Duel Baru</h2>
           <p class="text-blue-200">Mainkan game publik, selesaikan, dan tantang temanmu!</p>
         </div>
-        <a href="/dashboard/games" class="bg-[#FFC107] text-[#1A237E] px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-yellow-400 transition-colors shadow-lg whitespace-nowrap">
+        <a href="/dashboard/games" class="bg-highlight text-primary px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-yellow-400 transition-colors shadow-lg whitespace-nowrap">
           Cari Kuis & Tantang
         </a>
       </div>
@@ -69,12 +69,12 @@ export const DuelHubPage = ({ username, userId }: { username: string; userId: nu
           
           <div class="space-y-4" x-show="!loading">
             <template x-for="duel in waitingDuels" :key="duel.id">
-              <div class="p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 flex justify-between items-center group hover:border-[#1A237E]/30 transition-colors">
+              <div class="p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 flex justify-between items-center group hover:border-primary/30 transition-colors">
                 <div>
-                  <p class="font-bold text-base text-[#1A237E]" x-text="duel.quizTitle"></p>
-                  <p class="text-xs text-slate-500 mt-1 font-medium">Skormu: <span class="font-bold text-[#FF5722]" x-text="duel.challengerScore"></span></p>
+                  <p class="font-bold text-base text-primary" x-text="duel.quizTitle"></p>
+                  <p class="text-xs text-slate-500 mt-1 font-medium">Skormu: <span class="font-bold text-accent" x-text="duel.challengerScore"></span></p>
                 </div>
-                <button @click="copyLink(duel.id)" class="px-4 py-2 bg-white border border-slate-200 hover:bg-[#1A237E] hover:text-white hover:border-[#1A237E] text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm">
+                <button @click="copyLink(duel.id)" class="px-4 py-2 bg-white border border-slate-200 hover:bg-primary hover:text-white hover:border-primary text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm">
                   Salin Link
                 </button>
               </div>

@@ -49,7 +49,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
 
     <div x-data="userDashboard()" class="space-y-8 pb-12">
       <!-- Header -->
-      <div class="bg-gradient-to-r from-[#1A237E] to-blue-800 rounded-3xl p-8 shadow-xl text-white relative overflow-hidden">
+      <div class="bg-gradient-to-r from-primary to-blue-800 rounded-3xl p-8 shadow-xl text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div class="relative z-10">
           <h1 class="text-3xl font-black mb-2">Halo, ${username}! 👋</h1>
@@ -60,7 +60,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
       <!-- Loading State -->
       <template x-if="loading">
         <div class="flex justify-center items-center py-20">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1A237E]"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       </template>
 
@@ -73,7 +73,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
               <div class="bg-blue-100 p-3 rounded-xl text-blue-600 text-2xl">🎮</div>
               <div>
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dimainkan</p>
-                <p class="text-xl font-black text-[#1A237E]" x-text="stats.totalPlayed"></p>
+                <p class="text-xl font-black text-primary" x-text="stats.totalPlayed"></p>
               </div>
             </div>
             <!-- Card 2 -->
@@ -81,7 +81,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
               <div class="bg-emerald-100 p-3 rounded-xl text-emerald-600 text-2xl">🏆</div>
               <div>
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Selesai</p>
-                <p class="text-xl font-black text-[#1A237E]" x-text="stats.completedCount"></p>
+                <p class="text-xl font-black text-primary" x-text="stats.completedCount"></p>
               </div>
             </div>
             <!-- Card 3 -->
@@ -89,7 +89,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
               <div class="bg-amber-100 p-3 rounded-xl text-amber-600 text-2xl">✨</div>
               <div>
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total XP</p>
-                <p class="text-xl font-black text-[#1A237E]" x-text="stats.totalXp + ' XP'"></p>
+                <p class="text-xl font-black text-primary" x-text="stats.totalXp + ' XP'"></p>
               </div>
             </div>
             <!-- Card 4 -->
@@ -97,7 +97,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
               <div class="bg-orange-100 p-3 rounded-xl text-orange-600 text-2xl">🔥</div>
               <div>
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Beruntun</p>
-                <p class="text-xl font-black text-[#1A237E]" x-text="stats.dailyStreak + ' Hari'"></p>
+                <p class="text-xl font-black text-primary" x-text="stats.dailyStreak + ' Hari'"></p>
               </div>
             </div>
           </div>
@@ -106,8 +106,8 @@ export const UserDashboard = ({ username }: { username: string }) => {
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Left: Resume Project -->
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-              <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest mb-6 flex items-center gap-2">
-                <div class="w-1.5 h-4 bg-[#FFC107] rounded-full"></div> Lanjutkan Belajar/Main
+              <h3 class="text-sm font-black text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
+                <div class="w-1.5 h-4 bg-highlight rounded-full"></div> Lanjutkan Belajar/Main
               </h3>
               
               <template x-if="resumeProject">
@@ -125,12 +125,12 @@ export const UserDashboard = ({ username }: { username: string }) => {
                       <span x-text="resumeProject.scrollPercentage + '%'"></span>
                     </div>
                     <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                      <div class="bg-[#1A237E] h-2 rounded-full transition-all duration-500" :style="'width: ' + resumeProject.scrollPercentage + '%'"></div>
+                      <div class="bg-primary h-2 rounded-full transition-all duration-500" :style="'width: ' + resumeProject.scrollPercentage + '%'"></div>
                     </div>
                   </div>
                   
                   <a :href="resumeProject.type === 'GAME' ? '/play/' + resumeProject.projectId : '/materi/' + resumeProject.projectId" 
-                     class="block w-full py-3 px-4 bg-[#1A237E] hover:bg-blue-900 text-white font-black text-sm text-center rounded-xl transition-all shadow-md">
+                     class="block w-full py-3 px-4 bg-primary hover:bg-blue-900 text-white font-black text-sm text-center rounded-xl transition-all shadow-md">
                     LANJUTKAN SEKARANG
                   </a>
                 </div>
@@ -147,7 +147,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
 
             <!-- Right: Recommended -->
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-              <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest mb-6 flex items-center gap-2">
+              <h3 class="text-sm font-black text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
                 <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div> Rekomendasi Untukmu
               </h3>
               
@@ -166,7 +166,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
                       <span class="text-[10px] font-black uppercase text-slate-400" x-text="'#' + proj.type"></span>
                       <h4 class="font-bold text-slate-800 text-sm truncate" x-text="proj.title"></h4>
                     </div>
-                    <a :href="proj.type === 'GAME' ? '/play/' + proj.id : '/materi/' + proj.id" class="px-3 py-2 bg-slate-100 hover:bg-[#1A237E] hover:text-white text-[#1A237E] font-black text-[10px] rounded-lg transition-colors whitespace-nowrap">
+                    <a :href="proj.type === 'GAME' ? '/play/' + proj.id : '/materi/' + proj.id" class="px-3 py-2 bg-slate-100 hover:bg-primary hover:text-white text-primary font-black text-[10px] rounded-lg transition-colors whitespace-nowrap">
                       MAIN/BACA
                     </a>
                   </div>
@@ -182,8 +182,8 @@ export const UserDashboard = ({ username }: { username: string }) => {
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Left: Leaderboard -->
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-              <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest mb-6 flex items-center gap-2">
-                <div class="w-1.5 h-4 bg-[#FF5722] rounded-full"></div> Top 5 Leaderboard
+              <h3 class="text-sm font-black text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
+                <div class="w-1.5 h-4 bg-accent rounded-full"></div> Top 5 Leaderboard
               </h3>
               
               <div class="space-y-3">
@@ -205,7 +205,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
                     <div class="flex-1">
                       <h4 class="font-bold text-sm text-slate-800" x-text="user.name"></h4>
                     </div>
-                    <div class="font-black text-[#1A237E] text-sm" x-text="user.totalXp + ' XP'"></div>
+                    <div class="font-black text-primary text-sm" x-text="user.totalXp + ' XP'"></div>
                   </div>
                 </template>
               </div>
@@ -213,7 +213,7 @@ export const UserDashboard = ({ username }: { username: string }) => {
 
             <!-- Right: Achievements -->
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-              <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest mb-6 flex items-center gap-2">
+              <h3 class="text-sm font-black text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
                 <div class="w-1.5 h-4 bg-purple-500 rounded-full"></div> Koleksi Lencana
               </h3>
               

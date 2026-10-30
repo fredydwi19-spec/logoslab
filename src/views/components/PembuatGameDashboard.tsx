@@ -538,7 +538,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
     </script>
 
     <div class="bg-white p-0 rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" x-data="pembuatDashboard()">
-      <div class="bg-[#1A237E] p-6 border-b-4 border-[#FFC107] flex items-center justify-between">
+      <div class="bg-primary p-6 border-b-4 border-highlight flex items-center justify-between">
         <div class="flex items-center gap-4">
           <h2 class="text-lg md:text-xl font-bold text-white uppercase tracking-widest leading-tight" x-text="activeProject ? 'Workspace Produksi Game' : (menuTab === 'dashboard' ? 'Dashboard Analitik' : (viewMode === 'all' ? 'Semua Proyek Saya' : 'Manajemen Proyek'))"></h2>
         </div>
@@ -556,14 +556,14 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
           <div class="space-y-6 mb-8">
             <!-- SECTION 1: PUBLISHED GAME METRICS (milik saya & seluruh platform) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="bg-gradient-to-r from-[#1A237E] to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+              <div class="bg-gradient-to-r from-primary to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
                 <div>
                   <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Game Saya Dipublish</p>
-                  <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalStats.myPublishedGames"></h3>
+                  <h3 class="text-4xl font-black text-highlight" x-text="analytics.globalStats.myPublishedGames"></h3>
                 </div>
                 <div class="text-5xl opacity-80"><i class="bi bi-controller"></i></div>
               </div>
-              <div class="bg-gradient-to-r from-[#FF5722] to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+              <div class="bg-gradient-to-r from-accent to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
                 <div>
                   <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Game Dipublish di Platform</p>
                   <h3 class="text-4xl font-black" x-text="analytics.globalStats.totalPublishedGames"></h3>
@@ -575,17 +575,17 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             <!-- SECTION 2: KEY PERFORMANCE INDEX (KPI Creator) -->
             <div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div class="flex items-center gap-3 mb-6">
-                <span class="h-6 w-1.5 bg-[#1A237E] rounded-full"></span>
-                <h3 class="text-lg font-bold text-[#1A237E] uppercase tracking-widest">KPI Creator</h3>
+                <span class="h-6 w-1.5 bg-primary rounded-full"></span>
+                <h3 class="text-lg font-bold text-primary uppercase tracking-widest">KPI Creator</h3>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Game Dikerjakan</p>
-                  <p class="text-2xl font-black text-[#1A237E]" x-text="analytics.creatorKpi.totalAssignedGames"></p>
+                  <p class="text-2xl font-black text-primary" x-text="analytics.creatorKpi.totalAssignedGames"></p>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Game Sedang Dikerjakan</p>
-                  <p class="text-2xl font-black text-[#FF5722]" x-text="analytics.creatorKpi.activeGamesCount"></p>
+                  <p class="text-2xl font-black text-accent" x-text="analytics.creatorKpi.activeGamesCount"></p>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Waktu Penyelesaian</p>
@@ -599,7 +599,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               <!-- Tabel Peringkat Kecepatan Pengerjaan -->
               <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" x-data="{ sortAsc: true }">
                 <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
-                  <h4 class="text-xs font-bold text-[#1A237E] uppercase tracking-widest">Peringkat Kecepatan Pengerjaan Game</h4>
+                  <h4 class="text-xs font-bold text-primary uppercase tracking-widest">Peringkat Kecepatan Pengerjaan Game</h4>
                   <button @click="sortAsc = !sortAsc; analytics.creatorKpi.speedRankedProjects.reverse()" class="text-[10px] bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-black uppercase tracking-tighter text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                     <i class="bi" :class="sortAsc ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up'"></i>
                     <span x-text="sortAsc ? 'Tercepat -> Terlambat' : 'Terlambat -> Tercepat'"></span>
@@ -614,9 +614,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                       <template x-for="(proj, idx) in analytics.creatorKpi.speedRankedProjects" :key="proj.id">
                         <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                           <td class="p-3 pl-4">
-                            <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
+                            <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-highlight text-primary' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
                           </td>
-                          <td class="p-3 text-sm font-semibold text-[#1A237E]" x-text="proj.title"></td>
+                          <td class="p-3 text-sm font-semibold text-primary" x-text="proj.title"></td>
                           <td class="p-3 text-xs font-bold text-slate-500 text-right pr-4" x-text="proj.durationFormatted"></td>
                         </tr>
                       </template>
@@ -631,8 +631,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               <!-- Top Played Games -->
               <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
                 <div class="flex items-center gap-3 mb-4">
-                  <span class="h-6 w-1.5 bg-[#FFC107] rounded-full"></span>
-                  <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Game Saya Paling Sering Dimainkan</h3>
+                  <span class="h-6 w-1.5 bg-highlight rounded-full"></span>
+                  <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Game Saya Paling Sering Dimainkan</h3>
                 </div>
                 <div class="space-y-3">
                   <template x-if="analytics.popularityStats.topPlayedGames.length === 0">
@@ -658,8 +658,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
           <!-- Header + Search -->
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
-              <h2 class="text-base md:text-lg font-semibold text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
-                <span class="h-5 w-1.5 bg-[#FFC107] rounded-full"></span>
+              <h2 class="text-base md:text-lg font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
+                <span class="h-5 w-1.5 bg-highlight rounded-full"></span>
                 Proyek Yang Sedang Dikerjakan
               </h2>
               <p class="text-xs md:text-sm text-slate-400 font-medium mt-1">Proyek aktif yang ditugaskan kepada Anda</p>
@@ -673,7 +673,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             <div class="flex flex-wrap items-center gap-3 w-full p-4 bg-slate-50/80 border-b border-slate-200">
               <div class="flex flex-col gap-1 w-48 shrink-0">
                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
-                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   <option value="">-- Pilih Kriteria --</option>
                   <option value="title_game">Judul Game</option>
                   <option value="type_game">Jenis Game</option>
@@ -685,11 +685,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
                 
                 <template x-if="filterKey === 'title_game'">
-                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 </template>
 
                 <template x-if="filterKey === 'type_game'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Jenis Game --</option>
                     <option value="QUIZ">QUIZ</option>
                     <option value="FILL_THE_BLANK">FILL THE BLANK</option>
@@ -699,7 +699,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 </template>
 
                 <template x-if="filterKey === 'status'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Status --</option>
                     <option value="DRAFT">DRAFT</option>
                     <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
@@ -714,9 +714,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
 
                 <template x-if="filterKey === 'deadline'">
                   <div class="flex gap-2">
-                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <span class="self-center font-bold text-slate-400">-</span>
-                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   </div>
                 </template>
 
@@ -726,7 +726,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               </div>
               
               <div class="flex gap-2 ml-auto shrink-0 self-end">
-                <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+                <button @click="applyFilter()" class="bg-primary text-highlight py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2">
                   TERAPKAN
                 </button>
                 <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
@@ -753,7 +753,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                 <template x-for="p in filteredActiveProjects()" :key="p.id">
                   <tr class="hover:bg-blue-50/40 transition-all group">
                     <td class="px-6 py-5">
-                      <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
+                      <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-primary transition-colors" x-text="p.title"></div>
                       <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
                     </td>
                     <td class="px-6 py-5">
@@ -770,8 +770,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         :class="{
                           'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'DRAFT',
                           'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR' || workflowStatus(p) === 'REVIEW_KETUA',
-                          'bg-orange-100 text-[#E64A19] border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
-                          'bg-[#FFC107] text-[#1A237E] border border-[#FFC107]': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                          'bg-orange-100 text-accent-hover border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
+                          'bg-highlight text-primary border border-highlight': workflowStatus(p) === 'ACCEPTED_PAKAR',
                           'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'PUBLISHED',
                           'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'UNPUBLISHED',
                         }"
@@ -783,9 +783,9 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                         </button>
-                        <button x-show="workflowStatus(p) === 'DRAFT' || workflowStatus(p) === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
+                        <button x-show="workflowStatus(p) === 'DRAFT' || workflowStatus(p) === 'UNPUBLISHED'" @click="openProject(p.id)" class="bg-primary text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-primary-dark transition-all shadow-md uppercase tracking-widest">KERJAKAN</button>
                         <button x-show="['REVISI_PAKAR', 'REVISI_KETUA'].includes(workflowStatus(p))" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">PERBAIKI</button>
-                        <button x-show="p.type === 'GAME' && p.status === 'PUBLISHED' && !p.levelReviewStatus" @click="startNewLevel(p)" class="bg-white text-[#FF5722] border-2 border-[#FF5722] px-4 py-2 rounded-xl text-xs font-black hover:bg-[#FF5722] hover:text-white transition-all shadow-sm uppercase tracking-widest whitespace-nowrap">+ Tambah Level</button>
+                        <button x-show="p.type === 'GAME' && p.status === 'PUBLISHED' && !p.levelReviewStatus" @click="startNewLevel(p)" class="bg-white text-accent border-2 border-accent px-4 py-2 rounded-xl text-xs font-black hover:bg-accent hover:text-white transition-all shadow-sm uppercase tracking-widest whitespace-nowrap">+ Tambah Level</button>
                         <button x-show="['REVIEW_PAKAR', 'REVIEW_KETUA', 'ACCEPTED_PAKAR', 'PUBLISHED'].includes(workflowStatus(p))" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
                       </div>
                     </td>
@@ -807,7 +807,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
         <div x-show="menuTab === 'projects' && viewMode === 'all' && !activeProject">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h2 class="text-lg font-black text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
+              <h2 class="text-lg font-black text-primary uppercase tracking-wider flex items-center gap-2">
                 <span class="h-5 w-1.5 bg-green-500 rounded-full"></span>
                 Proyek Telah Dipublikasikan
               </h2>
@@ -860,7 +860,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                         <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                         </button>
-                        <button x-show="p.type === 'GAME' && !p.levelReviewStatus" @click="startNewLevel(p)" class="bg-white text-[#FF5722] border-2 border-[#FF5722] px-4 py-2 rounded-xl text-xs font-black hover:bg-[#FF5722] hover:text-white transition-all shadow-sm uppercase tracking-widest whitespace-nowrap">+ Tambah Level</button>
+                        <button x-show="p.type === 'GAME' && !p.levelReviewStatus" @click="startNewLevel(p)" class="bg-white text-accent border-2 border-accent px-4 py-2 rounded-xl text-xs font-black hover:bg-accent hover:text-white transition-all shadow-sm uppercase tracking-widest whitespace-nowrap">+ Tambah Level</button>
                         <span x-show="p.levelReviewStatus" class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded-lg font-black uppercase whitespace-nowrap" x-text="statusLabel(p)"></span>
                         <button @click="openProject(p.id)" class="bg-green-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition-all shadow-md transform hover:scale-105 uppercase tracking-widest">LIHAT DETAIL</button>
                       </div>
@@ -905,24 +905,24 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
           <div x-show="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'" class="space-y-6 mb-10">
             <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 gap-4">
               <div class="flex items-center gap-3">
-                <div class="h-8 w-1.5 bg-[#1A237E] rounded-full"></div>
+                <div class="h-8 w-1.5 bg-primary rounded-full"></div>
                 <div>
-                  <h3 class="text-sm font-black text-[#1A237E] uppercase tracking-widest">Editor Konten</h3>
+                  <h3 class="text-sm font-black text-primary uppercase tracking-widest">Editor Konten</h3>
                   <p class="text-[10px] text-slate-400 font-bold">Kelola butir soal interaktif</p>
                 </div>
               </div>
               <div class="flex flex-wrap gap-2 justify-center">
-                 <button @click="downloadTemplate()" class="text-[10px] font-black uppercase bg-white border-2 border-slate-200 px-4 py-2 rounded-lg hover:border-[#1A237E] transition-all flex items-center gap-2">
+                 <button @click="downloadTemplate()" class="text-[10px] font-black uppercase bg-white border-2 border-slate-200 px-4 py-2 rounded-lg hover:border-primary transition-all flex items-center gap-2">
                    CSV Template
                  </button>
-                 <label class="text-[10px] font-black uppercase bg-[#FFC107] text-[#1A237E] px-4 py-2 rounded-lg cursor-pointer hover:bg-[#FFD54F] transition-all flex items-center gap-2 shadow-sm">
+                 <label class="text-[10px] font-black uppercase bg-highlight text-primary px-4 py-2 rounded-lg cursor-pointer hover:bg-[#FFD54F] transition-all flex items-center gap-2 shadow-sm">
                    Import CSV
                    <input type="file" accept=".csv" @change="importCSV" class="hidden">
                  </label>
-                 <button x-show="activeProject?.gameType === 'QUIZ' || activeProject?.gameType === 'FILL_THE_BLANK'" @click="openGenerateModal = true" class="text-[10px] font-black uppercase bg-[#FF5722] text-white px-4 py-2 rounded-lg hover:bg-[#E64A19] transition-all flex items-center gap-2 shadow-md">
+                 <button x-show="activeProject?.gameType === 'QUIZ' || activeProject?.gameType === 'FILL_THE_BLANK'" @click="openGenerateModal = true" class="text-[10px] font-black uppercase bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-hover transition-all flex items-center gap-2 shadow-md">
                    Generate Soal
                  </button>
-                 <button @click="previewGame()" class="text-[10px] font-black uppercase bg-[#1A237E] text-white px-4 py-2 rounded-lg hover:bg-indigo-900 transition-all flex items-center gap-2 shadow-md">
+                 <button @click="previewGame()" class="text-[10px] font-black uppercase bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-all flex items-center gap-2 shadow-md">
                    Simulasi Game
                  </button>
               </div>
@@ -964,27 +964,27 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
           <div x-show="openGenerateModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;" x-transition>
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
               <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-lg font-bold text-[#1A237E]">Auto-Generate Soal dari Bank</h3>
+                <h3 class="text-lg font-bold text-primary">Auto-Generate Soal dari Bank</h3>
                 <button @click="openGenerateModal = false" class="text-slate-400 hover:text-red-500">&times;</button>
               </div>
               <div class="p-5 space-y-4">
                 <p class="text-xs text-slate-500 font-bold mb-4">Pastikan Total Soal = (Mudah + Sedang + Sulit). Auto-generate akan menarik soal secara acak dari Bank Soal global.</p>
                 <div>
                   <label class="block text-sm font-semibold text-slate-700 mb-1">Total Soal</label>
-                  <input type="number" min="1" x-model.number="generateData.totalSoal" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                  <input type="number" min="1" x-model.number="generateData.totalSoal" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-highlight outline-none">
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                   <div>
                     <label class="block text-xs font-semibold text-green-700 mb-1">Mudah</label>
-                    <input type="number" min="0" x-model.number="generateData.jumlahMudah" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                    <input type="number" min="0" x-model.number="generateData.jumlahMudah" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-highlight outline-none">
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-yellow-700 mb-1">Sedang</label>
-                    <input type="number" min="0" x-model.number="generateData.jumlahSedang" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                    <input type="number" min="0" x-model.number="generateData.jumlahSedang" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-highlight outline-none">
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-red-700 mb-1">Sulit</label>
-                    <input type="number" min="0" x-model.number="generateData.jumlahSulit" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+                    <input type="number" min="0" x-model.number="generateData.jumlahSulit" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-highlight outline-none">
                   </div>
                 </div>
                 <div class="p-3 mt-4 bg-slate-50 rounded border border-slate-200 text-xs font-bold text-center">
@@ -993,7 +993,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               </div>
               <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
                 <button @click="openGenerateModal = false" class="px-4 py-2 text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-                <button @click="submitGenerate()" :disabled="isGenerating || Number(generateData.totalSoal) !== (Number(generateData.jumlahMudah) + Number(generateData.jumlahSedang) + Number(generateData.jumlahSulit))" class="px-4 py-2 text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 disabled:opacity-50 font-semibold text-sm">
+                <button @click="submitGenerate()" :disabled="isGenerating || Number(generateData.totalSoal) !== (Number(generateData.jumlahMudah) + Number(generateData.jumlahSedang) + Number(generateData.jumlahSulit))" class="px-4 py-2 text-white bg-primary rounded-lg hover:bg-blue-900 disabled:opacity-50 font-semibold text-sm">
                   <span x-text="isGenerating ? 'Memproses...' : 'Generate'"></span>
                 </button>
               </div>
@@ -1005,13 +1005,13 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200">
               <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
               <template x-for="level in levelCount" :key="level">
-                <button type="button" @click="activeLevel = level" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="activeLevel === level ? 'bg-[#1A237E] text-[#FFC107] shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
+                <button type="button" @click="activeLevel = level" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="activeLevel === level ? 'bg-primary text-highlight shadow-md' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-primary'">
                   <span x-text="'Level ' + level"></span>
                   <span class="ml-1 opacity-70" x-text="'(' + levelQuestionCount(level) + ')'"></span>
                   <i class="bi bi-lock-fill ml-1" x-show="isLevelLocked(level)" title="Sudah terbit"></i>
                 </button>
               </template>
-              <button type="button" x-show="!isReadOnly()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-[#FF5722] text-[#FF5722] hover:bg-[#FF5722] hover:text-white transition-all">+ Tambah Level</button>
+              <button type="button" x-show="!isReadOnly()" @click="addLevel()" class="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest border-2 border-dashed border-accent text-accent hover:bg-accent hover:text-white transition-all">+ Tambah Level</button>
               <button type="button" x-show="!isReadOnly() && levelCount > 1 && activeLevel === levelCount && levelQuestionCount(levelCount) === 0" @click="removeLastLevel()" class="px-3 py-2 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50">Hapus Level Kosong</button>
               <span class="sm:ml-auto text-[10px] text-slate-400 font-bold" x-text="'Nilai minimal lulus tiap level: ' + (activeProject?.passPercentage ?? 70) + '%'"></span>
             </div>
@@ -1024,8 +1024,8 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             </div>
 
             <template x-for="(q, idx) in questions" :key="idx">
-              <div x-show="levelOf(q) === activeLevel" class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-[#FFC107]">
-                <div class="absolute -left-4 top-10 bg-[#1A237E] text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="questionNumberInLevel(idx)"></div>
+              <div x-show="levelOf(q) === activeLevel" class="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-xl relative group transition-all hover:border-highlight">
+                <div class="absolute -left-4 top-10 bg-primary text-white h-10 w-10 rounded-xl flex items-center justify-center font-black shadow-lg" x-text="questionNumberInLevel(idx)"></div>
                 <button x-show="!isQuestionLocked(q)" @click="removeQuestion(idx)" class="absolute -right-3 -top-3 bg-red-500 text-white h-10 w-10 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-10">&times;</button>
                 
                 <!-- Quiz Editor -->
@@ -1033,27 +1033,27 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                   <div class="space-y-8 pl-4">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Butir Pertanyaan</label>
-                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-32 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
+                      <textarea x-model="q.question" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-32 focus:border-primary outline-none font-bold text-xl text-primary bg-white transition-all shadow-inner" placeholder="Tuliskan pertanyaan di sini..."></textarea>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <template x-for="opt in ['A', 'B', 'C', 'D']">
                         <div class="relative">
                           <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" x-text="'Pilihan ' + opt"></label>
-                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white transition-all pl-12 shadow-sm" :placeholder="'Opsi ' + opt">
-                          <div class="absolute left-4 top-10 font-black text-[#1A237E]" x-text="opt + '.'"></div>
+                          <input type="text" x-model="q['option' + opt]" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold text-slate-700 bg-white transition-all pl-12 shadow-sm" :placeholder="'Opsi ' + opt">
+                          <div class="absolute left-4 top-10 font-black text-primary" x-text="opt + '.'"></div>
                         </div>
                       </template>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-50">
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Jawaban Benar</label>
-                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
+                        <select x-model="q.correctAnswer" @change="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-black bg-white cursor-pointer text-primary shadow-sm">
                           <option value="A">Opsi A</option><option value="B">Opsi B</option><option value="C">Opsi C</option><option value="D">Opsi D</option>
                         </select>
                       </div>
                       <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Kesulitan</label>
-                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-black bg-white cursor-pointer text-[#1A237E] shadow-sm">
+                        <select x-model="q.difficulty" @change="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-black bg-white cursor-pointer text-primary shadow-sm">
                           <option value="MUDAH">MUDAH (10 Poin)</option>
                           <option value="SEDANG">SEDANG (20 Poin)</option>
                           <option value="SULIT">SULIT (50 Poin)</option>
@@ -1062,7 +1062,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                     </div>
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Penjelasan Edukatif</label>
-                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 italic bg-white transition-all shadow-sm" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
+                      <textarea x-model="q.explanation" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-primary outline-none font-medium text-slate-600 italic bg-white transition-all shadow-sm" placeholder="Berikan alasan mengapa jawaban tersebut benar..."></textarea>
                     </div>
                   </div>
                 </template>
@@ -1073,11 +1073,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                      <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex justify-between">
                            Teks Lengkap (Blok teks lalu klik 'Jadikan Blank')
-                           <button x-show="!isQuestionLocked(q)" @click="makeBlank(idx)" class="bg-[#FFC107] text-[#1A237E] px-4 py-1 rounded-full hover:bg-yellow-400 transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase">
+                           <button x-show="!isQuestionLocked(q)" @click="makeBlank(idx)" class="bg-highlight text-primary px-4 py-1 rounded-full hover:bg-yellow-400 transition-all shadow-sm flex items-center gap-2 font-black text-[10px] uppercase">
                              Jadikan Blank
                            </button>
                         </label>
-                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-40 focus:border-[#1A237E] outline-none font-bold text-xl text-[#1A237E] bg-white transition-all shadow-inner" placeholder="Tuliskan kalimat di sini..."></textarea>
+                        <textarea :id="'ftb-text-' + idx" x-model="q.fullText" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full border-2 border-slate-100 rounded-2xl p-6 h-40 focus:border-primary outline-none font-bold text-xl text-primary bg-white transition-all shadow-inner" placeholder="Tuliskan kalimat di sini..."></textarea>
                      </div>
                      <div class="space-y-3">
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Daftar Kata Rumpang</label>
@@ -1085,11 +1085,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                            <div class="bg-slate-50 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-start border border-slate-100">
                               <div class="flex-none">
                                  <div class="text-[8px] font-black text-blue-400 uppercase mb-1">KATA</div>
-                                 <div class="bg-[#1A237E] text-white px-3 py-1 rounded font-black text-sm" x-text="ans.word"></div>
+                                 <div class="bg-primary text-white px-3 py-1 rounded font-black text-sm" x-text="ans.word"></div>
                               </div>
                               <div class="flex-1 w-full">
                                  <div class="text-[8px] font-black text-blue-400 uppercase mb-1">PENJELASAN</div>
-                                 <input type="text" x-model="ans.explanation" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full bg-white border-2 border-slate-100 rounded-lg p-2 text-xs font-bold focus:border-[#1A237E] outline-none transition-all" placeholder="Mengapa kata ini penting?">
+                                 <input type="text" x-model="ans.explanation" @input="debouncedSave()" :disabled="isQuestionLocked(q)" class="w-full bg-white border-2 border-slate-100 rounded-lg p-2 text-xs font-bold focus:border-primary outline-none transition-all" placeholder="Mengapa kata ini penting?">
                               </div>
                               <button x-show="!isQuestionLocked(q)" @click="q.answers.splice(aidx, 1); debouncedSave()" class="text-red-400 hover:text-red-600 pt-5 font-black">&times;</button>
                            </div>
@@ -1103,15 +1103,15 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
               </div>
             </template>
 
-            <button x-show="!isReadOnly() && !isLevelLocked(activeLevel)" @click="addQuestion()" class="w-full border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-slate-400 font-black uppercase tracking-[0.3em] hover:border-[#1A237E] hover:text-[#1A237E] transition-all flex flex-col items-center gap-4 group">
-               <div class="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-[#1A237E] group-hover:text-[#FFC107] transition-all transform group-hover:rotate-90">
+            <button x-show="!isReadOnly() && !isLevelLocked(activeLevel)" @click="addQuestion()" class="w-full border-4 border-dashed border-slate-200 rounded-[2.5rem] p-10 text-slate-400 font-black uppercase tracking-[0.3em] hover:border-primary hover:text-primary transition-all flex flex-col items-center gap-4 group">
+               <div class="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-primary group-hover:text-highlight transition-all transform group-hover:rotate-90">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
                </div>
                <span x-text="'Tambah butir soal baru ke Level ' + activeLevel"></span>
             </button>
 
             <div x-show="!isReadOnly()" class="pt-10 flex flex-col items-center gap-3">
-               <button @click="submitForReview()" class="bg-[#FF5722] text-white px-12 py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#E64A19] transition-all transform hover:scale-110 active:scale-95 flex items-center gap-4">
+               <button @click="submitForReview()" class="bg-accent text-white px-12 py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-accent-hover transition-all transform hover:scale-110 active:scale-95 flex items-center gap-4">
                   <span x-text="workflowStatus(activeProject) === 'REVISI_KETUA' ? 'KIRIM KE KETUA TIM' : 'KIRIM KE PAKAR'"></span>
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                </button>
@@ -1130,11 +1130,11 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
            class="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] backdrop-blur-md">
          <div class="bg-white rounded-[3rem] w-full shadow-2xl overflow-hidden flex flex-col relative border-4 border-white/20 transition-all duration-500"
               :class="activeProject?.gameType === 'WORD_SEARCH' || activeProject?.gameType === 'CROSSWORD' ? 'max-w-[95vw] h-[95vh]' : 'max-w-4xl h-[85vh]'">
-            <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-[#FF5722] z-10 text-3xl transition-colors font-black">&times;</button>
-            <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-[0.2em] border-b-8 border-[#FFC107] flex justify-between px-10">
+            <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-accent z-10 text-3xl transition-colors font-black">&times;</button>
+            <div class="bg-primary p-6 text-white font-black text-center uppercase tracking-[0.2em] border-b-8 border-highlight flex justify-between px-10">
               <div class="flex gap-2">
                 <span class="text-white/40">SIMULASI:</span>
-                <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+                <span x-text="activeProject?.title" class="text-highlight"></span>
               </div>
               <div class="flex gap-4 text-[10px]">
                 <span class="bg-white/10 px-3 py-1 rounded-full text-white" x-text="activeProject?.gameType"></span>
@@ -1143,19 +1143,19 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
             <div x-show="activeProject?.type === 'GAME' && previewLevelCount() > 1" class="flex flex-wrap items-center justify-center gap-2 bg-slate-100 px-4 py-3 border-b border-slate-200">
               <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
               <template x-for="l in previewLevelCount()" :key="l">
-                <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-[#1A237E] text-[#FFC107]' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
+                <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-primary text-highlight' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-primary'">
                   <span x-text="'Level ' + l"></span>
-                  <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-[#FF5722] text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
+                  <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-accent text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
                 </button>
               </template>
             </div>
             <div class="p-0 flex-1 overflow-y-auto bg-slate-50 relative flex flex-col">
                <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
                  <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none z-20">
-                    <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="pointer-events-auto bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
+                    <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="pointer-events-auto bg-white/80 hover:bg-white text-primary p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
                     </button>
-                    <button @click="nextQuestion()" x-show="currentQuestionIndex < previewQuestions.length - 1" class="pointer-events-auto bg-white/80 hover:bg-white text-[#1A237E] p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
+                    <button @click="nextQuestion()" x-show="currentQuestionIndex < previewQuestions.length - 1" class="pointer-events-auto bg-white/80 hover:bg-white text-primary p-4 rounded-full shadow-xl transition-all hover:scale-110 border border-slate-200">
                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
                     </button>
                  </div>
@@ -1163,26 +1163,26 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
 
                <div class="text-center w-full flex-1 flex flex-col justify-center">
                   <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
-                    <div class="inline-block mx-auto bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest mt-10" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
+                    <div class="inline-block mx-auto bg-primary text-highlight px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest mt-10" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
                   </template>
                   
                   <!-- Quiz Content -->
                   <template x-if="activeProject?.gameType === 'QUIZ'">
                     <div>
-                      <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-6 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
+                      <h3 class="text-base md:text-lg font-bold text-primary mb-6 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <template x-for="opt in ['A', 'B', 'C', 'D']">
                            <button @click="checkAnswerQuiz(opt)" 
                               :class="{
-                                'border-[#FFC107] bg-yellow-50': selectedAnswer === opt,
+                                'border-highlight bg-yellow-50': selectedAnswer === opt,
                                 'border-green-500 bg-green-50': showExplanation && opt === previewQuestions[currentQuestionIndex]?.correctAnswer,
                                 'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== previewQuestions[currentQuestionIndex]?.correctAnswer,
                                 'border-slate-100 bg-white': selectedAnswer !== opt && !(showExplanation && opt === previewQuestions[currentQuestionIndex]?.correctAnswer)
                               }"
-                              class="border-4 p-4 rounded-xl text-[#1A237E] font-bold transition-all text-left flex items-center gap-3 group disabled:cursor-default text-sm"
+                              class="border-4 p-4 rounded-xl text-primary font-bold transition-all text-left flex items-center gap-3 group disabled:cursor-default text-sm"
                               :disabled="showExplanation">
                               <span class="h-8 w-8 rounded-lg flex-shrink-0 flex items-center justify-center font-bold" 
-                                    :class="showExplanation && opt === previewQuestions[currentQuestionIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-[#FFC107] text-slate-400'">
+                                    :class="showExplanation && opt === previewQuestions[currentQuestionIndex]?.correctAnswer ? 'bg-green-500 text-white' : 'bg-slate-100 group-hover:bg-highlight text-slate-400'">
                                 <span x-text="opt"></span>
                               </span>
                               <span x-text="previewQuestions[currentQuestionIndex]?.['option' + opt]"></span>
@@ -1195,10 +1195,10 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                   <!-- FTB Content -->
                   <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
                     <div>
-                      <div class="text-2xl font-bold text-[#1A237E] mb-10 leading-relaxed bg-white p-8 rounded-3xl shadow-inner border-2 border-slate-100" 
+                      <div class="text-2xl font-bold text-primary mb-10 leading-relaxed bg-white p-8 rounded-3xl shadow-inner border-2 border-slate-100" 
                            x-html="renderFTB(previewQuestions[currentQuestionIndex])"></div>
                       <div class="mt-8 flex justify-center">
-                        <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-[#E64A19] transition-all">PERIKSA JAWABAN</button>
+                        <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-accent text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-accent-hover transition-all">PERIKSA JAWABAN</button>
                       </div>
                     </div>
                   </template>
@@ -1211,7 +1211,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                   </template>
                   
                   <template x-if="showPreview && activeProject?.gameType === 'CROSSWORD' && gameData">
-                    <div class="w-full h-full flex items-center justify-center p-4 bg-[#1A237E]/5" :key="'cw-' + activeProject.id + '-' + (gameData?.updatedAt || Date.now())">
+                    <div class="w-full h-full flex items-center justify-center p-4 bg-primary/5" :key="'cw-' + activeProject.id + '-' + (gameData?.updatedAt || Date.now())">
                        ${CrosswordGame({ projectVar: 'activeProject', gameDataVar: 'gameData', isReadOnly: 'true' })}
                     </div>
                   </template>
@@ -1236,7 +1236,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                           <div class="space-y-2">
                             <template x-for="(ans, aidx) in previewQuestions[currentQuestionIndex]?.answers" :key="aidx">
                               <div class="text-xs font-bold border-l-4 pl-3" :class="userFTBAnswers[aidx]?.toLowerCase() === ans.word.toLowerCase() ? 'border-green-400' : 'border-red-400'">
-                                <span class="text-[#1A237E] uppercase tracking-tighter" x-text="ans.word"></span>: 
+                                <span class="text-primary uppercase tracking-tighter" x-text="ans.word"></span>: 
                                 <span class="text-slate-500 italic" x-text="ans.explanation"></span>
                               </div>
                             </template>

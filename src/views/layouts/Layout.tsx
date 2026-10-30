@@ -15,6 +15,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>${title} | Logos LAB Dashboard</title>
       <script src="https://cdn.tailwindcss.com"></script>
+      <script src="/public/js/tailwind-config.js"></script>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       <style>
@@ -39,32 +40,32 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
           <!-- Main Header -->
           <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 flex items-center justify-between gap-4 shadow-sm">
             <div class="flex items-center gap-3 min-w-0">
-               <button type="button" @click="mobileNavOpen = true" class="lg:hidden text-[#1A237E] text-2xl leading-none" aria-label="Buka menu"><i class="bi bi-list"></i></button>
+               <button type="button" @click="mobileNavOpen = true" class="lg:hidden text-primary text-2xl leading-none" aria-label="Buka menu"><i class="bi bi-list"></i></button>
                ${(title.toLowerCase() !== 'dashboard' && !title.toLowerCase().startsWith('bank soal')) ? `
-               <div class="h-6 w-1 bg-[#FFC107] rounded-full shrink-0"></div>
-               <h1 class="text-lg md:text-xl font-bold text-[#1A237E] uppercase tracking-widest leading-tight truncate">${title}</h1>
+               <div class="h-6 w-1 bg-highlight rounded-full shrink-0"></div>
+               <h1 class="text-lg md:text-xl font-bold text-primary uppercase tracking-widest leading-tight truncate">${title}</h1>
                ` : ''}
             </div>
 
             <div class="flex items-center gap-4 md:gap-8 shrink-0">
               <!-- Notification Center -->
               <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="relative text-slate-400 hover:text-[#1A237E] transition-all transform hover:scale-110">
+                <button @click="open = !open" class="relative text-slate-400 hover:text-primary transition-all transform hover:scale-110">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
-                  ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 bg-[#FF5722] text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg ring-2 ring-white">${unreadCount}</span>` : ''}
+                  ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 bg-accent text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg ring-2 ring-white">${unreadCount}</span>` : ''}
                 </button>
                 
                 <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" style="display:none;" class="absolute right-0 mt-4 w-96 bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 overflow-hidden ring-8 ring-black/5">
-                  <div class="bg-[#1A237E] px-6 py-4 flex justify-between items-center">
+                  <div class="bg-primary px-6 py-4 flex justify-between items-center">
                     <span class="text-xs font-black text-white uppercase tracking-widest">Pusat Notifikasi</span>
-                    ${unreadCount > 0 ? `<span class="bg-[#FFC107] text-[#1A237E] text-[9px] font-black px-3 py-1 rounded-full uppercase">${unreadCount} Pesan Baru</span>` : ''}
+                    ${unreadCount > 0 ? `<span class="bg-highlight text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase">${unreadCount} Pesan Baru</span>` : ''}
                   </div>
                   <div class="max-h-[500px] overflow-y-auto divide-y divide-slate-50">
                     ${notifications.length === 0 ? '<div class="p-10 text-center text-xs text-slate-400 font-bold italic uppercase tracking-widest opacity-50">Tidak ada notifikasi baru.</div>' : notifications.map(n => `
                       <a href="/dashboard/${role.toLowerCase().split('_')[0]}" class="block p-6 hover:bg-slate-50 transition-all ${!n.isRead ? 'bg-blue-50/30' : ''} group">
-                        <p class="text-sm md:text-base text-slate-800 ${!n.isRead ? 'font-black' : 'font-medium'} group-hover:text-[#1A237E] transition-colors leading-relaxed">${n.message}</p>
+                        <p class="text-sm md:text-base text-slate-800 ${!n.isRead ? 'font-black' : 'font-medium'} group-hover:text-primary transition-colors leading-relaxed">${n.message}</p>
                         <p class="text-[10px] text-slate-400 mt-2 font-black uppercase tracking-tighter">${new Date(n.createdAt).toLocaleString('id-ID')}</p>
                       </a>
                     `).join('')}
@@ -74,7 +75,7 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
 
               <!-- User Profile (Corner Right) -->
               <div x-data="{ openProfile: false }" class="relative">
-                <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-[#1A237E] to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-[#FFC107]">
+                <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-primary to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-highlight">
                   ${avatarUrl ? `<img src="${avatarUrl}" alt="${username}" class="w-full h-full object-cover">` : username.charAt(0).toUpperCase()}
                 </button>
 
@@ -82,13 +83,13 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
                 <div x-show="openProfile" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" style="display:none;" class="absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
                   <div class="p-3">
                     <div class="bg-slate-50 p-3 rounded-xl flex items-center gap-3">
-                      <div class="w-12 h-12 rounded-full bg-[#1A237E] text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
+                      <div class="w-12 h-12 rounded-full bg-primary text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
                         ${avatarUrl ? `<img src="${avatarUrl}" alt="${username}" class="w-full h-full object-cover">` : username.charAt(0).toUpperCase()}
                       </div>
                       <div class="flex flex-col overflow-hidden">
                         <span class="font-bold text-slate-800 text-sm truncate">${username}</span>
                         ${email ? `<span class="text-slate-500 text-xs truncate">${email}</span>` : ''}
-                        <span class="text-[9px] font-black text-[#FF5722] mt-1 tracking-widest uppercase">${role.replace('_', ' ')}</span>
+                        <span class="text-[9px] font-black text-accent mt-1 tracking-widest uppercase">${role.replace('_', ' ')}</span>
                       </div>
                     </div>
                   </div>
@@ -96,10 +97,10 @@ export const Layout = ({ children, title, username, role, notifications = [], cu
                   <div class="border-t border-slate-100 my-1"></div>
                   
                   <div class="p-2 space-y-1">
-                    <a href="/dashboard/${role.toLowerCase().split('_')[0]}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                    <a href="/dashboard/${role.toLowerCase().split('_')[0]}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium">
                       <i class="bi bi-grid-1x2 text-lg"></i> Dashboard Utama
                     </a>
-                    <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                    <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium">
                       <i class="bi bi-person-gear text-lg"></i> Pengaturan Profil
                     </a>
                   </div>

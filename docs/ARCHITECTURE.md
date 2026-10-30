@@ -60,7 +60,7 @@ src/views/pages/           # Halaman penuh: Landing, Profil, Duel, Jurnal, Katal
 src/__tests__/             # Tes (bun test)
 drizzle/                   # File migrasi database (dibuat otomatis oleh drizzle-kit), dimulai dari 0000_baseline.sql
 public/assets/             # Logo dan gambar resmi
-public/css/, public/js/    # CSS dan JS global
+public/css/, public/js/    # CSS dan JS global (public/js/tailwind-config.js = warna palet untuk Tailwind)
 public/uploads/            # File yang diunggah pengguna (foto profil)
 ```
 

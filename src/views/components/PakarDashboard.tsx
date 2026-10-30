@@ -280,7 +280,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
              sorted.forEach(g => {
                 const regex = new RegExp(\`\\\\b(\${g.word})\\\\b\`, 'gi');
                 html = html.replace(regex, (match) => {
-                  return \`<span class="relative group cursor-help font-bold text-[#FF5722] border-b-2 border-dotted border-[#FF5722] hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1A237E] text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
+                  return \`<span class="relative group cursor-help font-bold text-accent border-b-2 border-dotted border-accent hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-primary text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
                 });
              });
              return html;
@@ -423,7 +423,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
 
     <div class="bg-white p-0 w-full rounded-2xl border border-slate-200 shadow-2xl overflow-hidden" x-data="pakarDashboard()">
       <!-- Header -->
-      <div class="bg-[#1A237E] p-6 border-b-4 border-[#FFC107] flex items-center justify-between">
+      <div class="bg-primary p-6 border-b-4 border-highlight flex items-center justify-between">
         <div class="flex items-center gap-4">
           <h2 class="text-lg md:text-xl font-bold text-white uppercase tracking-widest leading-tight" x-text="activeProject ? 'Review Proyek' : (menuTab === 'dashboard' ? 'DASHBOARD ANALITIK' : 'PEMERIKSAAN & PENYELARASAN MATERI')"></h2>
         </div>
@@ -440,14 +440,14 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
         <div class="space-y-6 mb-8">
           <!-- SECTION 1: GLOBAL ECOSYSTEM METRICS -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-gradient-to-r from-[#1A237E] to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+            <div class="bg-gradient-to-r from-primary to-blue-600 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
               <div>
                 <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Total Proyek Game Dipublish</p>
-                <h3 class="text-4xl font-black text-[#FFC107]" x-text="analytics.globalMetrics.totalPublishedGames"></h3>
+                <h3 class="text-4xl font-black text-highlight" x-text="analytics.globalMetrics.totalPublishedGames"></h3>
               </div>
               <div class="text-5xl opacity-80"><i class="bi bi-controller"></i></div>
             </div>
-            <div class="bg-gradient-to-r from-[#FF5722] to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
+            <div class="bg-gradient-to-r from-accent to-orange-500 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between hover:scale-[1.02] transition-transform">
               <div>
                 <p class="text-xs font-bold uppercase tracking-widest text-orange-200 mb-1">Total Proyek Materi Dipublish</p>
                 <h3 class="text-4xl font-black" x-text="analytics.globalMetrics.totalPublishedMaterials"></h3>
@@ -459,17 +459,17 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
           <!-- SECTION 2: KPI PAKAR REVIEWER -->
           <div class="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-sm">
             <div class="flex items-center gap-3 mb-6">
-              <span class="h-6 w-1.5 bg-[#1A237E] rounded-full"></span>
-              <h3 class="text-lg font-bold text-[#1A237E] uppercase tracking-widest">KPI Pakar Reviewer</h3>
+              <span class="h-6 w-1.5 bg-primary rounded-full"></span>
+              <h3 class="text-lg font-bold text-primary uppercase tracking-widest">KPI Pakar Reviewer</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Proyek Ditugaskan</p>
-                <p class="text-2xl font-black text-[#1A237E]" x-text="analytics.reviewerKpi.totalAssignedReviews"></p>
+                <p class="text-2xl font-black text-primary" x-text="analytics.reviewerKpi.totalAssignedReviews"></p>
               </div>
               <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proyek Sedang Ditinjau</p>
-                <p class="text-2xl font-black text-[#FF5722]" x-text="analytics.reviewerKpi.pendingReviewsCount"></p>
+                <p class="text-2xl font-black text-accent" x-text="analytics.reviewerKpi.pendingReviewsCount"></p>
               </div>
               <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rata-rata Waktu Review</p>
@@ -483,7 +483,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             <!-- Tabel Peringkat Kecepatan Review -->
             <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" x-data="{ sortAsc: true }">
               <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
-                <h4 class="text-xs font-bold text-[#1A237E] uppercase tracking-widest">Urutan Kecepatan Review</h4>
+                <h4 class="text-xs font-bold text-primary uppercase tracking-widest">Urutan Kecepatan Review</h4>
                 <button @click="sortAsc = !sortAsc; analytics.reviewerKpi.speedRankedReviews.reverse()" class="text-[10px] bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-black uppercase tracking-tighter text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                   <i class="bi" :class="sortAsc ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up'"></i>
                   <span x-text="sortAsc ? 'Tercepat -> Terlambat' : 'Terlambat -> Tercepat'"></span>
@@ -498,9 +498,9 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                     <template x-for="(proj, idx) in analytics.reviewerKpi.speedRankedReviews" :key="proj.id">
                       <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                         <td class="p-3 pl-4">
-                          <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-[#FFC107] text-[#1A237E]' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
+                          <span class="w-6 h-6 inline-flex items-center justify-center rounded-full text-[10px] font-black" :class="idx === 0 && sortAsc ? 'bg-highlight text-primary' : 'bg-slate-100 text-slate-500'" x-text="idx + 1"></span>
                         </td>
-                        <td class="p-3 text-sm font-semibold text-[#1A237E]" x-text="proj.title"></td>
+                        <td class="p-3 text-sm font-semibold text-primary" x-text="proj.title"></td>
                         <td class="p-3 text-xs font-bold text-slate-500 text-right pr-4" x-text="proj.durationFormatted"></td>
                       </tr>
                     </template>
@@ -515,8 +515,8 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             <!-- Top Played Games -->
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div class="flex items-center gap-3 mb-4">
-                <span class="h-6 w-1.5 bg-[#FFC107] rounded-full"></span>
-                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Proyek Game Paling Sering Dimainkan</h3>
+                <span class="h-6 w-1.5 bg-highlight rounded-full"></span>
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Proyek Game Paling Sering Dimainkan</h3>
               </div>
               <div class="space-y-3">
                 <template x-if="analytics.popularityMetrics.topPlayedGames.length === 0">
@@ -537,8 +537,8 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             <!-- Top Accessed Materials -->
             <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div class="flex items-center gap-3 mb-4">
-                <span class="h-6 w-1.5 bg-[#FF5722] rounded-full"></span>
-                <h3 class="text-sm font-bold text-[#1A237E] uppercase tracking-widest">Proyek Materi Paling Sering Diakses</h3>
+                <span class="h-6 w-1.5 bg-accent rounded-full"></span>
+                <h3 class="text-sm font-bold text-primary uppercase tracking-widest">Proyek Materi Paling Sering Diakses</h3>
               </div>
               <div class="space-y-3">
                 <template x-if="analytics.popularityMetrics.topAccessedMaterials.length === 0">
@@ -565,8 +565,8 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
           <!-- Header + Search -->
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
             <div>
-              <h2 class="text-base md:text-lg font-semibold text-[#1A237E] mb-1 flex items-center gap-2 uppercase tracking-tighter">
-                <span class="h-5 w-1 bg-[#FFC107] rounded-full"></span>
+              <h2 class="text-base md:text-lg font-semibold text-primary mb-1 flex items-center gap-2 uppercase tracking-tighter">
+                <span class="h-5 w-1 bg-highlight rounded-full"></span>
                 Antrean Review Proyek
               </h2>
               <p class="text-xs md:text-sm text-slate-400 font-medium">Proyek yang ditugaskan kepada Anda sebagai Pakar</p>
@@ -581,7 +581,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             <div class="flex flex-wrap items-center gap-3 w-full mb-6 p-4 bg-slate-50/80 rounded-xl border border-slate-200">
               <div class="flex flex-col gap-1 w-48 shrink-0">
                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
-                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   <option value="">-- Pilih Kriteria --</option>
                   <option value="title_game">Judul Proyek</option>
                   <option value="type_project">Tipe Proyek (Game/Materi)</option>
@@ -596,11 +596,11 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
                 
                 <template x-if="filterKey === 'title_game'">
-                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 </template>
 
                 <template x-if="filterKey === 'type_project'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Tipe --</option>
                     <option value="GAME">Game</option>
                     <option value="MATERI">Materi</option>
@@ -608,7 +608,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'type_game'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Jenis Game --</option>
                     <option value="QUIZ">QUIZ</option>
                 <option value="FILL_THE_BLANK">FILL THE BLANK</option>
@@ -618,7 +618,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'type_materi'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Jenis Materi --</option>
                     <option value="TEKS">TEKS</option>
                 <option value="VIDEO">VIDEO</option>
@@ -627,7 +627,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'pembuat'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Pembuat --</option>
                     <template x-for="p in allUsers.filter(u => u.role.includes('PEMBUAT'))" :key="p.id">
                       <option :value="p.id" x-text="p.name || ('User ID '+p.id)"></option>
@@ -636,7 +636,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'status'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Status --</option>
                     <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
                     <option value="REVISI_PAKAR">REVISI PAKAR</option>
@@ -649,9 +649,9 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
 
                 <template x-if="filterKey === 'deadline'">
                   <div class="flex gap-2">
-                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <span class="self-center font-bold text-slate-400">-</span>
-                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   </div>
                 </template>
 
@@ -661,7 +661,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
               </div>
               
               <div class="flex gap-2 ml-auto shrink-0 self-end">
-                <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+                <button @click="applyFilter()" class="bg-primary text-highlight py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2">
                   TERAPKAN
                 </button>
                 <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
@@ -687,7 +687,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 <template x-for="p in filteredProjects()" :key="p.id">
                   <tr class="hover:bg-blue-50/40 transition-all group">
                     <td class="px-6 py-2.5">
-                      <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
+                      <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-primary transition-colors" x-text="p.title"></div>
                       <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="(p.type === 'MATERI' ? '#M' : '#G') + p.id"></div>
                     </td>
                     <td class="px-6 py-2.5">
@@ -705,8 +705,8 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                         :class="{
                           'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'DRAFT',
                           'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR' || workflowStatus(p) === 'REVIEW_KETUA',
-                          'bg-orange-100 text-[#E64A19] border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
-                          'bg-[#FFC107] text-[#1A237E] border border-[#FFC107]': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                          'bg-orange-100 text-accent-hover border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
+                          'bg-highlight text-primary border border-highlight': workflowStatus(p) === 'ACCEPTED_PAKAR',
                           'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'PUBLISHED',
                           'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'UNPUBLISHED',
                         }"
@@ -719,7 +719,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                         </button>
                         <button x-show="!['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(workflowStatus(p))" @click="openProject(p.id)" class="bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-xl text-xs font-black hover:bg-slate-200 transition-all shadow-sm uppercase tracking-widest">DETAIL</button>
-                        <button x-show="workflowStatus(p) === 'REVIEW_PAKAR'" @click="openProject(p.id)" class="bg-[#1A237E] text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-indigo-900 transition-all shadow-md uppercase tracking-widest">REVIEW</button>
+                        <button x-show="workflowStatus(p) === 'REVIEW_PAKAR'" @click="openProject(p.id)" class="bg-primary text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-primary-dark transition-all shadow-md uppercase tracking-widest">REVIEW</button>
                         <button x-show="workflowStatus(p) === 'REVISI_PAKAR'" @click="openProject(p.id)" class="bg-amber-500 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-amber-600 transition-all shadow-md uppercase tracking-widest">LIHAT REVISI</button>
                       </div>
                     </td>
@@ -740,7 +740,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
         <!-- ======= VIEW: SEMUA PROYEK SAYA (PUBLISHED) ======= -->
         <div x-show="menuTab === 'projects' && viewMode === 'all' && !activeProject">
           <div class="mb-6">
-            <h2 class="text-lg font-black text-[#1A237E] flex items-center gap-2 uppercase tracking-tighter">
+            <h2 class="text-lg font-black text-primary flex items-center gap-2 uppercase tracking-tighter">
               <span class="h-5 w-1 bg-green-500 rounded-full"></span>
               Proyek Telah Dipublikasikan
             </h2>
@@ -756,7 +756,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
             <div class="flex flex-wrap items-center gap-3 w-full mb-6 p-4 bg-slate-50/80 rounded-xl border border-slate-200">
               <div class="flex flex-col gap-1 w-48 shrink-0">
                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
-                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   <option value="">-- Pilih Kriteria --</option>
                   <option value="title_game">Judul Proyek</option>
                   <option value="type_project">Tipe Proyek (Game/Materi)</option>
@@ -771,11 +771,11 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
                 
                 <template x-if="filterKey === 'title_game'">
-                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 </template>
 
                 <template x-if="filterKey === 'type_project'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Tipe --</option>
                     <option value="GAME">Game</option>
                     <option value="MATERI">Materi</option>
@@ -783,7 +783,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'type_game'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Jenis Game --</option>
                     <option value="QUIZ">QUIZ</option>
                     <option value="FILL_THE_BLANK">FILL THE BLANK</option>
@@ -793,7 +793,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'type_materi'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Jenis Materi --</option>
                     <option value="TEKS">TEKS</option>
                     <option value="VIDEO">VIDEO</option>
@@ -802,7 +802,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'pembuat'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Pembuat --</option>
                     <template x-for="p in allUsers.filter(u => u.role.includes('PEMBUAT'))" :key="p.id">
                       <option :value="p.id" x-text="p.name || ('User ID '+p.id)"></option>
@@ -811,7 +811,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 </template>
 
                 <template x-if="filterKey === 'status'">
-                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <option value="">-- Pilih Status --</option>
                     <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
                     <option value="REVISI_PAKAR">REVISI PAKAR</option>
@@ -824,9 +824,9 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
 
                 <template x-if="filterKey === 'deadline'">
                   <div class="flex gap-2">
-                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                     <span class="self-center font-bold text-slate-400">-</span>
-                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                    <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   </div>
                 </template>
 
@@ -836,7 +836,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
               </div>
               
               <div class="flex gap-2 ml-auto shrink-0 self-end">
-                <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+                <button @click="applyFilter()" class="bg-primary text-highlight py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2">
                   TERAPKAN
                 </button>
                 <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
@@ -906,21 +906,21 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
 
           <template x-if="activeProject && ['REVIEW_PAKAR', 'REVISI_PAKAR'].includes(workflowStatus(activeProject))">
             <div class="bg-white p-5 border-2 border-slate-100 rounded-2xl shadow-xl">
-              <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
-                <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
+              <h4 class="font-black text-primary uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
+                <span class="h-3 w-3 bg-accent rounded-full animate-pulse"></span>
                 Lembar Evaluasi Pakar
               </h4>
-              <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-[#1A237E] outline-none font-medium transition-all mb-6 shadow-inner" placeholder="Tuliskan catatan teknis atau instruksi revisi..." rows="3"></textarea>
+              <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-primary outline-none font-medium transition-all mb-6 shadow-inner" placeholder="Tuliskan catatan teknis atau instruksi revisi..." rows="3"></textarea>
               <div class="flex flex-col sm:flex-row gap-4">
-                <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-[#FF5722] text-[#FF5722] p-2 text-sm.5 text-sm rounded-lg rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
-                <button @click="submitReview('ACCEPT')" class="flex-1 bg-[#1A237E] text-[#FFC107] p-2 text-sm.5 text-sm rounded-lg rounded-xl font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg">VERIFIKASI &amp; SETUJUI</button>
+                <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-accent text-accent p-2 text-sm.5 text-sm rounded-lg rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
+                <button @click="submitReview('ACCEPT')" class="flex-1 bg-primary text-highlight p-2 text-sm.5 text-sm rounded-lg rounded-xl font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg">VERIFIKASI &amp; SETUJUI</button>
               </div>
             </div>
           </template>
 
           <template x-if="activeProject && !['REVIEW_PAKAR','DRAFT','REVISI_PAKAR'].includes(workflowStatus(activeProject))">
             <div class="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 text-center">
-              <p class="text-slate-500 font-bold text-sm">Proyek ini berstatus <span class="font-black text-[#1A237E] uppercase" x-text="statusLabel(activeProject)"></span> dan tidak memerlukan tindakan.</p>
+              <p class="text-slate-500 font-bold text-sm">Proyek ini berstatus <span class="font-black text-primary uppercase" x-text="statusLabel(activeProject)"></span> dan tidak memerlukan tindakan.</p>
             </div>
           </template>
         </div><!-- /Detail View -->
@@ -929,17 +929,17 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
 
       <!-- Preview Modal -->
       <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+        <div class="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-primary">
           <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 z-10 text-base font-black">&times;</button>
-          <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
-            <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+          <div class="bg-primary p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-highlight">
+            <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-highlight"></span>
           </div>
           <div x-show="activeProject?.type === 'GAME' && previewLevelCount() > 1" class="flex flex-wrap items-center justify-center gap-2 bg-slate-100 px-4 py-3 border-b border-slate-200">
             <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
             <template x-for="l in previewLevelCount()" :key="l">
-              <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-[#1A237E] text-[#FFC107]' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
+              <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-primary text-highlight' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-primary'">
                 <span x-text="'Level ' + l"></span>
-                <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-[#FF5722] text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
+                <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-accent text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
               </button>
             </template>
           </div>
@@ -951,7 +951,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 <template x-if="activeProject?.materiType === 'MANUAL'">
                   <div class="w-full max-w-4xl flex flex-col gap-6">
                     <div class="flex justify-end w-full">
-                       <button @click="speakAllSections()" class="bg-[#1A237E] hover:bg-indigo-900 text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-md flex items-center gap-2">
+                       <button @click="speakAllSections()" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-md flex items-center gap-2">
                          <template x-if="isReading"><span>Jeda / Berhenti Baca Semua</span></template>
                          <template x-if="!isReading"><span>🔊 Bacakan Semua Kartu</span></template>
                        </button>
@@ -971,19 +971,19 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                              x-transition:leave-start="flip-in"
                              x-transition:leave-end="flip-out"
                              @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
-                             class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-6 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
+                             class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-6 md:p-16 bg-gradient-to-br from-primary to-blue-900 text-white"
                              :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
                            
                            <!-- Locked Overlay -->
                            <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#FFC107] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                              <span class="bg-[#1A237E] text-white p-2 text-sm rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-highlight mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                              <span class="bg-primary text-white p-2 text-sm rounded-full font-bold text-sm shadow-xl border border-highlight/30">Buka kartu sebelumnya terlebih dahulu</span>
                            </div>
 
                            <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
-                             <span class="inline-block bg-[#FF5722] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
+                             <span class="inline-block bg-accent text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
                              <h2 class="text-lg md:text-lg font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
-                             <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 p-2 text-sm.5 text-sm rounded-lg rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+                             <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-highlight text-sm font-bold animate-bounce bg-white/10 p-2 text-sm.5 text-sm rounded-lg rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
                                Buka Kartu
                              </button>
@@ -996,7 +996,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                              x-transition:enter-start="flip-start"
                              x-transition:enter-end="flip-in"
                              class="w-full h-full flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-                          <div class="bg-[#1A237E] text-white p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
+                          <div class="bg-primary text-white p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center min-h-[140px] border-b-4 border-highlight gap-4">
                             <div class="flex items-center gap-3 flex-1">
                               <button @click="flipped = false" class="shrink-0 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Tutup Kartu">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -1004,7 +1004,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                               <h2 class="text-base md:text-lg font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
                             </div>
                             <!-- Speaker Button -->
-                            <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] p-2 text-sm rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
+                            <button @click="speakSection(idx)" class="shrink-0 bg-accent hover:bg-accent-hover p-2 text-sm rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
                               <template x-if="speakingIdx === idx && !isPaused">
                                  <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Jeda</div>
                               </template>
@@ -1060,10 +1060,10 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
               </template>
               <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
                 <div>
-                  <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
+                  <div class="inline-block bg-primary text-highlight px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
                   <template x-if="activeProject?.gameType === 'QUIZ'">
                     <div>
-                      <h3 class="text-base md:text-lg font-bold text-[#1A237E] mb-6 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
+                      <h3 class="text-base md:text-lg font-bold text-primary mb-6 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <template x-for="opt in ['A','B','C','D']">
                           <button @click="checkAnswerQuiz(opt)"
@@ -1073,7 +1073,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                               'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== previewQuestions[currentQuestionIndex]?.correctAnswer,
                               'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
                             }"
-                            class="border-4 p-4 rounded-xl text-[#1A237E] font-bold transition-all text-left flex items-center gap-3 text-sm"
+                            class="border-4 p-4 rounded-xl text-primary font-bold transition-all text-left flex items-center gap-3 text-sm"
                             :disabled="showExplanation">
                             <span class="h-8 w-8 rounded-lg flex items-center justify-center font-bold bg-slate-100 shrink-0" x-text="opt"></span>
                             <span x-text="previewQuestions[currentQuestionIndex]?.['option' + opt]"></span>
@@ -1084,8 +1084,8 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                   </template>
                   <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
                     <div>
-                      <div class="text-base font-bold text-[#1A237E] mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(previewQuestions[currentQuestionIndex])"></div>
-                      <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white p-2 text-sm text-sm rounded-lg rounded-xl font-black uppercase tracking-widest">PERIKSA JAWABAN</button>
+                      <div class="text-base font-bold text-primary mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(previewQuestions[currentQuestionIndex])"></div>
+                      <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-accent text-white p-2 text-sm text-sm rounded-lg rounded-xl font-black uppercase tracking-widest">PERIKSA JAWABAN</button>
                     </div>
                   </template>
                   <div x-show="showExplanation" class="mt-6 p-5 rounded-2xl border-2 border-dashed text-left" :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
@@ -1094,7 +1094,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                   </div>
                   <div class="flex gap-4 mt-6 justify-center">
                     <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="bg-slate-100 text-slate-700 px-6 py-2 rounded-xl font-black">← Prev</button>
-                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < previewQuestions.length - 1 ? 'Berikutnya →' : 'Selesai Review'"></button>
+                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-primary text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < previewQuestions.length - 1 ? 'Berikutnya →' : 'Selesai Review'"></button>
                   </div>
                 </div>
               </template>

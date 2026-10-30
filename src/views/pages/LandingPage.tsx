@@ -10,12 +10,12 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
           <div class="container mx-auto p-2 text-sm.5 text-sm rounded-lg flex justify-between items-center">
             <a href="/" class="flex items-center gap-3">
               <img src="/public/assets/logo.png" alt="Logos LAB Logo" class="h-10 w-10">
-              <span class="font-black text-2xl text-[#1A237E] tracking-tight">Logos LAB</span>
+              <span class="font-black text-2xl text-primary tracking-tight">Logos LAB</span>
             </a>
             <nav class="flex items-center">
               ${user ? `
                 <div x-data="{ openProfile: false }" class="relative">
-                  <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-[#1A237E] to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-[#FFC107]">
+                  <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 shadow-inner group transition-transform hover:scale-105 bg-gradient-to-br from-primary to-blue-600 text-white font-black overflow-hidden ring-2 ring-white hover:ring-highlight">
                     ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
                   </button>
 
@@ -27,13 +27,13 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                     
                     <div class="p-3">
                       <div class="bg-slate-50 p-3 rounded-xl flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-[#1A237E] text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
+                        <div class="w-12 h-12 rounded-full bg-primary text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0 overflow-hidden">
                           ${user.avatarUrl || user.profilePicture ? `<img src="${user.avatarUrl || user.profilePicture}" alt="${user.name || user.username}" class="w-full h-full object-cover">` : (user.name || user.username).charAt(0).toUpperCase()}
                         </div>
                         <div class="flex flex-col overflow-hidden">
                           <span class="font-bold text-slate-800 text-sm truncate">${user.name || user.username}</span>
                           <span class="text-slate-500 text-xs truncate">${user.email || (user.username.toLowerCase().replace(/\s+/g, '') + '@logoslab.com')}</span>
-                          <span class="text-[9px] font-black text-[#FF5722] mt-1 tracking-widest uppercase">${user.role.replace('_', ' ')}</span>
+                          <span class="text-[9px] font-black text-accent mt-1 tracking-widest uppercase">${user.role.replace('_', ' ')}</span>
                         </div>
                       </div>
                     </div>
@@ -41,10 +41,10 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                     <div class="border-t border-slate-100 my-1"></div>
                     
                     <div class="p-2 space-y-1">
-                      <a href="${getDashboardPath(user.role)}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                      <a href="${getDashboardPath(user.role)}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium">
                         <i class="bi bi-grid-1x2 text-lg"></i> Dashboard Utama
                       </a>
-                      <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-[#1A237E] hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                      <a href="/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors font-medium">
                         <i class="bi bi-person-gear text-lg"></i> Pengaturan Profil
                       </a>
                     </div>
@@ -59,7 +59,7 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                   </div>
                 </div>
               ` : `
-                <button id="btn-login-trigger" class="bg-[#FF5722] hover:bg-[#E64A19] text-white p-2 text-sm.5 text-sm rounded-lg rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                <button id="btn-login-trigger" class="bg-accent hover:bg-accent-hover text-white p-2 text-sm.5 text-sm rounded-lg rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                   Masuk Workspace
                 </button>
@@ -69,14 +69,14 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
         </header>
 
         <!-- ========== HERO SECTION ========== -->
-        <section class="relative bg-gradient-to-br from-[#1A237E] to-[#3949AB] text-white py-24 lg:py-32 overflow-hidden">
+        <section class="relative bg-gradient-to-br from-primary to-[#3949AB] text-white py-24 lg:py-32 overflow-hidden">
           <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
           <div class="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
             <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold mb-8 border border-white/30">
-              <span class="text-[#FFC107]">✨</span> Platform Edukasi Interaktif
+              <span class="text-highlight">✨</span> Platform Edukasi Interaktif
             </div>
             <h1 class="text-4xl md:text-4xl font-black leading-tight mb-6">
-              <span class="text-[#FFC107]">Edukasi Alkitab</span><br>dan Berpikir Kritis
+              <span class="text-highlight">Edukasi Alkitab</span><br>dan Berpikir Kritis
             </h1>
             <p class="text-lg md:text-xl text-blue-100 max-w-2xl mb-10 leading-relaxed font-light">
               ${user === null 
@@ -84,11 +84,11 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                 : `Selamat datang kembali, ${user.name}! Siap melanjutkan petualangan Alkitab hari ini?`}
             </p>
             ${user === null 
-              ? `<button id="btn-login-trigger-hero" onclick="document.getElementById('btn-login-trigger').click()" class="bg-white text-[#1A237E] hover:bg-slate-50 px-6 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
+              ? `<button id="btn-login-trigger-hero" onclick="document.getElementById('btn-login-trigger').click()" class="bg-white text-primary hover:bg-slate-50 px-6 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
                   Masuk / Daftar Sekarang
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>`
-              : `<a href="${getDashboardPath(user.role)}" class="bg-[#1A237E] text-white hover:bg-blue-900 px-6 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
+              : `<a href="${getDashboardPath(user.role)}" class="bg-primary text-white hover:bg-blue-900 px-6 py-3 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-3">
                   Buka Dashboard Saya →
                 </a>`
             }
@@ -99,7 +99,7 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
         <section id="showcase" class="py-24 bg-slate-50">
           <div class="container mx-auto px-6">
             <div class="text-center mb-16">
-              <h2 class="text-4xl font-black text-[#1A237E] mb-4">🎮 Showcase Game Publik</h2>
+              <h2 class="text-4xl font-black text-primary mb-4">🎮 Showcase Game Publik</h2>
               <p class="text-slate-500 text-lg">Karya interaktif terbaik dari komunitas kreator Logos LAB</p>
             </div>
             
@@ -115,7 +115,7 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                         `<img src="${game.thumbnailUrl}" alt="${game.title}" class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500">` : 
                         `<span class="text-6xl mb-2 transform group-hover:scale-110 transition-transform">${getGameIcon(game.gameType)}</span>`
                       }
-                      <span class="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-black px-3 py-1 rounded-full text-[#1A237E] shadow-sm uppercase tracking-wider">
+                      <span class="absolute top-4 right-4 bg-white/90 backdrop-blur text-xs font-black px-3 py-1 rounded-full text-primary shadow-sm uppercase tracking-wider">
                         ${game.gameType?.replace('_', ' ') || 'GAME'}
                       </span>
                     </div>
@@ -123,8 +123,8 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                       <h3 class="text-xl font-bold text-slate-800 mb-2 leading-tight">${game.title}</h3>
                       <p class="text-slate-500 text-sm mb-6 line-clamp-2 flex-1">${game.description || 'Tidak ada deskripsi.'}</p>
                       ${user === null
-                        ? `<button onclick="document.getElementById('btn-login-trigger').click()" class="btn-play-game w-full py-2 rounded-xl bg-blue-50 text-[#1A237E] font-bold hover:bg-[#1A237E] hover:text-white transition-colors text-center inline-block">Coba Demo</button>`
-                        : `<a href="/play/${game.id}" class="btn-play-game w-full py-2 rounded-xl bg-blue-50 text-[#1A237E] font-bold hover:bg-[#1A237E] hover:text-white transition-colors text-center inline-block">Mainkan Sekarang</a>`
+                        ? `<button onclick="document.getElementById('btn-login-trigger').click()" class="btn-play-game w-full py-2 rounded-xl bg-blue-50 text-primary font-bold hover:bg-primary hover:text-white transition-colors text-center inline-block">Coba Demo</button>`
+                        : `<a href="/play/${game.id}" class="btn-play-game w-full py-2 rounded-xl bg-blue-50 text-primary font-bold hover:bg-primary hover:text-white transition-colors text-center inline-block">Mainkan Sekarang</a>`
                       }
                     </div>
                   </div>
@@ -134,8 +134,8 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
             
             ${user === null ? `
             <div class="mt-16 text-center bg-blue-50 p-8 rounded-2xl border border-blue-100 max-w-3xl mx-auto">
-              <h3 class="text-xl font-bold text-[#1A237E] mb-4">Ingin mengakses seluruh game & materi Alkitab serta mencatat poin XP?</h3>
-              <button onclick="document.getElementById('btn-login-trigger').click()" class="bg-[#FF5722] hover:bg-[#E64A19] text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2">
+              <h3 class="text-xl font-bold text-primary mb-4">Ingin mengakses seluruh game & materi Alkitab serta mencatat poin XP?</h3>
+              <button onclick="document.getElementById('btn-login-trigger').click()" class="bg-accent hover:bg-accent-hover text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2">
                 Masuk / Daftar Sekarang
               </button>
             </div>
@@ -265,7 +265,7 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
           <div class="container mx-auto px-6 relative z-10">
             <div class="flex flex-col lg:flex-row items-center gap-16">
               <div class="lg:w-1/2">
-                <h2 class="text-4xl font-black text-[#1A237E] mb-6 leading-tight">Sistem Penjaminan Mutu & Kolaborasi Lintas Peran</h2>
+                <h2 class="text-4xl font-black text-primary mb-6 leading-tight">Sistem Penjaminan Mutu & Kolaborasi Lintas Peran</h2>
                 <p class="text-slate-600 text-lg leading-relaxed mb-8">
                   Setiap konten di Logos LAB tidak diterbitkan sembarangan. Kami menerapkan sistem penjaminan mutu teologis berlapis untuk memastikan kebenaran, akurasi, dan relevansi.
                 </p>
@@ -306,7 +306,7 @@ export const LandingPage = ({ games, user }: { games: any[], user?: any }) => {
                       <i class="bi bi-arrow-right text-slate-300"></i>
                     </div>
                     <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                      <span class="font-bold text-[#1A237E]">2. Review Pakar</span>
+                      <span class="font-bold text-primary">2. Review Pakar</span>
                       <span class="animate-pulse bg-blue-500 w-2 h-2 rounded-full"></span>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center opacity-70">

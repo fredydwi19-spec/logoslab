@@ -104,7 +104,7 @@ export const ProfilePage = ({ user }: { user: any }) => {
                     <div class="space-y-2">
                       <label class="text-sm font-bold text-slate-700 ml-1">Nama Lengkap</label>
                       <input type="text" name="name" value="${user.name}" placeholder="Nama Anda" required
-                        class="w-full px-5 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 focus:border-[#1A237E] focus:ring-4 focus:ring-[#1A237E]/5 outline-none transition-all font-medium">
+                        class="w-full px-5 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium">
                     </div>
                     <div class="space-y-2">
                       <label class="text-sm font-bold text-slate-700 ml-1">Ganti Foto Profil</label>
@@ -145,7 +145,7 @@ export const ProfilePage = ({ user }: { user: any }) => {
                 ` : ''}
 
                 <div class="pt-6">
-                  <button type="submit" id="save-btn" class="w-full bg-[#FF5722] hover:bg-[#E64A19] text-white font-bold py-2.5 rounded-2xl shadow-lg shadow-[#FF5722]/20 transition-all transform hover:-translate-y-1">
+                  <button type="submit" id="save-btn" class="w-full bg-accent hover:bg-accent-hover text-white font-bold py-2.5 rounded-2xl shadow-lg shadow-accent/20 transition-all transform hover:-translate-y-1">
                     Simpan Semua Perubahan
                   </button>
                 </div>

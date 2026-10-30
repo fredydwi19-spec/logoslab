@@ -55,8 +55,8 @@ Pakai kelipatan 4/8 px: 4, 8, 12, 16, 24, 32, 48, 64 (di Tailwind: `1, 2, 3, 4, 
 - **Badge status proyek:**
   - `DRAFT` = abu-abu (`bg-slate-100 text-slate-600 border-slate-200`)
   - `REVIEW_PAKAR`, `REVIEW_KETUA` = biru (`bg-blue-100 text-blue-800 border-blue-200`)
-  - `REVISI_PAKAR`, `REVISI_KETUA` = Warning (`bg-orange-100 text-[#E64A19] border-orange-200`)
-  - `ACCEPTED_PAKAR` = Highlight (`bg-[#FFC107] text-[#1A237E]`)
+  - `REVISI_PAKAR`, `REVISI_KETUA` = Warning (`bg-orange-100 text-accent-hover border-orange-200`)
+  - `ACCEPTED_PAKAR` = Highlight (`bg-highlight text-primary`)
   - `PUBLISHED` = Success (`bg-green-100 text-green-800 border-green-200`)
   - `UNPUBLISHED` = Error (`bg-red-100 text-red-800 border-red-200`)
   - Kelas di atas dipakai sama persis di tabel proyek Ketua (`KetuaTimAllProjects.tsx`), Pakar, Pembuat Game, dan Pembuat Materi. Badge memakai `whitespace-nowrap` agar tidak terpecah.
@@ -84,8 +84,22 @@ Bootstrap Icons (`<i class="bi bi-..."></i>`). Pakai itu saja; jangan memakai em
 
 ## 09 Framework CSS
 Tailwind CSS (lewat CDN) + variabel warna di `public/css/style.css`.
-- Daftarkan warna di atas pada konfigurasi tema Tailwind (`tailwind.config` di `Layout.tsx`), lalu pakai nama seperti `bg-primary` dan `bg-accent`. Jangan menulis kode hex langsung di class.
-- ⚠️ Saat ini kode masih menulis hex langsung (`bg-[#1A237E]`) dan di beberapa tempat memakai `bg-indigo-900` sebagai pengganti navy. Keduanya harus diganti bertahap.
+- Warna palet sudah terdaftar di `public/js/tailwind-config.js` (dimuat tepat setelah script Tailwind CDN di `Layout.tsx`, `MainLayout.tsx`, dan halaman `/materi`, `/play`, `/duel` di `src/index.tsx`). Pakai nama warnanya, jangan menulis kode hex di class:
+
+| Class | Hex |
+|-------|-----|
+| `primary` | #1A237E |
+| `primary-dark` | #121858 (dipakai untuk efek hover tombol Primary) |
+| `accent` | #FF5722 |
+| `accent-hover` | #E64A19 |
+| `highlight` | #FFC107 |
+| `success` | #16A34A |
+| `error` | #DC2626 |
+| `muted` | #64748B |
+
+  Contoh: `bg-primary`, `text-highlight`, `hover:bg-accent-hover`, `border-highlight/30`, `from-primary`.
+- Halaman baru yang memuat Tailwind CDN wajib ikut memuat `/public/js/tailwind-config.js` tepat setelahnya.
+- Warna tambahan dari Tailwind bawaan (misalnya `slate`, `blue`, `green-100`) tetap boleh untuk latar lembut dan badge sesuai aturan di §06.
 
 ## Aturan
 - Jangan memakai warna di luar palet ini.

@@ -4,13 +4,13 @@ export const BankSoalFtbUI = () => {
       <!-- Header -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="text-base md:text-lg font-bold text-[#1A237E] font-poppins">Bank Soal Fill The Blank</h1>
+          <h1 class="text-base md:text-lg font-bold text-primary font-poppins">Bank Soal Fill The Blank</h1>
           <p class="text-sm text-slate-500 mt-1">Kelola bank soal rumpang secara global.</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
           <div class="relative w-full sm:w-64">
             <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" x-model="searchQuery" placeholder="Cari teks rumpang..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#1A237E] outline-none">
+            <input type="text" x-model="searchQuery" placeholder="Cari teks rumpang..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none">
           </div>
           <div class="flex gap-2">
             <button x-show="selectedIds.length > 0" @click="deleteSelected()" class="p-2 text-sm bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-bold flex items-center gap-2 flex-1 justify-center sm:flex-none" x-transition>
@@ -19,7 +19,7 @@ export const BankSoalFtbUI = () => {
             <button @click="openImportModal = true" class="p-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold flex items-center gap-2 flex-1 justify-center sm:flex-none">
               <i class="bi bi-file-earmark-excel"></i> Import Excel
             </button>
-            <button @click="openFormModal()" class="p-2 text-sm bg-[#FF5722] text-white rounded-lg hover:bg-[#E64A19] transition-colors text-sm font-bold flex items-center gap-2 shadow-md flex-1 justify-center sm:flex-none">
+            <button @click="openFormModal()" class="p-2 text-sm bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors text-sm font-bold flex items-center gap-2 shadow-md flex-1 justify-center sm:flex-none">
               <i class="bi bi-plus-lg"></i> Tambah Soal
             </button>
           </div>
@@ -34,7 +34,7 @@ export const BankSoalFtbUI = () => {
             <thead>
               <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wider">
                 <th class="p-4 w-12 text-center">
-                  <input type="checkbox" class="rounded text-[#1A237E] focus:ring-[#1A237E] cursor-pointer"
+                  <input type="checkbox" class="rounded text-primary focus:ring-primary cursor-pointer"
                          :checked="filteredSoalList().length > 0 && selectedIds.length === filteredSoalList().length"
                          @change="$event.target.checked ? selectedIds = filteredSoalList().map(s => s.id) : selectedIds = []">
                 </th>
@@ -54,7 +54,7 @@ export const BankSoalFtbUI = () => {
               <template x-for="soal in filteredSoalList()" :key="soal.id">
                 <tr class="hover:bg-slate-50 transition-colors" :class="{'bg-blue-50/50': selectedIds.includes(soal.id)}">
                   <td class="p-4 text-center align-top">
-                    <input type="checkbox" class="rounded text-[#1A237E] focus:ring-[#1A237E] cursor-pointer" :value="soal.id" x-model="selectedIds">
+                    <input type="checkbox" class="rounded text-primary focus:ring-primary cursor-pointer" :value="soal.id" x-model="selectedIds">
                   </td>
                   <td class="p-4 text-sm text-slate-700 align-top break-words" x-text="soal.fullText"></td>
                   <td class="p-4 text-xs text-slate-600 align-top">
@@ -87,17 +87,17 @@ export const BankSoalFtbUI = () => {
       <div x-show="showForm" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;" x-transition>
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
           <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 class="text-lg font-bold text-[#1A237E]" x-text="isEdit ? 'Edit Soal FTB' : 'Tambah Soal FTB'"></h3>
+            <h3 class="text-lg font-bold text-primary" x-text="isEdit ? 'Edit Soal FTB' : 'Tambah Soal FTB'"></h3>
             <button @click="showForm = false" class="text-slate-400 hover:text-red-500">&times;</button>
           </div>
           <div class="p-5 overflow-y-auto space-y-4">
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Utuh</label>
-              <textarea x-model="formData.fullText" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none" rows="4" placeholder="Masukkan teks. Gunakan tanda kurung siku untuk menandai kata rumpang. Contoh: Ibukota Indonesia adalah [Jakarta]."></textarea>
+              <textarea x-model="formData.fullText" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none" rows="4" placeholder="Masukkan teks. Gunakan tanda kurung siku untuk menandai kata rumpang. Contoh: Ibukota Indonesia adalah [Jakarta]."></textarea>
             </div>
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1">Tingkat Kesulitan</label>
-              <select x-model="formData.difficulty" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#FFC107] outline-none">
+              <select x-model="formData.difficulty" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-highlight outline-none">
                 <option value="MUDAH">Mudah</option>
                 <option value="SEDANG">Sedang</option>
                 <option value="SULIT">Sulit</option>
@@ -113,7 +113,7 @@ export const BankSoalFtbUI = () => {
                 <template x-for="(ans, idx) in formData.answers" :key="idx">
                   <div class="flex gap-2 items-center">
                     <input type="text" x-model="ans.word" class="w-1/3 border border-slate-200 rounded p-1.5 text-xs bg-slate-100" readonly>
-                    <input type="text" x-model="ans.explanation" placeholder="Penjelasan (opsional)" class="flex-1 border border-slate-200 rounded p-1.5 text-xs focus:ring-1 focus:ring-[#FFC107] outline-none">
+                    <input type="text" x-model="ans.explanation" placeholder="Penjelasan (opsional)" class="flex-1 border border-slate-200 rounded p-1.5 text-xs focus:ring-1 focus:ring-highlight outline-none">
                   </div>
                 </template>
                 <template x-if="formData.answers.length === 0">
@@ -124,7 +124,7 @@ export const BankSoalFtbUI = () => {
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button @click="showForm = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitForm()" class="p-2 text-sm text-white bg-[#1A237E] rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
+            <button @click="submitForm()" class="p-2 text-sm text-white bg-primary rounded-lg hover:bg-blue-900 font-semibold text-sm">Simpan</button>
           </div>
         </div>
       </div>
@@ -133,7 +133,7 @@ export const BankSoalFtbUI = () => {
       <div x-show="openImportModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style="display: none;" x-transition>
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
           <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 class="text-lg font-bold text-[#1A237E]">Import Bank Soal FTB</h3>
+            <h3 class="text-lg font-bold text-primary">Import Bank Soal FTB</h3>
             <button @click="openImportModal = false" class="text-slate-400 hover:text-red-500">&times;</button>
           </div>
           <div class="p-5 space-y-4">
@@ -152,7 +152,7 @@ export const BankSoalFtbUI = () => {
           </div>
           <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
             <button @click="openImportModal = false" class="p-2 text-sm text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 font-semibold text-sm">Batal</button>
-            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="p-2 text-sm text-white bg-[#FF5722] rounded-lg hover:bg-[#E64A19] disabled:opacity-50 font-semibold text-sm">
+            <button @click="submitImport()" :disabled="!selectedFile || isImporting" class="p-2 text-sm text-white bg-accent rounded-lg hover:bg-accent-hover disabled:opacity-50 font-semibold text-sm">
               <span x-text="isImporting ? 'Mengimpor...' : 'Mengimpor'"></span>
             </button>
           </div>

@@ -274,7 +274,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
              sorted.forEach(g => {
                 const regex = new RegExp(\`\\\\b(\${g.word})\\\\b\`, 'gi');
                 html = html.replace(regex, (match) => {
-                  return \`<span class="relative group cursor-help font-bold text-[#FF5722] border-b-2 border-dotted border-[#FF5722] hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1A237E] text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
+                  return \`<span class="relative group cursor-help font-bold text-accent border-b-2 border-dotted border-accent hover:bg-orange-50 transition-colors rounded px-1">\${match}<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-primary text-white text-xs font-normal p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 leading-relaxed pointer-events-none">\${g.definition}</span></span>\`;
                 });
              });
              return html;
@@ -398,16 +398,16 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
     </script>
 
     <div class="space-y-8" x-data="ketuaDashboard()">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#1A237E] p-4 md:p-6 rounded-xl shadow-lg border-b-4 border-[#FFC107]">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-primary p-4 md:p-6 rounded-xl shadow-lg border-b-4 border-highlight">
         <div class="flex items-center gap-4">
           <img src="/public/assets/Logo-LogosLAB.png" alt="Logos LAB" class="h-12 w-auto object-contain bg-white p-1 rounded shadow-sm" onerror="this.style.display='none'"/>
           <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight">Manajemen Proyek Game</h2>
         </div>
         <div class="flex flex-wrap items-center gap-3 md:gap-4">
-          <button @click="openCreateModal('GAME')" class="flex-1 md:flex-none bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+          <button @click="openCreateModal('GAME')" class="flex-1 md:flex-none bg-accent hover:bg-accent-hover text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
             + TAMBAH PROYEK GAME
           </button>
-          <button @click="openCreateModal('MATERI')" class="flex-1 md:flex-none bg-[#FF5722] hover:bg-[#E64A19] text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
+          <button @click="openCreateModal('MATERI')" class="flex-1 md:flex-none bg-accent hover:bg-accent-hover text-white px-4 py-3 md:px-6 rounded-xl text-xs md:text-sm font-bold transition-all transform hover:scale-105 shadow-lg uppercase tracking-widest">
             + TUGASKAN MATERI
           </button>
         </div>
@@ -417,8 +417,8 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
       <div x-show="!activeProject">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
           <div>
-            <h2 class="text-base md:text-lg font-semibold text-[#1A237E] uppercase tracking-wider flex items-center gap-2">
-              <span class="h-5 w-1.5 bg-[#FFC107] rounded-full"></span>
+            <h2 class="text-base md:text-lg font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
+              <span class="h-5 w-1.5 bg-highlight rounded-full"></span>
               Proyek Yang Sedang Dikerjakan
             </h2>
             <p class="text-xs md:text-sm text-slate-400 font-medium mt-1">Daftar seluruh proyek produksi dalam sistem</p>
@@ -432,7 +432,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
           <div class="flex flex-wrap items-center gap-3 w-full p-4 bg-slate-50/80 border-b border-slate-200">
             <div class="flex flex-col gap-1 w-48 shrink-0">
               <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kriteria Filter</label>
-              <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+              <select x-model="filterKey" @change="filterValue=''; filterStart=''; filterEnd=''" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 <option value="">-- Pilih Kriteria --</option>
                 <option value="title_game">Judul Game/Materi</option>
                 <option value="type_game">Jenis</option>
@@ -444,11 +444,11 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nilai Filter</label>
               
               <template x-if="filterKey === 'title_game'">
-                <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <input type="text" x-model="filterValue" placeholder="Ketik pencarian..." class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
               </template>
 
               <template x-if="filterKey === 'type_game'">
-                <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   <option value="">-- Pilih Jenis --</option>
                   <option value="QUIZ">QUIZ</option>
                   <option value="FILL_THE_BLANK">FILL THE BLANK</option>
@@ -461,7 +461,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               </template>
 
               <template x-if="filterKey === 'status'">
-                <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                <select x-model="filterValue" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   <option value="">-- Pilih Status --</option>
                   <option value="DRAFT">DRAFT</option>
                   <option value="REVIEW_PAKAR">REVIEW PAKAR</option>
@@ -476,9 +476,9 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
 
               <template x-if="filterKey === 'deadline'">
                 <div class="flex gap-2">
-                  <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <input type="date" x-model="filterStart" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                   <span class="self-center font-bold text-slate-400">-</span>
-                  <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white shadow-sm">
+                  <input type="date" x-model="filterEnd" class="w-full border-2 border-slate-200 rounded-lg py-2 px-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white shadow-sm">
                 </div>
               </template>
 
@@ -488,7 +488,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
             </div>
             
             <div class="flex gap-2 ml-auto shrink-0 self-end">
-              <button @click="applyFilter()" class="bg-[#1A237E] text-[#FFC107] py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-indigo-900 transition-all uppercase tracking-widest flex items-center gap-2">
+              <button @click="applyFilter()" class="bg-primary text-highlight py-2.5 px-4 text-sm font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-all uppercase tracking-widest flex items-center gap-2">
                 TERAPKAN
               </button>
               <button @click="resetFilter()" class="bg-slate-200 text-slate-700 py-2.5 px-4 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-300 transition-all uppercase tracking-widest">
@@ -515,7 +515,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               <template x-for="p in filteredActiveProjects()" :key="p.id">
                 <tr class="hover:bg-blue-50/40 transition-all group">
                   <td class="px-6 py-5">
-                    <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-[#1A237E] transition-colors" x-text="p.title"></div>
+                    <div class="font-semibold text-slate-800 text-base md:text-lg leading-tight group-hover:text-primary transition-colors" x-text="p.title"></div>
                     <div class="text-[10px] text-slate-400 font-bold mt-0.5" x-text="'#G' + p.id"></div>
                   </td>
                   <td class="px-6 py-5">
@@ -532,8 +532,8 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                       :class="{
                         'bg-slate-100 text-slate-600 border border-slate-200': workflowStatus(p) === 'DRAFT',
                         'bg-blue-100 text-blue-800 border border-blue-200': workflowStatus(p) === 'REVIEW_PAKAR' || workflowStatus(p) === 'REVIEW_KETUA',
-                        'bg-orange-100 text-[#E64A19] border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
-                        'bg-[#FFC107] text-[#1A237E] border border-[#FFC107]': workflowStatus(p) === 'ACCEPTED_PAKAR',
+                        'bg-orange-100 text-accent-hover border border-orange-200': workflowStatus(p) === 'REVISI_PAKAR' || workflowStatus(p) === 'REVISI_KETUA',
+                        'bg-highlight text-primary border border-highlight': workflowStatus(p) === 'ACCEPTED_PAKAR',
                         'bg-green-100 text-green-800 border border-green-200': workflowStatus(p) === 'PUBLISHED',
                         'bg-red-100 text-red-800 border border-red-200': workflowStatus(p) === 'UNPUBLISHED',
                       }"
@@ -549,7 +549,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                       <button @click="$dispatch('open-chat-drawer', { projectId: p.id, contextType: 'GENERAL', contextTargetId: null, targetName: p.title, userRole: window.USER_ROLE })" title="Diskusi Proyek" class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-xl text-xs font-black hover:bg-indigo-200 shadow-sm transition-all uppercase tracking-widest flex items-center justify-center shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
                       </button>
-                      <button @click="openProject(p.id)" class="bg-[#1A237E] text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-indigo-900 shadow-md transition-all uppercase tracking-widest">DETAIL</button>
+                      <button @click="openProject(p.id)" class="bg-primary text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-primary-dark shadow-md transition-all uppercase tracking-widest">DETAIL</button>
                     </div>
                   </td>
                 </tr>
@@ -576,31 +576,31 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
         ${ProjectHeader()}
 
         <div class="bg-white p-8 border-2 border-slate-100 rounded-2xl shadow-xl">
-          <h4 class="font-black text-[#1A237E] uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
-            <span class="h-3 w-3 bg-[#FF5722] rounded-full animate-pulse"></span>
+          <h4 class="font-black text-primary uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
+            <span class="h-3 w-3 bg-accent rounded-full animate-pulse"></span>
             Persetujuan Produksi
           </h4>
-          <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-[#1A237E] outline-none font-medium transition-all mb-6" placeholder="Tuliskan catatan atau instruksi pengerjaan..."></textarea>
+          <textarea x-model="feedback" class="w-full border-2 border-slate-100 rounded-xl p-4 h-40 focus:border-primary outline-none font-medium transition-all mb-6" placeholder="Tuliskan catatan atau instruksi pengerjaan..."></textarea>
           <div class="flex gap-4">
-            <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-[#FF5722] text-[#FF5722] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
-            <button @click="submitReview('ACCEPT')" class="flex-1 bg-[#1A237E] text-[#FFC107] px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-900 transition-all shadow-lg">SETUJUI &amp; PUBLISH</button>
+            <button @click="submitReview('REVISI')" class="flex-1 bg-white border-4 border-accent text-accent px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-orange-50 transition-all shadow-lg">MINTA REVISI</button>
+            <button @click="submitReview('ACCEPT')" class="flex-1 bg-primary text-highlight px-6 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg">SETUJUI &amp; PUBLISH</button>
           </div>
         </div>
       </div>
 
       <!-- Preview Modal -->
       <div x-show="showPreview" style="display:none;" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-[#1A237E]">
+        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative shadow-2xl border-4 border-primary">
           <button @click="showPreview = false" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 z-10 text-3xl font-black">&times;</button>
-          <div class="bg-[#1A237E] p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-[#FFC107]">
-            <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-[#FFC107]"></span>
+          <div class="bg-primary p-6 text-white font-black text-center uppercase tracking-widest border-b-4 border-highlight">
+            <span x-text="activeProject?.type === 'MATERI' ? 'PREVIEW MATERI: ' : 'SIMULASI GAME: '"></span> <span x-text="activeProject?.title" class="text-highlight"></span>
           </div>
           <div x-show="activeProject?.type === 'GAME' && previewLevelCount() > 1" class="flex flex-wrap items-center justify-center gap-2 bg-slate-100 px-4 py-3 border-b border-slate-200">
             <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1">Level</span>
             <template x-for="l in previewLevelCount()" :key="l">
-              <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-[#1A237E] text-[#FFC107]' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-[#1A237E]'">
+              <button type="button" @click="selectPreviewLevel(l)" class="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all" :class="previewLevel === l ? 'bg-primary text-highlight' : 'bg-white text-slate-600 border-2 border-slate-200 hover:border-primary'">
                 <span x-text="'Level ' + l"></span>
-                <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-[#FF5722] text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
+                <span x-show="isNewPreviewLevel(l)" class="ml-1 bg-accent text-white px-1.5 py-0.5 rounded text-[9px]">Baru</span>
               </button>
             </template>
           </div>
@@ -612,7 +612,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                 <template x-if="activeProject?.materiType === 'MANUAL'">
                   <div class="w-full max-w-4xl flex flex-col gap-6">
                     <div class="flex justify-end w-full">
-                       <button @click="speakAllSections()" class="bg-[#1A237E] hover:bg-indigo-900 text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-md flex items-center gap-2">
+                       <button @click="speakAllSections()" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-md flex items-center gap-2">
                          <template x-if="isReading"><span>Jeda / Berhenti Baca Semua</span></template>
                          <template x-if="!isReading"><span>🔊 Bacakan Semua Kartu</span></template>
                        </button>
@@ -632,19 +632,19 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                              x-transition:leave-start="flip-in"
                              x-transition:leave-end="flip-out"
                              @click="if(idx <= unlockedIdx) { flipped = true; if(idx === unlockedIdx) unlockedIdx++; }"
-                             class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 bg-gradient-to-br from-[#1A237E] to-blue-900 text-white"
+                             class="absolute inset-0 w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col items-center justify-center p-10 md:p-16 bg-gradient-to-br from-primary to-blue-900 text-white"
                              :class="idx > unlockedIdx ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-transform'">
                            
                            <!-- Locked Overlay -->
                            <div x-show="idx > unlockedIdx" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-all">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#FFC107] mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                              <span class="bg-[#1A237E] text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl border border-[#FFC107]/30">Buka kartu sebelumnya terlebih dahulu</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-highlight mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                              <span class="bg-primary text-white px-4 py-2 rounded-full font-bold text-sm shadow-xl border border-highlight/30">Buka kartu sebelumnya terlebih dahulu</span>
                            </div>
 
                            <div class="relative z-10 text-center w-full flex flex-col items-center h-full justify-center">
-                             <span class="inline-block bg-[#FF5722] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
+                             <span class="inline-block bg-accent text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest mb-4 shadow-md" x-text="'KARTU MATERI ' + (idx + 1)"></span>
                              <h2 class="text-2xl md:text-4xl font-black text-center tracking-tight leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
-                             <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-[#FFC107] text-sm font-bold animate-bounce bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
+                             <button x-show="idx <= unlockedIdx" class="mt-8 flex items-center justify-center gap-2 text-highlight text-sm font-bold animate-bounce bg-white/10 px-6 py-3 rounded-full backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-colors">
                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
                                Buka Kartu
                              </button>
@@ -657,7 +657,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                              x-transition:enter-start="flip-start"
                              x-transition:enter-end="flip-in"
                              class="w-full h-full flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-                          <div class="bg-[#1A237E] text-white px-6 py-4 flex justify-between items-center min-h-[140px] border-b-4 border-[#FFC107] gap-4">
+                          <div class="bg-primary text-white px-6 py-4 flex justify-between items-center min-h-[140px] border-b-4 border-highlight gap-4">
                             <div class="flex items-center gap-3 flex-1">
                               <button @click="flipped = false" class="shrink-0 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Tutup Kartu">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -665,7 +665,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                               <h2 class="text-xl md:text-2xl font-bold leading-tight" x-text="section.subTitle || 'Sub-Bab ' + (idx + 1)"></h2>
                             </div>
                             <!-- Speaker Button -->
-                            <button @click="speakSection(idx)" class="shrink-0 bg-[#FF5722] hover:bg-[#E64A19] px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
+                            <button @click="speakSection(idx)" class="shrink-0 bg-accent hover:bg-accent-hover px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest shadow-md">
                               <template x-if="speakingIdx === idx && !isPaused">
                                  <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Jeda</div>
                               </template>
@@ -721,10 +721,10 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               </template>
               <template x-if="activeProject?.gameType !== 'WORD_SEARCH' && activeProject?.gameType !== 'CROSSWORD'">
                 <div>
-                  <div class="inline-block bg-[#1A237E] text-[#FFC107] px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
+                  <div class="inline-block bg-primary text-highlight px-4 py-1 rounded-full text-[10px] font-black mb-4 uppercase tracking-widest" x-text="'PERTANYAAN ' + (currentQuestionIndex + 1) + ' / ' + previewQuestions.length"></div>
                   <template x-if="activeProject?.gameType === 'QUIZ'">
                     <div>
-                      <h3 class="text-2xl font-black text-[#1A237E] mb-8 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
+                      <h3 class="text-2xl font-black text-primary mb-8 leading-relaxed" x-text="previewQuestions[currentQuestionIndex]?.question"></h3>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <template x-for="opt in ['A','B','C','D']">
                           <button @click="checkAnswerQuiz(opt)"
@@ -734,7 +734,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                               'border-red-500 bg-red-50': showExplanation && selectedAnswer === opt && opt !== previewQuestions[currentQuestionIndex]?.correctAnswer,
                               'border-slate-100 bg-white hover:border-yellow-300': !showExplanation && selectedAnswer !== opt
                             }"
-                            class="border-4 p-5 rounded-2xl text-[#1A237E] font-black transition-all text-left flex items-center gap-3"
+                            class="border-4 p-5 rounded-2xl text-primary font-black transition-all text-left flex items-center gap-3"
                             :disabled="showExplanation">
                             <span class="h-8 w-8 rounded-lg flex items-center justify-center font-black bg-slate-100 shrink-0" x-text="opt"></span>
                             <span x-text="previewQuestions[currentQuestionIndex]?.['option' + opt]"></span>
@@ -745,8 +745,8 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   </template>
                   <template x-if="activeProject?.gameType === 'FILL_THE_BLANK'">
                     <div>
-                      <div class="text-xl font-bold text-[#1A237E] mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(previewQuestions[currentQuestionIndex])"></div>
-                      <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-[#FF5722] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest">PERIKSA JAWABAN</button>
+                      <div class="text-xl font-bold text-primary mb-8 leading-relaxed bg-white p-6 rounded-2xl shadow-inner border-2 border-slate-100" x-html="renderFTB(previewQuestions[currentQuestionIndex])"></div>
+                      <button @click="checkAnswerFTB()" x-show="!showExplanation" class="bg-accent text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest">PERIKSA JAWABAN</button>
                     </div>
                   </template>
                   <div x-show="showExplanation" class="mt-6 p-5 rounded-2xl border-2 border-dashed text-left" :class="isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
@@ -755,7 +755,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   </div>
                   <div class="flex gap-4 mt-6 justify-center">
                     <button @click="prevQuestion()" x-show="currentQuestionIndex > 0" class="bg-slate-100 text-slate-700 px-6 py-2 rounded-xl font-black">← Prev</button>
-                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-[#1A237E] text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < previewQuestions.length - 1 ? 'Berikutnya →' : 'Selesai'"></button>
+                    <button @click="nextQuestion()" x-show="showExplanation" class="bg-primary text-white px-6 py-2 rounded-xl font-black" x-text="currentQuestionIndex < previewQuestions.length - 1 ? 'Berikutnya →' : 'Selesai'"></button>
                   </div>
                 </div>
               </template>
@@ -765,9 +765,9 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
       </div>
 
       <!-- Create/Edit Modal -->
-      <div id="createGameModal" class="fixed inset-0 bg-[#1A237E]/40 backdrop-blur-sm hidden flex items-center justify-center z-[150] p-4">
-        <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-[#1A237E] flex flex-col overflow-hidden">
-          <div class="bg-[#1A237E] p-6 text-white flex justify-between items-center border-b-4 border-[#FFC107]">
+      <div id="createGameModal" class="fixed inset-0 bg-primary/40 backdrop-blur-sm hidden flex items-center justify-center z-[150] p-4">
+        <div class="bg-white rounded-[2rem] w-full max-w-xl max-h-[90vh] shadow-2xl border-4 border-primary flex flex-col overflow-hidden">
+          <div class="bg-primary p-6 text-white flex justify-between items-center border-b-4 border-highlight">
             <h3 class="font-black uppercase tracking-widest" x-text="(editMode ? 'Edit Proyek' : 'Penugasan Proyek Baru') + (modalType === 'MATERI' ? ' (Materi)' : ' (Game)')"></h3>
             <button onclick="closeCreateGameModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
           </div>
@@ -776,20 +776,20 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               <input type="hidden" name="id" :value="editProjectData?.id">
               <div>
                 <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2" x-text="modalType === 'MATERI' ? 'Judul Materi' : 'Judul Permainan'"></label>
-                <input type="text" name="title" :value="editProjectData?.title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
+                <input type="text" name="title" :value="editProjectData?.title" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold text-slate-700">
               </div>
               <div>
                 <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2" x-text="modalType === 'MATERI' ? 'Deskripsi Materi' : 'Deskripsi Game'"></label>
-                <textarea name="description" :value="editProjectData?.description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
+                <textarea name="description" :value="editProjectData?.description" class="w-full border-2 border-slate-100 rounded-xl p-4 h-24 focus:border-primary outline-none font-medium text-slate-600 resize-none"></textarea>
               </div>
               <div>
                 <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Instruksi</label>
-                <textarea name="instructions" :value="editProjectData?.instructions" class="w-full border-2 border-slate-100 rounded-xl p-4 h-28 focus:border-[#1A237E] outline-none font-medium text-slate-600 resize-none"></textarea>
+                <textarea name="instructions" :value="editProjectData?.instructions" class="w-full border-2 border-slate-100 rounded-xl p-4 h-28 focus:border-primary outline-none font-medium text-slate-600 resize-none"></textarea>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div x-show="modalType === 'GAME'">
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Jenis Game</label>
-                  <select name="gameType" :value="editProjectData?.gameType" :required="modalType === 'GAME'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                  <select name="gameType" :value="editProjectData?.gameType" :required="modalType === 'GAME'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold bg-white">
                     <option value="QUIZ">Quiz</option>
                     <option value="FILL_THE_BLANK">Fill The Blank</option>
                     <option value="WORD_SEARCH">Word Search</option>
@@ -798,12 +798,12 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                 </div>
                 <div x-show="modalType === 'GAME'">
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Nilai Minimal Lulus Level (%)</label>
-                  <input type="number" name="passPercentage" min="1" max="100" step="1" value="70" :value="editProjectData?.passPercentage ?? 70" :required="modalType === 'GAME'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
+                  <input type="number" name="passPercentage" min="1" max="100" step="1" value="70" :value="editProjectData?.passPercentage ?? 70" :required="modalType === 'GAME'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold text-slate-700">
                   <p class="text-[10px] text-slate-400 mt-1">Pemain harus mencapai nilai ini untuk membuka level berikutnya.</p>
                 </div>
                 <div x-show="modalType === 'MATERI'">
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Jenis Materi</label>
-                  <select name="materiType" :value="editProjectData?.materiType" :required="modalType === 'MATERI'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                  <select name="materiType" :value="editProjectData?.materiType" :required="modalType === 'MATERI'" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold bg-white">
                     <option value="TEKS">Teks (PDF/PPT/Gambar)</option>
                     <option value="VIDEO">Video</option>
                     <option value="MANUAL">Materi Teks Manual (Sub-Bab + Glosarium)</option>
@@ -813,13 +813,13 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Klasifikasi Minat</label>
                   <div class="flex flex-wrap gap-2 mb-2">
                     <template x-for="cat in selectedCategories" :key="cat">
-                      <span class="bg-[#1A237E] text-white px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm border border-[#FFC107]/30">
+                      <span class="bg-primary text-white px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm border border-highlight/30">
                         <span x-text="cat"></span>
-                        <button type="button" @click="removeCategory(cat)" class="hover:text-[#FFC107] transition-colors focus:outline-none text-sm">&times;</button>
+                        <button type="button" @click="removeCategory(cat)" class="hover:text-highlight transition-colors focus:outline-none text-sm">&times;</button>
                       </span>
                     </template>
                   </div>
-                  <select @change="addCategory($event.target.value); $event.target.value=''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white text-slate-700">
+                  <select @change="addCategory($event.target.value); $event.target.value=''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold bg-white text-slate-700">
                     <option value="">+ Tambah Minat...</option>
                     <template x-for="avail in availableCategories" :key="avail">
                       <option :value="avail" x-text="avail" x-show="!selectedCategories.includes(avail)"></option>
@@ -831,7 +831,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2" x-text="modalType === 'MATERI' ? 'PIC Pembuat Konten' : 'Pembuat Game'"></label>
-                  <select name="idPembuat" :value="editProjectData?.idPembuat" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                  <select name="idPembuat" :value="editProjectData?.idPembuat" required class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold bg-white">
                     <option value="">Pilih PIC</option>
                     <template x-if="modalType === 'GAME'">
                       <optgroup label="Pembuat Game">${pembuatOptions}</optgroup>
@@ -843,7 +843,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                 </div>
                 <div>
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">PIC Pakar</label>
-                  <select name="idPakar" :value="editProjectData?.idPakar" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold bg-white">
+                  <select name="idPakar" :value="editProjectData?.idPakar" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold bg-white">
                     <option value="">Pilih Pakar</option>
                     ${pakarOptions}
                   </select>
@@ -852,14 +852,14 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Deadline</label>
-                  <input type="date" name="deadline" :value="editProjectData?.deadline ? new Date(editProjectData.deadline).toISOString().split('T')[0] : ''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-[#1A237E] outline-none font-bold text-slate-700">
+                  <input type="date" name="deadline" :value="editProjectData?.deadline ? new Date(editProjectData.deadline).toISOString().split('T')[0] : ''" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-primary outline-none font-bold text-slate-700">
                 </div>
                 <div>
                   <label class="block text-xs md:text-sm font-medium text-slate-400 uppercase tracking-widest mb-2">Thumbnail (Opsional)</label>
-                  <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-[#1A237E] outline-none font-bold text-slate-700 bg-white cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A237E] file:text-[#FFC107] hover:file:bg-indigo-900">
+                  <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-primary outline-none font-bold text-slate-700 bg-white cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary file:text-highlight hover:file:bg-primary-dark">
                 </div>
               </div>
-              <button type="submit" class="w-full bg-[#1A237E] text-[#FFC107] py-4 rounded-xl font-black uppercase tracking-widest shadow-xl hover:bg-indigo-900 transition-all">
+              <button type="submit" class="w-full bg-primary text-highlight py-4 rounded-xl font-black uppercase tracking-widest shadow-xl hover:bg-primary-dark transition-all">
                 <span x-text="editMode ? 'SIMPAN PERUBAHAN' : 'TUGASKAN PROYEK'"></span>
               </button>
             </form>
