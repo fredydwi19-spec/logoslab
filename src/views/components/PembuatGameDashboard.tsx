@@ -695,6 +695,7 @@ export const PembuatGameDashboard = ({ myProjects, publishedProjects, allUsers, 
                     <option value="FILL_THE_BLANK">FILL THE BLANK</option>
                     <option value="WORD_SEARCH">WORD SEARCH</option>
                     <option value="CROSSWORD">CROSSWORD</option>
+                    <option value="ADVENTURE">ADVENTURE</option>
                   </select>
                 </template>
 

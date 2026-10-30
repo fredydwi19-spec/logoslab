@@ -82,9 +82,18 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
     - Setelah Ketua menerima, jumlah level terbit bertambah dan level baru terbuka untuk pemain. Level yang belum terbit tampil "Segera hadir" dan isinya tidak bisa diambil pemain lewat API.
 - **Game Adventure Studi Kasus:** cerita bercabang tentang situasi nyata anak muda atau kisah Alkitab. Pemain memilih respons, pilihannya menentukan alur, dan di tengah cerita ada tantangan soal dari Bank Soal Quiz. Cerita berakhir dengan ending, skor, ayat, dan ajakan menulis Jurnal Refleksi.
   - Dikerjakan sebagai proyek GAME biasa (`game_type = ADVENTURE`) dengan alur yang sama: Ketua menugaskan PIC Pembuat Game dan Pakar → Pembuat mengerjakan → Pakar (accept/revisi) → Ketua (accept/revisi) → terbit.
-  - Isi game terdiri dari scene dengan 3 jenis: **Cerita** (2–4 pilihan menuju scene lain), **Tantangan** (soal Bank Soal; jawaban benar/salah menuju scene berbeda), dan **Akhir** (ending + refleksi + ayat).
+  - Isi game terdiri dari scene dengan 3 jenis: **Cerita** (2–4 pilihan menuju scene lain), **Tantangan** (soal pilihan ganda yang dipilih dari Bank Soal Quiz lalu disalin ke scene, atau ditulis langsung; jawaban benar/salah menuju scene berbeda), dan **Akhir** (ending + nilai 0–100 + ayat + ajakan refleksi).
+  - **Nilai level = nilai ending yang dicapai pemain.** Pembuat memberi nilai di tiap ending (misalnya ending terbaik 100, ending kurang tepat 40). Pemain lulus jika nilai ending ≥ nilai minimal lulus dari Ketua, jadi yang dinilai adalah keputusan pemain. Tantangan menentukan cabang cerita.
+  - Mendukung Sistem Level dan terbit bertahap: satu level = satu cerita.
+  - Versi 1 hanya teks (tanpa gambar per scene).
   - Editor versi 1 berbentuk form: kartu scene dengan dropdown "menuju scene", pemeriksa otomatis (tidak ada jalan buntu, semua scene tercapai, minimal satu ending), peta alur yang bisa dilihat, dan Preview.
   - Pakar dan Ketua mereview dengan mencoba Preview, lalu memakai fitur revisi proyek yang sudah ada (accept/revisi + catatan).
+  - **Progres pengerjaan:**
+    - [x] Langkah 1: database (tabel scene + jenis game `ADVENTURE`), API simpan/ambil cerita, pemeriksa alur, cek saat Kirim ke Pakar, dan Ketua bisa membuat proyek Adventure
+    - [ ] Langkah 2: editor form untuk Pembuat Game (kartu scene, dropdown "menuju scene", pilih soal dari Bank Soal, pemeriksa otomatis, peta alur, tab level)
+    - [ ] Langkah 3: pemain di `/play` (scene per scene dari server, ending, nilai, ayat, ajakan Jurnal Refleksi)
+    - [ ] Langkah 4: Preview untuk Pakar, Ketua, dan Simulasi Pembuat
+    - ⚠️ Sampai langkah 2 selesai, proyek Adventure belum punya editor di dashboard Pembuat Game.
 
 ## 06 Di Luar Cakupan (belum dibuat sekarang)
 - Forum tanya pakar (Expert Insight Forum)

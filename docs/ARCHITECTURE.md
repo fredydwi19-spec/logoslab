@@ -48,11 +48,13 @@ src/routes/                # Satu file per bagian fitur
   chat.ts                  #   Diskusi Proyek
   quizDuels.ts             #   Quiz Duel
   journals.ts              #   Jurnal Refleksi
+  adventure.ts             #   Game Adventure: ambil & simpan cerita per level (hanya tim proyek)
   levels.ts                #   Peta level pemain, sesi main (mulai/cek jawaban/selesai) & penilaian skor per level
   userDashboard.ts         #   data dashboard pengguna
   ai.ts                    #   Logos AI Assistant
 src/services/              # Logika bisnis yang dipakai bersama (dashboardService.ts)
 src/utils/mailer.ts        # Pengirim email
+src/utils/adventure.ts     # Aturan cerita Adventure: bentuk scene, pemeriksa alur, scene versi pemain
 src/utils/level.ts         # Fungsi bantu level (toLevel, findMissingLevel) dan versi soal tanpa kunci jawaban untuk pemain
 src/views/layouts/         # Kerangka halaman (Layout.tsx untuk dashboard, MainLayout.tsx untuk publik)
 src/views/components/      # Bagian tampilan: dashboard per peran, editor & player game, widget chat
@@ -137,6 +139,10 @@ Halaman publik: landing page (`/`), player game (`/play/:id`), viewer materi (`/
 - **Simpan soal (`POST /api/projects/:id/questions`) dan Generate Soal (`POST /api/bank-soal/auto-generate`):** hanya Pembuat yang ditugaskan di proyek itu (Generate Soal juga boleh oleh Ketua).
 - **Kirim ke Pakar:** server menolak jika ada level yang kosong (level harus 1, 2, 3, ... tanpa celah). Quiz & Fill the Blank: tiap level minimal 1 soal. Word Search & TTS: tiap level punya grid dengan minimal 1 kata/clue.
 - **Grid Word Search & TTS per level:** `GET /api/word-search/:id?level=N` dan `GET /api/crossword/:id?level=N` (tanpa `level` = Level 1) mengembalikan `data` level itu dan `levelCount`. Simpan (`POST .../questions`) menyertakan `level`; satu baris tabel per level. Fungsi bantu nomor level ada di `src/utils/level.ts`.
+- **Game Adventure (`game_adventure_scenes`):** satu baris = satu scene (`scene_key` unik per proyek + level; jenis `STORY`/`CHALLENGE`/`ENDING`). Pilihan scene Cerita disimpan di kolom `choices` (JSON `[{ text, next }]`); tantangan memakai kolom soal biasa (`question`, `option_a`–`option_d`, `correct_answer`, `next_correct`, `next_wrong`); Akhir memakai `ending_score` (0–100), `verse`, `reflection`. Relasi ke `projects` memakai `ON DELETE CASCADE`.
+  - `GET /api/adventure/:id?level=N` hanya untuk tim proyek (pemain dan pengunjung ditolak 403); mengembalikan `scenes`, `levelCount`, dan `errors` dari pemeriksa alur.
+  - `POST /api/adventure/:id/scenes` (`level`, `scenes`) hanya Pembuat Game yang ditugaskan, mengganti seluruh scene level itu dalam satu transaksi. Draf yang belum lengkap boleh disimpan; balasannya berisi `errors`. Level terbit dikunci seperti jenis game lain.
+  - **Pemeriksa alur** (`validateAdventure` di `src/utils/adventure.ts`): tepat satu scene awal (bukan Akhir), judul dan isi terisi, Cerita punya 2–4 pilihan, Tantangan lengkap dengan kunci, semua tujuan ada dan bukan dirinya sendiri, minimal satu Akhir, ada ending dengan nilai ≥ nilai minimal lulus, semua scene tercapai dari awal, dan tidak ada putaran yang tidak pernah sampai ke Akhir. **Kirim ke Pakar ditolak** jika ada level yang belum lolos pemeriksa.
 
 ## 09 Repositori dan Alur Commit
 - **Repositori:** https://github.com/fredydwi19-spec/logoslab

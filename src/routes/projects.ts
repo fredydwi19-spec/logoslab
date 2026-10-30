@@ -1,9 +1,11 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db/db";
-import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats } from "../db/schema";
+import { projects, questionBank, reviewsHistory, notifications, users, userScores, gameFillTheBlank, gameQuestionsBank, gameWordSearch, gameCrossword, materiContents, materialSections, materialGlossary, achievements, materiReadProgress, quizDuels, userJournals, gamePlayLogs, materialAccessLogs, projectChats, gameAdventureScenes } from "../db/schema";
 import { eq, and, desc, inArray, gte } from "drizzle-orm";
 import { jwt } from "@elysiajs/jwt";
 import { toLevel, findMissingLevel, firstEditableLevel, isProjectTeam, publicQuizQuestion, publicFtbQuestion, publicCrosswordClues } from "../utils/level";
+import { validateAdventure } from "../utils/adventure";
+import { loadAdventureScenes } from "./adventure";
 
 // Nilai minimal lulus level: angka bulat 1–100. Kosong = pakai nilai bawaan. Tidak valid = null.
 function parsePassPercentage(value: unknown, fallback: number): number | null {
@@ -18,6 +20,7 @@ async function getHighestContentLevel(projectId: number, gameType: string | null
     : gameType === "FILL_THE_BLANK" ? gameFillTheBlank
     : gameType === "WORD_SEARCH" ? gameWordSearch
     : gameType === "CROSSWORD" ? gameCrossword
+    : gameType === "ADVENTURE" ? gameAdventureScenes
     : null;
   if (!table) return 1;
   const rows: { level: number }[] = await db.select({ level: table.level }).from(table as any).where(eq(table.projectId, projectId));
@@ -319,6 +322,21 @@ export const projectRoutes = new Elysia({ prefix: "/api/projects" })
         for (let level = 1; level <= highestLevel; level++) {
           if (!filledLevels.includes(level)) {
             return new Response(JSON.stringify({ error: `Level ${level} belum berisi ${itemName}.` }), { status: 400 });
+          }
+        }
+      }
+
+      // Adventure: setiap level 1..N wajib berisi cerita yang lolos pemeriksa alur
+      if (project.gameType === "ADVENTURE") {
+        const rows = await db.select({ level: gameAdventureScenes.level }).from(gameAdventureScenes).where(eq(gameAdventureScenes.projectId, projectId));
+        if (rows.length === 0) {
+          return new Response(JSON.stringify({ error: "Cerita belum berisi scene." }), { status: 400 });
+        }
+        const highestLevel = Math.max(...rows.map(r => r.level));
+        for (let level = Math.max(1, firstEditableLevel(project) ?? 1); level <= highestLevel; level++) {
+          const errors = validateAdventure(await loadAdventureScenes(projectId, level), project.passPercentage);
+          if (errors.length > 0) {
+            return new Response(JSON.stringify({ error: `Level ${level}: ${errors[0]}${errors.length > 1 ? ` (dan ${errors.length - 1} masalah lain)` : ""}` }), { status: 400 });
           }
         }
       }

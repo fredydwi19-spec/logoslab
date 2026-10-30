@@ -33,6 +33,7 @@ export const UserGamesPage = ({ games }: { games: any[] }) => {
                 case 'FILL_THE_BLANK': return '🧩';
                 case 'WORD_SEARCH': return '🔎';
                 case 'CROSSWORD': return '📝';
+                case 'ADVENTURE': return '🧭';
                 default: return '🎮';
               }
             }

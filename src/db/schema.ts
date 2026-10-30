@@ -32,7 +32,7 @@ export const projects = mysqlTable("projects", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   instructions: text("instructions"),
-  gameType: mysqlEnum("game_type", ["QUIZ", "FILL_THE_BLANK", "WORD_SEARCH", "CROSSWORD"]),
+  gameType: mysqlEnum("game_type", ["QUIZ", "FILL_THE_BLANK", "WORD_SEARCH", "CROSSWORD", "ADVENTURE"]),
   type: mysqlEnum("type", ["GAME", "MATERI"]).notNull(),
   materiType: mysqlEnum("materi_type", ["TEKS", "VIDEO", "MANUAL"]),
   category: varchar("category", { length: 100 }), // Matching user interests
@@ -316,3 +316,33 @@ export const levelAttempts = mysqlTable("level_attempts", {
   finishedAt: timestamp("finished_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Game Adventure Studi Kasus: satu baris = satu scene. Scene saling terhubung lewat scene_key (unik per proyek + level).
+// STORY: 2-4 pilihan (choices JSON [{ text, next }]). CHALLENGE: soal pilihan ganda, benar -> next_correct, salah -> next_wrong.
+// ENDING: penutup cerita dengan nilai 0-100 (nilai level), ayat, dan ajakan refleksi.
+export const gameAdventureScenes = mysqlTable("game_adventure_scenes", {
+  id: serial("id").primaryKey(),
+  projectId: bigint("project_id", { mode: 'number', unsigned: true }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  level: int("level").default(1).notNull(),
+  sceneKey: varchar("scene_key", { length: 20 }).notNull(),
+  sceneType: mysqlEnum("scene_type", ["STORY", "CHALLENGE", "ENDING"]).notNull(),
+  isStart: boolean("is_start").default(false).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  choices: text("choices"),
+  question: text("question"),
+  optionA: varchar("option_a", { length: 255 }),
+  optionB: varchar("option_b", { length: 255 }),
+  optionC: varchar("option_c", { length: 255 }),
+  optionD: varchar("option_d", { length: 255 }),
+  correctAnswer: mysqlEnum("correct_answer", ["A", "B", "C", "D"]),
+  explanation: text("explanation"),
+  nextCorrect: varchar("next_correct", { length: 20 }),
+  nextWrong: varchar("next_wrong", { length: 20 }),
+  endingScore: int("ending_score"),
+  verse: text("verse"),
+  reflection: text("reflection"),
+  sortOrder: int("sort_order").default(0).notNull(),
+}, (table) => ({
+  sceneUnq: unique("adventure_scene_unq").on(table.projectId, table.level, table.sceneKey),
+}));

@@ -614,6 +614,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                 <option value="FILL_THE_BLANK">FILL THE BLANK</option>
                 <option value="WORD_SEARCH">WORD SEARCH</option>
                 <option value="CROSSWORD">CROSSWORD</option>
+                <option value="ADVENTURE">ADVENTURE</option>
                   </select>
                 </template>
 
@@ -789,6 +790,7 @@ export const PakarDashboard = ({ myProjects, publishedProjects, allUsers, analyt
                     <option value="FILL_THE_BLANK">FILL THE BLANK</option>
                     <option value="WORD_SEARCH">WORD SEARCH</option>
                     <option value="CROSSWORD">CROSSWORD</option>
+                    <option value="ADVENTURE">ADVENTURE</option>
                   </select>
                 </template>
 

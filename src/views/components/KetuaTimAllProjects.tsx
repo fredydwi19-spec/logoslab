@@ -454,6 +454,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                   <option value="FILL_THE_BLANK">FILL THE BLANK</option>
                   <option value="WORD_SEARCH">WORD SEARCH</option>
                   <option value="CROSSWORD">CROSSWORD</option>
+                  <option value="ADVENTURE">ADVENTURE</option>
                   <option value="TEKS">TEKS (MATERI)</option>
                   <option value="VIDEO">VIDEO (MATERI)</option>
                   <option value="MANUAL">MANUAL (MATERI)</option>
@@ -794,6 +795,7 @@ export const KetuaTimAllProjects = ({ allProjects, pembuatGames, pembuatMateris 
                     <option value="FILL_THE_BLANK">Fill The Blank</option>
                     <option value="WORD_SEARCH">Word Search</option>
                     <option value="CROSSWORD">Crossword</option>
+                    <option value="ADVENTURE">Adventure Studi Kasus</option>
                   </select>
                 </div>
                 <div x-show="modalType === 'GAME'">
