@@ -101,7 +101,6 @@ Urutan pengerjaan: Sistem Level lebih dulu, lalu tampilan dashboard di HP, lalu 
       - Jendela Preview punya tab **Mainkan** (mencoba cerita seperti pemain, dengan kode scene, tujuan pilihan, tombol Mulai Ulang, dan jejak keputusan) dan **Semua Scene** (membaca seluruh isi cerita sekaligus: pilihan dan tujuannya, kunci tantangan, penjelasan, nilai ending, ayat, dan ajakan refleksi). Pakar tidak perlu memainkan setiap cabang satu per satu.
       - Tab level berlaku seperti game lain; game terbit yang sedang menambah level langsung dibuka di level baru.
       - Simulasi Pembuat memakai cerita yang sudah disimpan ke cloud.
-    - ⚠️ Setiap kali halaman `/play` dibuka, satu sesi main (`level_attempts`) dibuat. Sesi yang tidak diselesaikan belum dibersihkan otomatis.
 
 ## 06 Di Luar Cakupan (belum dibuat sekarang)
 - Forum tanya pakar (Expert Insight Forum)

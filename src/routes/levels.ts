@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { db } from "../db/db";
 import { projects, questionBank, gameFillTheBlank, gameWordSearch, gameCrossword, userScores, levelAttempts } from "../db/schema";
-import { eq, and, max, isNull } from "drizzle-orm";
+import { eq, and, max, isNull, lt, or, sql } from "drizzle-orm";
 import { publicQuizQuestion, publicFtbQuestion } from "../utils/level";
 import { publicAdventureScene, type AdventureScene } from "../utils/adventure";
 import { loadAdventureScenes } from "./adventure";
@@ -129,6 +129,19 @@ async function loadOpenAttempt(attemptId: string, projectId: number, level: numb
   if (!attempt) return { status: 404, error: "Sesi main tidak ditemukan. Mulai ulang level ini." } as const;
   if (attempt.finishedAt) return { status: 400, error: "Sesi main ini sudah selesai. Mulai ulang level untuk bermain lagi." } as const;
   return { project, attempt };
+}
+
+// Sesi main dibuat setiap kali level dimulai. Sesi yang ditinggalkan (belum selesai) dan sesi pengunjung
+// yang sudah selesai tidak dipakai lagi setelah 24 jam, jadi dihapus. Sesi pemain login yang selesai tetap disimpan.
+const STALE_ATTEMPT_HOURS = 24;
+
+// Waktu sesi dihitung dengan NOW() milik MySQL agar sama dengan created_at (Drizzle mengirim Date sebagai UTC)
+export async function cleanupStaleAttempts(): Promise<number> {
+  const [result] = await db.delete(levelAttempts).where(and(
+    lt(levelAttempts.createdAt, sql`NOW() - INTERVAL ${STALE_ATTEMPT_HOURS} HOUR`),
+    or(isNull(levelAttempts.finishedAt), isNull(levelAttempts.userId)),
+  ));
+  return result.affectedRows;
 }
 
 export const levelRoutes = new Elysia({ prefix: "/api/projects" })
@@ -318,7 +331,7 @@ export const levelRoutes = new Elysia({ prefix: "/api/projects" })
     }
     const score = scoreAnswers(project, content, { answers, foundWords });
     await db.update(levelAttempts)
-      .set({ answers: JSON.stringify(answers), score, finishedAt: new Date() })
+      .set({ answers: JSON.stringify(answers), score, finishedAt: sql`NOW()` })
       .where(eq(levelAttempts.id, attempt.id));
 
     const percent = content.maxScore > 0 ? Math.round((score * 100) / content.maxScore) : 0;

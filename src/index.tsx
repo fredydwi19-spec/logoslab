@@ -15,7 +15,7 @@ import { chatRoutes, projectChatRoutes } from "./routes/chat";
 import { userDashboardRoutes } from "./routes/userDashboard";
 import { quizDuelsRoutes } from "./routes/quizDuels";
 import { journalsRoutes } from "./routes/journals";
-import { levelRoutes } from "./routes/levels";
+import { levelRoutes, cleanupStaleAttempts } from "./routes/levels";
 import { adventureRoutes } from "./routes/adventure";
 import { pool } from "./db/db";
 import { Layout } from "./views/layouts/Layout";
@@ -879,3 +879,10 @@ const app = new Elysia()
   .listen(3000);
 
 console.log("🚀 Logos LAB Server is running at localhost:3000");
+
+// Bersihkan sesi main yang sudah tidak dipakai: saat server menyala, lalu setiap 1 jam
+const runAttemptCleanup = () => cleanupStaleAttempts()
+  .then(count => { if (count > 0) console.log(`🧹 ${count} sesi main lama dihapus`); })
+  .catch(err => console.error("Gagal membersihkan sesi main:", err));
+runAttemptCleanup();
+setInterval(runAttemptCleanup, 60 * 60 * 1000);
